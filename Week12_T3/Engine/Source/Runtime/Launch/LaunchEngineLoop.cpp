@@ -15,8 +15,12 @@
 #include "UnrealEd/UnrealEd.h"
 #include "UObject/Casts.h"
 
+#include "Physics/PhysicsModule.h"
+
+
 FGraphicsDevice FEngineLoop::GraphicDevice;
 FRenderer FEngineLoop::Renderer;
+PhysicsModule FEngineLoop::PhysicsModule;
 FResourceManager FEngineLoop::ResourceManager;
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
