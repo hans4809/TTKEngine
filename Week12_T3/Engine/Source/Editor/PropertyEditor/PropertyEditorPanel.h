@@ -56,10 +56,13 @@ private:
     
     void DrawSkeletalMeshPreviewButton(const FString& FilePath) const;
     void DrawParticlesPreviewButton(UParticleSystem* ParticleSystem) const;
-    
 	template<typename T>
 		requires std::derived_from<T, UActorComponent>
 	T* GetTargetComponent(AActor* SelectedActor, USceneComponent* SelectedComponent);
+
+    /* Physics Asset Settings */
+    void RenderForPhysicsAsset() const;
+    void DrawPhysicsAssetPreviewButton() const;
 
 private:
     float Width = 0, Height = 0;

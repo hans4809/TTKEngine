@@ -525,6 +525,7 @@ void PropertyEditorPanel::Render()
     {
         if (USkeletalMeshComponent* SkeletalMeshComponent = PickedActor->GetComponentByClass<USkeletalMeshComponent>())
         {
+            RenderForPhysicsAsset();
             RenderForSkeletalMesh(SkeletalMeshComponent);
             RenderForMaterial(SkeletalMeshComponent);
         }
@@ -673,14 +674,6 @@ void PropertyEditorPanel::Render()
 
             ImGui::TreePop();
         }        
-    }
-
-    if (PickedActor && PickedComponent && PickedComponent->IsA<UParticleSystemComponent>())
-    {
-        if (UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PickedComponent))
-        {
-            RenderForParticleSystem(ParticleComp);
-        }
     }
 
     RenderShapeProperty(PickedActor);
@@ -1751,7 +1744,7 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
         }
         
         UWorld* World = EditorEngine->CreatePreviewWindow(EditorPreviewSkeletal);
-
+        // FIXME : worldtype 임시로 지정. 실제 지정해주는 거
         // @todo CreatePreviewWindow()에서 다른 액터들을 소환하는가? 아니라면 불필요해 보이는 검사
         const TArray<AActor*> CopiedActors = World->GetActors();
         for (AActor* Actor : CopiedActors)
@@ -1832,6 +1825,47 @@ void PropertyEditorPanel::DrawParticlesPreviewButton(UParticleSystem* ParticleSy
         EditorEngine->GetParticlePreviewUI()->CreateEmptyParticleSystem(TestComp);
         TestComp->Activate();
     }
+}
+
+void PropertyEditorPanel::RenderForPhysicsAsset() const
+{
+    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    if (ImGui::TreeNodeEx("Physics", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::Text("Physics Asset");
+        DrawPhysicsAssetPreviewButton();
+        ImGui::TreePop();
+    }
+    ImGui::PopStyleColor();
+}
+
+void PropertyEditorPanel::DrawPhysicsAssetPreviewButton() const
+{
+    
+        if (ImGui::Button("Preview##Physics Asset"))
+        {
+            UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
+            if (EditorEngine == nullptr)
+            {
+                return;
+            }
+
+            UWorld* World = EditorEngine->CreatePreviewWindow(EditorPreviewPhysicsAsset);
+
+            World->ClearSelectedActors();
+
+            // SkySphere 생성
+            AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
+            SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
+            UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
+            FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
+            MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
+            MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
+            MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
+            MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
+            SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
+
+        }
 }
 
 void PropertyEditorPanel::OnResize(const HWND hWnd)

@@ -557,6 +557,7 @@
     <ClInclude Include="Engine\Source\Runtime\Serialization\Archive2.h" />
     <ClInclude Include="Engine\Source\Runtime\Serialization\MemoryArchive.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Engine\Source\Editor\UnrealEd\PhysicsPreviewUI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -839,6 +840,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Particles\ParticleEmitterInstances.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\Archive2.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\MemoryArchive.cpp" />
+    <ClCompile Include="Engine\Source\Editor\UnrealEd\PhysicsPreviewUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

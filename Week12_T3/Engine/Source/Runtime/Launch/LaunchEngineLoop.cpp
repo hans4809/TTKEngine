@@ -12,6 +12,7 @@
 #include "Renderer/Renderer.h"
 #include "UnrealEd/SkeletalPreviewUI.h"
 #include "UnrealEd/ParticlePreviewUI.h"
+#include "UnrealEd/PhysicsPreviewUI.h"
 #include "UnrealEd/UnrealEd.h"
 #include "UObject/Casts.h"
 
@@ -195,6 +196,10 @@ void FEngineLoop::Render() const
                 case EViewportClientType::EditorPreviewParticle:
                     EditorEngine->GetParticlePreviewUI()->SetWorld(TargetWorld);
                     EditorEngine->GetParticlePreviewUI()->Render();
+                    break;
+                case EViewportClientType::EditorPreviewPhysicsAsset:
+                    EditorEngine->GetPhysicsPreviewUI()->SetWorld(TargetWorld);
+                    EditorEngine->GetPhysicsPreviewUI()->Render();
                     break;
                 default:
                     assert(false);
