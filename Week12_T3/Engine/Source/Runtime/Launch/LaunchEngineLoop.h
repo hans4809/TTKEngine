@@ -4,7 +4,6 @@
 #include "LevelEditor/SlateAppMessageHandler.h"
 
 class FRenderer;
-class PhysicsModule;
 
 class FEngineLoop : IEngineLoop
 {
@@ -36,8 +35,7 @@ public:
     static FGraphicsDevice GraphicDevice;
     static FRenderer Renderer;
     static FResourceManager ResourceManager;
-    static PhysicsModule PhysicsModule;
-
+  
 private:
     TArray<HWND> AppWindows;
     HWND DefaultWindow;
