@@ -557,9 +557,11 @@
     <ClInclude Include="Engine\Source\Runtime\Serialization\Archive2.h" />
     <ClInclude Include="Engine\Source\Runtime\Serialization\MemoryArchive.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Engine\Source\Physics\HitResult.h" />
-    <ClInclude Include="Engine\Source\Physics\PhysicsModule.h" />
-    <ClInclude Include="Engine\Source\Physics\PhysXSDKManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\HitResult.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysXSDKManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysScene.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -842,9 +844,11 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Particles\ParticleEmitterInstances.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\Archive2.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\MemoryArchive.cpp" />
-    <ClCompile Include="Engine\Source\Physics\HitResult.cpp" />
-    <ClCompile Include="Engine\Source\Physics\PhysicsModule.cpp" />
-    <ClCompile Include="Engine\Source\Physics\PhysXSDKManager.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\HitResult.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysXSDKManager.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\PhysScene.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />
