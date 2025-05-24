@@ -9,7 +9,17 @@ public:
     FTransform() : Rotation(FQuat::Identity), Location(FVector::ZeroVector), Scale(FVector::OneVector) {}
     FTransform(FQuat InRotation, FVector InLocation, FVector InScale) : Rotation(InRotation), Location(InLocation), Scale(InScale) {}
     FTransform(const FMatrix& InMatrix);
+    FTransform(const  physx::PxTransform& PxTransform) 
+    {
+        Location.X = PxTransform.p.x;
+        Location.Y = PxTransform.p.y;
+        Location.Z = PxTransform.p.z;
 
+        Rotation.X = PxTransform.q.x;
+        Rotation.Y = PxTransform.q.y;
+        Rotation.Z = PxTransform.q.z;
+        Rotation.W = PxTransform.q.w;
+    };
     FQuat Rotation;
     FVector Location;
     FVector Scale;
