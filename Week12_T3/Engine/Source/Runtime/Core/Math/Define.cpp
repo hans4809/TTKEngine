@@ -1,4 +1,6 @@
 #include "Define.h"
+
+#include "MathSSE.h"
 #include "Runtime/Serialization/Archive.h"
 
 void FMaterialSubset::Serialize(FArchive& Ar) const

@@ -247,3 +247,25 @@ FQuat FQuat::Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float S
         Scale0 * Quat1.Y + Scale1 * Quat2.Y,
         Scale0 * Quat1.Z + Scale1 * Quat2.Z);
 }
+
+bool FQuat::operator==(const FQuat& Other) const
+{
+    // 1) 직접 비교: q == Other
+    bool bDirectEqual =
+        FMath::IsNearlyEqual(W, Other.W, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(X, Other.X, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Y, Other.Y, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Z, Other.Z, KINDA_SMALL_NUMBER);
+
+    if (bDirectEqual)
+        return true;
+
+    // 2) 부호 반전 비교: q == -Other
+    bool bNegatedEqual =
+        FMath::IsNearlyEqual(W, -Other.W, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(X, -Other.X, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Y, -Other.Y, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Z, -Other.Z, KINDA_SMALL_NUMBER);
+
+    return bNegatedEqual;
+}

@@ -94,8 +94,8 @@ void USphereShapeComponent::UpdateBroadAABB()
     FVector Min = LocalCorners[7] + Center;
     FVector Max = LocalCorners[0] + Center;
 
-    BroadAABB.min = Min;
-    BroadAABB.max = Max;
+    BroadAABB.Min = Min;
+    BroadAABB.Max = Max;
 }
 
 bool USphereShapeComponent::TestOverlaps(const UShapeComponent* OtherShape) const

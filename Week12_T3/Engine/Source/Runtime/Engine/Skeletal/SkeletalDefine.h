@@ -1,12 +1,15 @@
 #pragma once
-#include "Define.h"
 #include "Container/Array.h"
 #include "Container/Map.h"
+#include "Math/BoundingBox.h"
 #include "Math/Matrix.h"
-#include "Math/Quat.h"
 #include "Math/Vector.h"
 
 #pragma region Skeletal;
+
+class UMaterial;
+struct FMaterialSubset;
+
 struct FBone
 {
     FString BoneName;

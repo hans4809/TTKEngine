@@ -4,6 +4,7 @@
 #include "UObject/ObjectMacros.h"
 
 class USkeleton;
+struct FMaterialSlot;
 
 class USkeletalMesh : public UObject
 {

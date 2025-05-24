@@ -19,9 +19,9 @@ ACharacter::ACharacter()
     CollisionCapsule = AddComponent<UCapsuleShapeComponent>(EComponentOrigin::Constructor);
     CollisionCapsule->SetupAttachment(RootComponent);
     
-    float XSize = BodyMesh->GetBoundingBox().max.X - BodyMesh->GetBoundingBox().min.X;
-    float YSize = BodyMesh->GetBoundingBox().max.Y - BodyMesh->GetBoundingBox().min.Y;
-    float ZSize = BodyMesh->GetBoundingBox().max.Z - BodyMesh->GetBoundingBox().min.Z;
+    float XSize = BodyMesh->GetBoundingBox().Max.X - BodyMesh->GetBoundingBox().Min.X;
+    float YSize = BodyMesh->GetBoundingBox().Max.Y - BodyMesh->GetBoundingBox().Min.Y;
+    float ZSize = BodyMesh->GetBoundingBox().Max.Z - BodyMesh->GetBoundingBox().Min.Z;
     CollisionCapsule->SetRadius(std::min(XSize / 2, YSize / 2));
     CollisionCapsule->SetHalfHeight(ZSize / 2);
     CollisionCapsule->SetRelativeLocation(FVector(0, 0, ZSize/2));

@@ -153,6 +153,16 @@ struct FVector
         return result;
     }
 
+    float GetMin() const
+    {
+        return FMath::Min3(X,Y,Z);
+    }
+    
+    float GetAbsMin() const
+    {
+        return FMath::Min3(FMath::Abs(X), FMath::Abs(Y), FMath::Abs(Z));
+    }
+
     FVector Max(const FVector& Other) const
     {
         FVector result = *this;
@@ -229,6 +239,9 @@ struct FVector
             FMath::Abs(Y) <= Tolerance &&
             FMath::Abs(Z) <= Tolerance;
     }
+
+    FVector GetAbs() const;
+    
     static const FVector ZeroVector;
     static const FVector OneVector;
     static const FVector UpVector;
@@ -299,4 +312,9 @@ inline FVector& FVector::operator/=(float Scalar)
 inline FVector FVector::operator-() const
 {
     return { -X, -Y, -Z };
+}
+
+inline FVector FVector::GetAbs() const
+{
+    return FVector(FMath::Abs(X), FMath::Abs(Y), FMath::Abs(Z));
 }

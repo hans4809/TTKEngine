@@ -5,7 +5,7 @@
 // 쿼터니언
 struct FQuat
 {
-    float W, X, Y, Z;
+    float X, Y, Z, W;
 
     // 기본 생성자
     explicit FQuat()
@@ -65,6 +65,8 @@ struct FQuat
     static FQuat Slerp(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
     
     static FQuat Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
+
+    bool operator==(const FQuat& Other) const;
 };
 
 inline const FQuat FQuat::Identity = FQuat(1.0f, 0.0f, 0.0f, 0.0f);

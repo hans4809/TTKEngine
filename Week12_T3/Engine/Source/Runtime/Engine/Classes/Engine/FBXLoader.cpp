@@ -804,8 +804,8 @@ void FFBXLoader::UpdateBoundingBox(FSkeletalMeshRenderData& MeshData)
     }
     
     // 바운딩 박스 설정
-    MeshData.BoundingBox.min = Min;
-    MeshData.BoundingBox.max = Max;
+    MeshData.BoundingBox.Min = Min;
+    MeshData.BoundingBox.Max = Max;
 }
 
 void FFBXLoader::ExtractFBXAnimData(const FbxScene* scene, const FString& FilePath)

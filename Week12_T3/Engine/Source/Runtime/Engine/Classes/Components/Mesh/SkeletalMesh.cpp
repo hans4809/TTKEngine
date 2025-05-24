@@ -1,5 +1,6 @@
 #include "SkeletalMesh.h"
 
+#include "Define.h"
 #include "Renderer/RenderResourceManager.h"
 #include "LaunchEngineLoop.h"
 #include "Renderer/Renderer.h"

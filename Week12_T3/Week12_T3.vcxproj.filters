@@ -557,6 +557,16 @@
     <ClInclude Include="Engine\Source\Runtime\Serialization\Archive2.h" />
     <ClInclude Include="Engine\Source\Runtime\Serialization\MemoryArchive.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\AggregateGeom.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupEnums.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\SphereElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\ShapeElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\SphylElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\BoundingBox.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -839,6 +849,16 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Particles\ParticleEmitterInstances.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\Archive2.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\MemoryArchive.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\AggregateGeom.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\SphereElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\ShapeElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\SphylElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\BoundingBox.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\MathSSE.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

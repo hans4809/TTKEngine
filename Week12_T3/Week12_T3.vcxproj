@@ -203,6 +203,9 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\UObject\ScriptStruct.cpp" />
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\UObject\Struct.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Container\EnumAsByte.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\BoundingBox.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\MathSSE.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\MathVectorContants.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\RandomStream.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Serialization\Serializer.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Animation\AnimationRuntime.cpp" />
@@ -291,6 +294,11 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Engine\PlayerCameraManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\AssetManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\InputCore\InputCoreTypes.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\AggregateGeom.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\FCollisionManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Coroutine\CoroutineManager.cpp" />
     <ClCompile Include="Engine\Source\Editor\LevelEditor\SLevelEditor.cpp" />
@@ -380,6 +388,9 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Launch\ImGuiManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Launch\Launch.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\SphereElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\ShapeElem.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\SphylElem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\ComputeShader\ComputeTileLightCulling.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\BlurRenderPass.cpp" />
@@ -487,7 +498,9 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Core\Container\EnumAsByte.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Container\Queue.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Container\StringConv.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\BoundingBox.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\IsPODType.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\MathVectorContants.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\RandomStream.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Misc\CoreMiscDefines.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Delegates\FFunctor.h" />
@@ -589,6 +602,12 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Launch\ShowFlags.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\PlayerCameraManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\AssetManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\AggregateGeom.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupEnums.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\FCollisionManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Coroutine\CoroutineManager.h" />
     <ClInclude Include="Engine\Source\Editor\LevelEditor\SLevelEditor.h" />
@@ -703,6 +722,9 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Launch\EngineBaseTypes.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\ImGuiManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\SphereElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\ShapeElem.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\SphylElem.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\ComputeShader\ComputeTileLightCulling.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\Renderer.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\BlurRenderPass.h" />
