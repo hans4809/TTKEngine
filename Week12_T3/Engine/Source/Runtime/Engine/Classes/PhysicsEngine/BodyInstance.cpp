@@ -72,7 +72,7 @@ void FBodyInstance::ReleasePhysicsState()
     }
 }
 
-physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, FPhysicsMaterial* Material, const FTransform& LocalPose)
+physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose)
 {
     if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
     {
@@ -98,12 +98,12 @@ physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, FPhysi
     return NewShape;
 }
 
-physx::PxShape* FBodyInstance::AddSphereGeometry(float Radius, FPhysicsMaterial* Material, const FTransform& LocalPose)
+physx::PxShape* FBodyInstance::AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& LocalPose)
 {
     return nullptr;
 }
 
-physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight, FPhysicsMaterial* Material, const FTransform& LocalPose)
+physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& LocalPose)
 {
     return nullptr;
 }

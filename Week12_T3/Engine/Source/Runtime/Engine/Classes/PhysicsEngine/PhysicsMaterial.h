@@ -5,11 +5,11 @@ namespace physx
     class PxPhysics;
 };
 
-class FPhysicsMaterial
+class UPhysicalMaterial
 {
 public:
-    FPhysicsMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution);
-    ~FPhysicsMaterial();
+    UPhysicalMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution);
+    ~UPhysicalMaterial();
 
     physx::PxMaterial* GetPxMaterial() const { return PxMaterialInstance; }
 

@@ -3,7 +3,7 @@
 #include <PxPhysics.h>
 #include <PxMaterial.h>
 
-FPhysicsMaterial::FPhysicsMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution)
+UPhysicalMaterial::UPhysicalMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution)
     :OwningPxPhysicsSDK(InPxPhysicsSDK), PxMaterialInstance(nullptr)
 {
     if (OwningPxPhysicsSDK)
@@ -17,7 +17,7 @@ FPhysicsMaterial::FPhysicsMaterial(physx::PxPhysics* InPxPhysicsSDK, float Stati
     }
 }
 
-FPhysicsMaterial::~FPhysicsMaterial()
+UPhysicalMaterial::~UPhysicalMaterial()
 {
     if (PxMaterialInstance)
     {
@@ -26,12 +26,12 @@ FPhysicsMaterial::~FPhysicsMaterial()
     }
 }
 
-float FPhysicsMaterial::GetStaticFriction() const
+float UPhysicalMaterial::GetStaticFriction() const
 {
     return PxMaterialInstance ? PxMaterialInstance->getStaticFriction() : 0.0f;
 }
 
-void FPhysicsMaterial::SetStaticFriction(float NewValue)
+void UPhysicalMaterial::SetStaticFriction(float NewValue)
 {
     if (PxMaterialInstance)
     {
@@ -39,12 +39,12 @@ void FPhysicsMaterial::SetStaticFriction(float NewValue)
     }
 }
 
-float FPhysicsMaterial::GetDynamicFriction() const
+float UPhysicalMaterial::GetDynamicFriction() const
 {
     return PxMaterialInstance ? PxMaterialInstance->getDynamicFriction() : 0.0f;
 }
 
-void FPhysicsMaterial::SetDynamicFriction(float NewValue)
+void UPhysicalMaterial::SetDynamicFriction(float NewValue)
 {
     if (PxMaterialInstance)
     {
@@ -52,12 +52,12 @@ void FPhysicsMaterial::SetDynamicFriction(float NewValue)
     }
 }
 
-float FPhysicsMaterial::GetRestitution() const
+float UPhysicalMaterial::GetRestitution() const
 {
     return PxMaterialInstance ? PxMaterialInstance->getRestitution() : 0.0f;
 }
 
-void FPhysicsMaterial::SetRestitution(float NewValue)
+void UPhysicalMaterial::SetRestitution(float NewValue)
 {
     if (PxMaterialInstance)
     {

@@ -15,7 +15,7 @@ namespace physx
     class PxFilterData;
 }
 class UPrimitiveComponent;
-class FPhysicsMaterial;
+class UPhysicalMaterial;
 
 enum class EPhysBodyType 
 {
@@ -34,9 +34,9 @@ public:
    //UPROPERTY(VisibleAnywhere, USceneComponent*, RootComponent, = nullptr)
     bool CreatePhysicsState(const FTransform& InitialTransform, EPhysBodyType BodyType);
     void ReleasePhysicsState();
-    physx::PxShape* AddBoxGeometry(const FVector& HalfExtents, FPhysicsMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
-    physx::PxShape* AddSphereGeometry(float Radius, FPhysicsMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
-    physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, FPhysicsMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
+    physx::PxShape* AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
+    physx::PxShape* AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
+    physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
     // 물리 속성 설정 및 조회
     void SetBodyType(EPhysBodyType NewType);
     EPhysBodyType GetBodyType() const { return CurrentBodyType; }
