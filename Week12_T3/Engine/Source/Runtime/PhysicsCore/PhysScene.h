@@ -1,18 +1,33 @@
 #pragma once
 #include "Math/Vector.h"
 #include "HitResult.h"
-class UPrimitiveComponent;
+#include <PxQueryFiltering.h> 
+namespace physx
+{
+    class PxPhysics;
+    class PxScene;
+    class PxCpuDispatcher;
+    class PxRigidActor;
+    struct PxQueryFilterData;
+}
+
+
+class FBodyInstance;
 
 class FPhysScene 
 {
 public:
     virtual ~FPhysScene() = default;
 
-    virtual void AddObject(UPrimitiveComponent* Component) = 0;
+    virtual bool Initialize() = 0;
+    virtual void Shutdown() = 0;
+    virtual void AddObject(FBodyInstance* BodyInstance) = 0;
+    virtual void RemoveObject(FBodyInstance* BodyInstance) = 0;
     virtual void Simulate(float DeltaTime) = 0;
     // virtual void FetchResults(bool bBlock) = 0; // Simulate에 통합될 수도 있음
     
     // 가장 가까운 첫 번째 교차점에 대한 정보만을 반환
-    virtual bool RaycastSingle(const FVector& Origin, const FVector& Direction, float MaxDistance, FHitResult& OutHit) = 0;
+    virtual bool RaycastSingle(const FVector& Origin, const FVector& Direction, float MaxDistance, FHitResult& OutHit,
+        const physx::PxQueryFilterData& FilterData, physx::PxHitFlags InQueryFlags = physx::PxHitFlags(physx::PxHitFlag::eDEFAULT)) = 0;
     virtual void SetGravity(const FVector& NewGravity) = 0;
 };
