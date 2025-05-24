@@ -17,7 +17,7 @@ class UCameraComponent;
 class USceneComponent;
 class UTransformGizmo;
 class USkeletalMesh;
-
+class FPhysScene;
 class UWorld : public UObject
 {
     DECLARE_CLASS(UWorld, UObject)
@@ -31,6 +31,11 @@ public:
     void CreateBaseObject(EWorldType::Type WorldType);
     void ReleaseBaseObject();
     void Tick(ELevelTick tickType, float deltaSeconds);
+
+    bool InitializePhysicsScene(); // 물리 씬 초기화
+    void ShutdownPhysicsScene();  // 물리 씬 종료
+    FPhysScene* GetPhysicsScene() const;
+
     void Release();
     void LoadScene(const FString& FileName);
     void SaveScene(const FString& FileName);
@@ -59,6 +64,8 @@ public:
     bool DestroyActor(AActor* ThisActor);
 
 private:
+    FPhysScene* CurrentPhysicsScene = nullptr;
+
     const FString defaultMapName = "Default";
     ULevel* Level = nullptr;
     /** World에서 관리되는 모든 Actor의 목록 */

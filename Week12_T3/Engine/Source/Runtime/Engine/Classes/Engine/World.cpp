@@ -34,17 +34,25 @@
 #include "DummyObject.h"
 #include "Asset/AssetManager.h"
 #include "Particles/ParticleSystem.h"
-#include <Particles/Modules/ParticleModuleSubUV.h>
-#include <Particles/Modules/ParticleModuleColor.h>
+#include "Particles/Modules/ParticleModuleSubUV.h"
+#include "Particles/Modules/ParticleModuleColor.h"
+
+#include "PhysicsEngine/PhysScene_PhysX.h"
+#include "PhysicsEngine/PhysXSDKManager.h"
 
 void UWorld::InitWorld()
 {
     FParticleSystemWorldManager::OnWorldInit(this);
-
+    LocalGizmo = nullptr;
     // TODO: Load Scene
     if (Level == nullptr)
     {
         Level = FObjectFactory::ConstructObject<ULevel>(this);
+    }
+    if (!InitializePhysicsScene())
+    {
+        UE_LOG(LogLevel::Error, "FATAL ERROR: UWorld::InitWorld - Failed to initialize physics scene!");
+
     }
     PreLoadResources();
 
@@ -57,6 +65,7 @@ void UWorld::InitWorld()
         CreateBaseObject(WorldType);
     }*/
     CreateBaseObject(WorldType);
+
 }
 
 void UWorld::LoadLevel(const FString& LevelName)
@@ -171,6 +180,11 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 
         FGameManager::Get().EditorTick(deltaSeconds);
     }
+    if (CurrentPhysicsScene && (tickType == LEVELTICK_All || tickType == LEVELTICK_PauseTick))
+    {
+        CurrentPhysicsScene->Simulate(deltaSeconds);
+    }
+
     // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
     if (tickType == LEVELTICK_All)
     {
@@ -194,6 +208,58 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
     FParticleSystemWorldManager::Get(this)->Tick(deltaSeconds, tickType);
 }
 
+bool UWorld::InitializePhysicsScene()
+{
+    if (CurrentPhysicsScene)
+    {
+        UE_LOG(LogLevel::Display, " UWorld::InitializePhysicsScene - Physics scene already initialized.");
+        return true;
+    }
+
+    // 1. PhysX SDK가 초기화되었는지 확인하고 PxPhysics* 가져오기
+    if (!FPhysXSDKManager::GetInstance().Initalize())
+    {
+        UE_LOG(LogLevel::Error, "UWorld::InitializePhysicsScene - FPhysXSDKManager is not initialized.");
+        return false;
+    }
+    physx::PxPhysics* PxSDK = FPhysXSDKManager::GetInstance().GetPhysicsSDK();
+    if (!PxSDK)
+    {
+        UE_LOG(LogLevel::Error, "UWorld::InitializePhysicsScene - Failed to get PxPhysics SDK from FPhysXSDKManager.");
+        return false;
+    }
+
+    // 2. FPhysScene_PhysX 인스턴스 생성 (FPhysScene 인터페이스 포인터로 받음)
+    //    FPhysScene_PhysX 생성자는 PxPhysics*와 UWorld* (this)를 받을 수 있음
+    FPhysScene_PhysX* NewPhysXScene = new FPhysScene_PhysX(PxSDK, this);
+    CurrentPhysicsScene = NewPhysXScene; // FPhysScene* 타입으로 업캐스팅하여 저장
+
+    // 3. 생성된 물리 씬 초기화 (이 내부에서 PxScene 생성)
+    if (!CurrentPhysicsScene->Initialize())
+    {
+        UE_LOG(LogLevel::Error, "UWorld::InitializePhysicsScene - Failed to initialize FPhysScene_PhysX.");
+        delete CurrentPhysicsScene;
+        CurrentPhysicsScene = nullptr;
+        return false;
+    }
+    UE_LOG(LogLevel::Display, "UWorld::InitializePhysicsScene - Physics scene initialized successfully.");
+    return true;
+}
+
+void UWorld::ShutdownPhysicsScene()
+{
+    if (CurrentPhysicsScene)
+    {
+        CurrentPhysicsScene->Shutdown();
+        delete CurrentPhysicsScene;
+        CurrentPhysicsScene = nullptr;
+    }
+}
+FPhysScene* UWorld::GetPhysicsScene() const
+{
+    return CurrentPhysicsScene;
+}
+
 void UWorld::Release()
 {
     FParticleSystemWorldManager::OnWorldCleanup(this);
@@ -211,7 +277,7 @@ void UWorld::Release()
     {
         LocalGizmo->Destroy();
     }
-
+    ShutdownPhysicsScene();
     GUObjectArray.MarkRemoveObject(Level);
     // TODO Level -> Release로 바꾸기
     // Level->Release();
