@@ -2,6 +2,8 @@
 #include "Matrix.h"
 #include "Serialization/Archive.h"
 
+#include <PxQuat.h>
+
 // 쿼터니언
 struct FQuat
 {
@@ -65,6 +67,11 @@ struct FQuat
     static FQuat Slerp(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
     
     static FQuat Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
+
+    physx::PxQuat ToPxQuat() const
+    {
+        return physx::PxQuat(X, Y, Z, W);
+    }
 };
 
 inline const FQuat FQuat::Identity = FQuat(1.0f, 0.0f, 0.0f, 0.0f);

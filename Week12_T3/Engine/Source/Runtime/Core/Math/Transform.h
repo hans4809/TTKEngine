@@ -2,7 +2,7 @@
 #include "Quat.h"
 #include "Vector.h"
 #include "Rotator.h"
-
+#include <PxTransform.h>
 class FTransform
 {
 public:
@@ -44,7 +44,10 @@ public:
             << Transform.Scale;
     }
 
-    
+    physx::PxTransform ToPxTransform() const // const 멤버 함수로 변경
+    {
+        return physx::PxTransform(Location.ToPxVec3(), Rotation.ToPxQuat());
+    }
 };
 
 inline const FTransform FTransform::Identity = FTransform();
