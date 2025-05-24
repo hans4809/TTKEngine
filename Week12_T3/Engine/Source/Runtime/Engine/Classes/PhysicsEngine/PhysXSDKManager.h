@@ -12,7 +12,7 @@
 class FPhysXSDKManager
 {
 public:
-    FPhysXSDKManager() = default;
+    FPhysXSDKManager();
     ~FPhysXSDKManager();
 
     FPhysXSDKManager(const FPhysXSDKManager&) = delete;
@@ -25,7 +25,7 @@ public:
         static FPhysXSDKManager Inst;
         return Inst;
     }
-    void Initalize();
+    bool Initalize();
     void Shutdown();
 
 public:
@@ -34,6 +34,7 @@ public:
 
     physx::PxFoundation* PxFoundationInstance;
     physx::PxPhysics* PxSDKInstance;
-    
+private:
+    bool bIsInitalized = false;
 };
 
