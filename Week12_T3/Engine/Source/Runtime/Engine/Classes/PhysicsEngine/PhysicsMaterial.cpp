@@ -27,7 +27,7 @@ UPhysicalMaterial::~UPhysicalMaterial()
 }
 
 float UPhysicalMaterial::GetStaticFriction() const
-{
+{ 
     return PxMaterialInstance ? PxMaterialInstance->getStaticFriction() : 0.0f;
 }
 
