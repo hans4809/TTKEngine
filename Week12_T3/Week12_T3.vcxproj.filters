@@ -562,6 +562,11 @@
     <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysScene.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsMaterial.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\OverlapResult.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\SweepResult.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysicsFilterData.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysScene_PhysX.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\SimulationEventCallback.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -849,6 +854,10 @@
     <ClCompile Include="Engine\Source\Runtime\PhysicsCore\PhysScene.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsMaterial.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\OverlapResult.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\SweepResult.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysScene_PhysX.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\SimulationEventCallback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />
