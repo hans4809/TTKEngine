@@ -58,3 +58,8 @@ void FPhysXSDKManager::Shutdown()
     bIsInitalized = false;
 
 }
+
+physx::PxPhysics* FPhysXSDKManager::GetPhysicsSDK()
+{
+    return PxSDKInstance;
+}

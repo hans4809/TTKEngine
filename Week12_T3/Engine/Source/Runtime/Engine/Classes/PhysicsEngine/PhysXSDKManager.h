@@ -20,14 +20,15 @@ public:
     FPhysXSDKManager(FPhysXSDKManager&&) = delete;
     FPhysXSDKManager& operator=(FPhysXSDKManager&&) = delete;
 
-    FPhysXSDKManager& GetInstance()
+    static FPhysXSDKManager& GetInstance()
     {
         static FPhysXSDKManager Inst;
+        Inst.Initalize();
         return Inst;
     }
     bool Initalize();
     void Shutdown();
-
+    physx::PxPhysics* GetPhysicsSDK();
 public:
     physx::PxDefaultAllocator DefaultAllocatorCallback;
     physx::PxDefaultErrorCallback DefaultErrorCallback;
