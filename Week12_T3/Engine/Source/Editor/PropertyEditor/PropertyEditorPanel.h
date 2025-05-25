@@ -61,8 +61,8 @@ private:
 	T* GetTargetComponent(AActor* SelectedActor, USceneComponent* SelectedComponent);
 
     /* Physics Asset Settings */
-    void RenderForPhysicsAsset() const;
-    void DrawPhysicsAssetPreviewButton() const;
+    void RenderForPhysicsAsset(USkeletalMeshComponent* SkeletalMeshComponent) const;
+    void DrawPhysicsAssetPreviewButton(const FString& FilePath) const;
 
 private:
     float Width = 0, Height = 0;

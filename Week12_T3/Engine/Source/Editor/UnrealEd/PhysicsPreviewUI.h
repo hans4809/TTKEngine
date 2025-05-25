@@ -17,7 +17,7 @@ public:
     FPhysicsPreviewUI() = default;
     ~FPhysicsPreviewUI() = default;
 
-    void Initialize(SLevelEditor* LevelEditor, float Width, float Height) const;
+    void Initialize(SLevelEditor* LevelEditor, float Width, float Height);
     void Render() const;
     void OnResize(HWND hWnd) const;
     void SetWorld(UWorld* InWorld);

@@ -558,6 +558,9 @@
     <ClInclude Include="Engine\Source\Runtime\Serialization\MemoryArchive.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Engine\Source\Editor\UnrealEd\PhysicsPreviewUI.h" />
+    <ClInclude Include="Engine\Source\Editor\PropertyEditor\PhysicsDetailPreviewEditorPanel.h" />
+    <ClInclude Include="Engine\Source\Editor\PropertyEditor\PhysicsTreePreviewEditorPanel.h" />
+    <ClInclude Include="Engine\Source\Editor\PropertyEditor\PhysicsGraphPreviewEditorPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -841,6 +844,9 @@
     <ClCompile Include="Engine\Source\Runtime\Serialization\Archive2.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\MemoryArchive.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\PhysicsPreviewUI.cpp" />
+    <ClCompile Include="Engine\Source\Editor\PropertyEditor\PhysicsDetailPreviewEditorPanel.cpp" />
+    <ClCompile Include="Engine\Source\Editor\PropertyEditor\PhysicsTreePreviewEditorPanel.cpp" />
+    <ClCompile Include="Engine\Source\Editor\PropertyEditor\PhysicsGraphPreviewEditorPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

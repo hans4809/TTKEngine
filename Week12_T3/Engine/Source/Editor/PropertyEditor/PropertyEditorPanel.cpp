@@ -525,7 +525,7 @@ void PropertyEditorPanel::Render()
     {
         if (USkeletalMeshComponent* SkeletalMeshComponent = PickedActor->GetComponentByClass<USkeletalMeshComponent>())
         {
-            RenderForPhysicsAsset();
+            RenderForPhysicsAsset(SkeletalMeshComponent);
             RenderForSkeletalMesh(SkeletalMeshComponent);
             RenderForMaterial(SkeletalMeshComponent);
         }
@@ -676,6 +676,12 @@ void PropertyEditorPanel::Render()
         }        
     }
 
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UParticleSystemComponent>())
+    {
+
+        UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PickedComponent);
+        RenderForParticleSystem(ParticleComp);
+    }
     RenderShapeProperty(PickedActor);
 
     if (PickedActor)
@@ -1827,19 +1833,19 @@ void PropertyEditorPanel::DrawParticlesPreviewButton(UParticleSystem* ParticleSy
     }
 }
 
-void PropertyEditorPanel::RenderForPhysicsAsset() const
+void PropertyEditorPanel::RenderForPhysicsAsset(USkeletalMeshComponent* SkeletalMeshComponent) const
 {
     ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
     if (ImGui::TreeNodeEx("Physics", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::Text("Physics Asset");
-        DrawPhysicsAssetPreviewButton();
+        DrawPhysicsAssetPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Name);
         ImGui::TreePop();
     }
     ImGui::PopStyleColor();
 }
 
-void PropertyEditorPanel::DrawPhysicsAssetPreviewButton() const
+void PropertyEditorPanel::DrawPhysicsAssetPreviewButton(const FString& FilePath) const
 {
     
         if (ImGui::Button("Preview##Physics Asset"))
@@ -1864,6 +1870,20 @@ void PropertyEditorPanel::DrawPhysicsAssetPreviewButton() const
             MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
             MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
             SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
+
+            // SkeletalMeshActor 생성
+            ASkeletalMeshActor* SkeletalMeshActor = World->SpawnActor<ASkeletalMeshActor>();
+            SkeletalMeshActor->SetActorLabel("PhysicsPreviewSkeletalMeshActor");
+            SkeletalMeshActor->GetSkeletalMeshComponent()->SetAnimInstance(nullptr);
+
+            // Mesh 설정
+            // 새로운 SkeletalMeshComponent 생성
+            //USkeletalMeshComponent* NewSkeletalMeshComp = SkeletalMeshActor->AddComponent<USkeletalMeshComponent>(EComponentOrigin::Editor);
+
+            //// 메시 할당
+            //NewSkeletalMeshComp->SetSkeletalMesh(FFBXLoader::CreateSkeletalMesh(FilePath));
+
+            //SkeletalMeshActor->SetRootComponent(NewSkeletalMeshComp);
 
         }
 }
