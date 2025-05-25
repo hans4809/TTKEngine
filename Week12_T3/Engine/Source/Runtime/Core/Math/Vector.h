@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 
 #include "MathUtility.h"
+#include "Container/String.h"
 #include "Serialization/Archive.h"
 
 struct FVector2D
@@ -192,6 +193,8 @@ struct FVector
         return ((*this - other).Magnitude());
     }
 
+    FString ToString() const;
+
     static float Distance(const FVector& V1, const FVector& V2)
     {
         return FMath::Sqrt(
@@ -312,6 +315,16 @@ inline FVector& FVector::operator/=(float Scalar)
 inline FVector FVector::operator-() const
 {
     return { -X, -Y, -Z };
+}
+
+inline FString FVector::ToString() const
+{
+    // FString::Printf를 사용하여 포맷팅된 문자열 생성
+    // TEXT() 매크로는 리터럴 문자열을 TCHAR 타입으로 만들어줍니다.
+    return FString::Printf(TEXT("X=%3.3f Y=%3.3f Z=%3.3f"), X, Y, Z);
+
+    // 필요에 따라 소수점 정밀도 지정 가능: 예) "X=%.2f Y=%.2f Z=%.2f"
+    // return FString::Printf(TEXT("X=%.2f Y=%.2f Z=%.2f"), x, y, z);
 }
 
 inline FVector FVector::GetAbs() const

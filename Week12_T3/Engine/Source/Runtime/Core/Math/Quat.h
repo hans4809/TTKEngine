@@ -1,5 +1,6 @@
 #pragma once
 #include "Matrix.h"
+#include "Container/String.h"
 #include "Serialization/Archive.h"
 
 // 쿼터니언
@@ -65,6 +66,8 @@ struct FQuat
     static FQuat Slerp(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
     
     static FQuat Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
+
+    FString ToString() const;
 
     bool operator==(const FQuat& Other) const;
 };

@@ -125,6 +125,14 @@ void FTransform::RemoveScaling()
     Rotation.Normalize();
 }
 
+FString FTransform::ToString() const
+{
+    return FString::Printf(TEXT("Translation=%s Rotation=%s Scale3D=%s"), 
+                      *Location.ToString(), 
+                      *Rotation.ToString(), 
+                      *Scale.ToString());
+}
+
 FTransform FTransform::Blend(const FTransform& Atom1, const FTransform& Atom2, float Alpha)
 {
     FTransform Result;

@@ -41,6 +41,8 @@ public:
     
     FVector GetScaledAxis(EAxis::Type InAxis);
     void RemoveScaling();
+    
+    FString ToString() const;
 
     const static FTransform Identity;
 

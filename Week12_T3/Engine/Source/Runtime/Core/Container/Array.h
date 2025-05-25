@@ -194,9 +194,9 @@ public:
     void AppendArray(const T* array, SizeType count);
 
     /**
- * Count만큼 초기화되지 않은 공간을 확장합니다.
- * @warning std::vector의 한계로, 실제로는 AddDefaulted와 동작이 같습니다.
- */
+     * Count만큼 초기화되지 않은 공간을 확장합니다.
+     * @warning std::vector의 한계로, 실제로는 AddDefaulted와 동작이 같습니다.
+     */
     SizeType AddUninitialized(SizeType Count);
 
     /**
@@ -226,6 +226,29 @@ public:
     */
     void SetNumZeroed(SizeType NewNum);
 
+    /**
+     * Returns n-th last element from the array.
+     *
+     * @param IndexFromTheEnd (Optional) Index from the end of array (default = 0).
+     * @returns Reference to n-th last element from the array.
+     */
+    FORCEINLINE ElementType& Last(SizeType IndexFromTheEnd = 0)
+    {
+        return GetData()[Num() - IndexFromTheEnd - 1];
+    }
+
+    /**
+     * Returns n-th last element from the array.
+     *
+     * Const version of the above.
+     *
+     * @param IndexFromTheEnd (Optional) Index from the end of array (default = 0).
+     * @returns Reference to n-th last element from the array.
+     */
+    FORCEINLINE const ElementType& Last(SizeType IndexFromTheEnd = 0) const
+    {
+        return GetData()[Num() - IndexFromTheEnd - 1];
+    }
 
     
     void Serialize(FArchive& Ar) const

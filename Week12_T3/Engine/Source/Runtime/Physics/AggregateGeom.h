@@ -17,6 +17,9 @@ struct FKAggregateGeom
      
     UPROPERTY(EditAnywhere, TArray<FKConvexElem>, ConvexElems, = {})
 
+    FKAggregateGeom()
+    {}
+
     FKAggregateGeom(const FKAggregateGeom& Other)
     {
         CloneAgg(Other);

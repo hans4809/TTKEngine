@@ -248,6 +248,11 @@ FQuat FQuat::Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float S
         Scale0 * Quat1.Z + Scale1 * Quat2.Z);
 }
 
+FString FQuat::ToString() const
+{
+    return FString::Printf(TEXT("X=%.9f Y=%.9f Z=%.9f W=%.9f"), X, Y, Z, W);
+}
+
 bool FQuat::operator==(const FQuat& Other) const
 {
     // 1) 직접 비교: q == Other
