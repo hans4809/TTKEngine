@@ -45,7 +45,10 @@ void FKSphylElem::SetTransform(const FTransform& InTransform)
     Center   = InTransform.GetLocation();
 }
 
-float FKSphylElem::GetVolume(const FVector& Scale) const { return GetScaledVolume(Scale); }
+float FKSphylElem::GetVolume(const FVector& Scale) const
+{
+    return GetScaledVolume(Scale);
+}
 
 float FKSphylElem::GetScaledVolume(const FVector& Scale3D) const
 {  

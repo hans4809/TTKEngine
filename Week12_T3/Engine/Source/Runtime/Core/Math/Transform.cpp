@@ -119,6 +119,12 @@ FVector FTransform::GetScaledAxis(EAxis::Type InAxis)
     return TransformVector(FVector(0.f, 0.f, 1.f));
 }
 
+void FTransform::RemoveScaling()
+{
+    Scale = FVector::ZeroVector;    
+    Rotation.Normalize();
+}
+
 FTransform FTransform::Blend(const FTransform& Atom1, const FTransform& Atom2, float Alpha)
 {
     FTransform Result;

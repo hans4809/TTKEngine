@@ -129,3 +129,21 @@ FBoundingBox FBoundingBox::TransformBy(FMatrix InMatirx) const
     
     return NewBox;
 }
+
+FBoundingBox FBoundingBox::operator+=(const FBoundingBox& Other)
+{
+    Min.X = FMath::Min(Min.X, Other.Min.X);
+    Min.Y = FMath::Min(Min.Y, Other.Min.Y);
+    Min.Z = FMath::Min(Min.Z, Other.Min.Z);
+
+    Max.X = FMath::Max(Max.X, Other.Max.X);
+    Max.Y = FMath::Max(Max.Y, Other.Max.Y);
+    Max.Z = FMath::Max(Max.Z, Other.Max.Z);
+
+    return *this;
+}
+
+FVector FBoundingBox::GetCenter() const
+{
+    return FVector((Min + Max) * 0.5f);
+}

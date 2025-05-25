@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "ContainerAllocator.h"
+#include "Misc/CoreMiscDefines.h"
 #include "Serialization/Archive.h"
 
 template <typename T, typename AllocatorType = FDefaultAllocator<T>>
@@ -88,15 +89,35 @@ public:
     iterator Erase(iterator Pos) { return ContainerPrivate.erase(Pos); }
     /** 이터레이터 범위 요소 제거 및 첫 위치 이터레이터 반환 */
     iterator Erase(iterator First, iterator Last) { return ContainerPrivate.erase(First, Last); }
+        
+    T* GetData();
+    const T* GetData() const;
 
 	/** Predicate에 부합하는 모든 요소를 제거합니다. */
     template <typename Predicate>
         requires std::is_invocable_r_v<bool, Predicate, const T&>
     SizeType RemoveAll(const Predicate& Pred);
+    
+    /**
+     * Predicate에 부합하는 첫 번째 요소의 포인터를 반환합니다.
+     *
+     * @param Pred 검사할 functor
+     * @return 조건을 만족하는 첫 요소의 포인터, 없으면 nullptr
+     */
+    template <typename Predicate>
+    ElementType* FindByPredicate(Predicate Pred);
 
-    T* GetData();
-    const T* GetData() const;
-
+    /**
+     * Finds an item by predicate.
+     *
+     * @param Pred The predicate to match.
+     *
+     * @returns Index to the first matching element, or INDEX_NONE if none is
+     *          found.
+     */
+    template <typename Predicate>
+    SizeType IndexOfByPredicate(Predicate Pred) const;
+    
     /**
      * Array에서 Item을 찾습니다.
      * @param Item 찾으려는 Item
@@ -114,6 +135,9 @@ public:
     /** Array의 Capacity를 가져옵니다. */
     SizeType Len() const;
 
+    /** Array의 AllocatedSize를 가져옵니다. */
+    SizeType GetAllocatedSize() const;
+
 	/** Array의 Size를 Number로 설정합니다. */
 	void SetNum(SizeType Number);
 
@@ -127,9 +151,9 @@ public:
 
 
     /**
- * 다른 TArray의 모든 요소를 이 배열의 끝에 추가합니다.
- * @param Source 다른 TArray 객체
- */
+     * 다른 TArray의 모든 요소를 이 배열의 끝에 추가합니다.
+     * @param Source 다른 TArray 객체
+     */
     void Append(const TArray& Source);
 
     /**
@@ -188,7 +212,8 @@ public:
      */
     SizeType AddDefaulted(SizeType Count);
 
-    bool IsValidIndex(uint32 ElementIndex) const {
+    bool IsValidIndex(uint32 ElementIndex) const
+    {
         if (ElementIndex < 0 || ElementIndex >= Num()) return false;
 
         return true;
@@ -369,16 +394,6 @@ void TArray<T, AllocatorType>::RemoveAtSwap(SizeType Index)
 }
 
 template <typename T, typename Allocator>
-template <typename Predicate>
-    requires std::is_invocable_r_v<bool, Predicate, const T&>
-typename TArray<T, Allocator>::SizeType TArray<T, Allocator>::RemoveAll(const Predicate& Pred)
-{
-    auto oldSize = ContainerPrivate.size();
-    ContainerPrivate.erase(std::remove_if(ContainerPrivate.begin(), ContainerPrivate.end(), Pred), ContainerPrivate.end());
-    return static_cast<SizeType>(oldSize - ContainerPrivate.size());
-}
-
-template <typename T, typename Allocator>
 T* TArray<T, Allocator>::GetData()
 {
     return ContainerPrivate.data();
@@ -388,6 +403,48 @@ template <typename T, typename Allocator>
 const T* TArray<T, Allocator>::GetData() const
 {
     return ContainerPrivate.data();
+}
+
+template <typename T, typename Allocator>
+template <typename Predicate>
+    requires std::is_invocable_r_v<bool, Predicate, const T&>
+typename TArray<T, Allocator>::SizeType TArray<T, Allocator>::RemoveAll(const Predicate& Pred)
+{
+    auto oldSize = ContainerPrivate.size();
+    ContainerPrivate.erase(std::remove_if(ContainerPrivate.begin(), ContainerPrivate.end(), Pred), ContainerPrivate.end());
+    return static_cast<SizeType>(oldSize - ContainerPrivate.size());
+}
+
+template <typename T, typename AllocatorType>
+template <typename Predicate>
+typename TArray<T, AllocatorType>::ElementType* TArray<T, AllocatorType>::FindByPredicate(Predicate Pred)
+{
+    ElementType* Data = GetData();
+    ElementType* DataEnd = Data + Num();
+    for (; Data != DataEnd; ++Data)
+    {
+        if (Pred(*Data))
+        {
+            return Data;
+        }
+    }
+    return nullptr;
+}
+
+template <typename T, typename AllocatorType>
+template <typename Predicate>
+typename TArray<T, AllocatorType>::SizeType TArray<T, AllocatorType>::IndexOfByPredicate(Predicate Pred) const
+{
+    const ElementType* Start   = GetData();
+    const ElementType* DataEnd = Start + Num();
+    for (const ElementType* Data = Start; Data != DataEnd; ++Data)
+    {
+        if (Pred(*Data))
+        {
+            return static_cast<SizeType>(Data - Start);
+        }
+    }
+    return INDEX_NONE;
 }
 
 template <typename T, typename Allocator>
@@ -427,6 +484,12 @@ template <typename T, typename Allocator>
 typename TArray<T, Allocator>::SizeType TArray<T, Allocator>::Len() const
 {
     return ContainerPrivate.capacity();
+}
+
+template <typename T, typename AllocatorType>
+typename TArray<T, AllocatorType>::SizeType TArray<T, AllocatorType>::GetAllocatedSize() const
+{
+    return ContainerPrivate.capacity() * sizeof(T);
 }
 
 template <typename T, typename Allocator>

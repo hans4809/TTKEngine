@@ -38,9 +38,9 @@ struct FKBoxElem : public FKShapeElem
 
     void SetTransform( const FTransform& InTransform );
 
-    FORCEINLINE float GetVolume(const FVector& Scale3D) const;
+    float GetVolume(const FVector& Scale3D) const;
 
-    FORCEINLINE float GetScaledVolume(const FVector& Scale3D) const;
+    float GetScaledVolume(const FVector& Scale3D) const;
 
     FBoundingBox CalcAABB(const FTransform& BoneTM, float Scale) const;
 

@@ -20,4 +20,18 @@ struct FBoundingBox
     void Deserialize(FArchive& Ar);
 
     FBoundingBox TransformBy(FMatrix InMatirx) const;
+    FBoundingBox operator+=(const FBoundingBox& bounding_box);
+    
+    FVector GetCenter() const;
+
+    FORCEINLINE FVector GetExtent() const
+    {
+        return (Max - Min) * 0.5f;
+    }
+    
+    FORCEINLINE void GetCenterAndExtents(FVector& Center, FVector& Extents) const
+    {
+        Extents = GetExtent();
+        Center = Min + Extents;
+    }
 };

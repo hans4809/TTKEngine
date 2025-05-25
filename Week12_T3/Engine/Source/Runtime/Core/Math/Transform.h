@@ -40,6 +40,7 @@ public:
     void ScaleTranslation(FVector InScale3D);
     
     FVector GetScaledAxis(EAxis::Type InAxis);
+    void RemoveScaling();
 
     const static FTransform Identity;
 

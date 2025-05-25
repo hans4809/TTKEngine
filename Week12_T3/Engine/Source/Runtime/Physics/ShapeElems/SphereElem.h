@@ -23,9 +23,9 @@ struct FKSphereElem : public FKShapeElem
 
     void SetTransform(const FTransform& InTransform);
 
-    FORCEINLINE float GetVolume(const FVector& Scale) const;
+    float GetVolume(const FVector& Scale) const;
 
-    FORCEINLINE float GetScaledVolume(const FVector& Scale) const;
+    float GetScaledVolume(const FVector& Scale) const;
 
     FBoundingBox CalcAABB(const FTransform& InTransform, float Scale) const;
 
