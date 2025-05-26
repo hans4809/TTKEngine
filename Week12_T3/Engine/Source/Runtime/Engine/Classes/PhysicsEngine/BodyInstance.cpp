@@ -184,6 +184,39 @@ physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight
     return NewShape;
 }
 
+physx::PxShape* FBodyInstance::AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& LocalPose)
+{
+    if (!PxActor || !PxPhysicsSDK || !CookedMesh)
+    {
+        UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddConvexGeometry failed: Invalid PxActor, SDK, or CookedMesh."));
+        return nullptr;
+    }
+
+    // 컨벡스 메시에 대한 스케일링은 PxMeshScale을 사용
+    physx::PxMeshScale MeshScale(LocalPose.GetScale().ToPxVec3());
+    physx::PxConvexMeshGeometry ConvexGeom(CookedMesh, MeshScale);
+
+    physx::PxShapeFlags shapeFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSIMULATION_SHAPE);
+    physx::PxShape* NewShape = PxPhysicsSDK->createShape(ConvexGeom, *Material->GetPxMaterial(), true, shapeFlags);
+
+    if (NewShape)
+    {
+        FTransform PoseWithoutScale = LocalPose;
+        PoseWithoutScale.SetScale(FVector::OneVector);
+        NewShape->setLocalPose(PoseWithoutScale.ToPxTransform());
+
+        // ... (FilterData 설정 등) ...
+        PxActor->attachShape(*NewShape);
+        NewShape->release();
+    }
+    else
+    {
+        UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddConvexGeometry failed: PxShape creation failed."));
+    }
+    return NewShape;
+}
+
+
 void FBodyInstance::SetBodyType(EPhysBodyType NewType)
 {
 }

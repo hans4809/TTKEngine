@@ -6,7 +6,8 @@ enum class EPhysBodyShapeType
 {
     Box,
     Sphere,
-    Sphyl
+    Sphyl,
+    Convex
 };
 
 class UStaticMesh;

@@ -84,23 +84,75 @@ bool UBodySetup::AddCollisionElemFrom(const FKAggregateGeom& FromAggGeom, const 
 
 void UBodySetup::InvalidatePhysicsData()
 {
-    //For ConvexElems
-//    for (FKConvexElem& Convex : AggGeom.ConvexElems)
-//    {
-//       // Convex.ResetChaosConvexMesh();  // ConvexElem 내부 리소스 해제
-//    }
+    for (FKConvexElem& Convex : AggGeom.ConvexElems)
+    {
+        Convex.ResetCookedPhysXData();
+    }
+
 }
 
 void UBodySetup::CreatePhysicsMeshes()
-{ 
-    //For ConvexElems
-  /*  physx::PxCooking* Cooking = FPhysXSDKManager::GetInstance().GetCooking();
-    if (Cooking)
-    {
-      
-    }*/
-}
+{
+    FPhysXSDKManager::GetInstance().Initalize();
+    physx::PxCooking* Cooking = FPhysXSDKManager::GetInstance().GetCooking();
+    physx::PxPhysics* PhysicsSDK = FPhysXSDKManager::GetInstance().GetPhysicsSDK();
 
+    if (!Cooking || !PhysicsSDK)
+    {
+        UE_LOG(LogLevel::Error, TEXT("UBodySetup::CreatePhysicsMeshes: Cooking API or Physics SDK is not available."));
+        return;
+    }
+    
+    for (int32 i = 0; i < AggGeom.ConvexElems.Num(); ++i) // 인덱스 기반 루프
+    {
+        FKConvexElem& ConvexElemInstance = AggGeom.ConvexElems[i]; // 명시적으로 참조 가져오기
+
+        // 이미 쿠킹된 데이터가 있거나, 원본 버텍스 데이터가 없으면 스킵
+        if (ConvexElemInstance.CookedPxConvexMesh || ConvexElemInstance.VertexData.IsEmpty())
+        {
+            continue;
+        }
+
+        TArray<physx::PxVec3> PxVerts;
+        PxVerts.Reserve(ConvexElemInstance.VertexData.Num());
+        for (const FVector& Vert : ConvexElemInstance.VertexData)
+        {
+            PxVerts.Add(physx::PxVec3(Vert.X, Vert.Y, Vert.Z));
+        }
+
+        physx::PxConvexMeshDesc ConvexDesc;
+        ConvexDesc.points.count = PxVerts.Num();
+        ConvexDesc.points.stride = sizeof(physx::PxVec3);
+        ConvexDesc.points.data = PxVerts.GetData();
+        ConvexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+
+        physx::PxDefaultMemoryOutputStream WriteBuffer;
+        physx::PxConvexMeshCookingResult::Enum CookResult;
+        bool bCookSuccess = Cooking->cookConvexMesh(ConvexDesc, WriteBuffer, &CookResult);
+
+        if (bCookSuccess && CookResult == physx::PxConvexMeshCookingResult::eSUCCESS)
+        {
+            physx::PxDefaultMemoryInputData ReadBuffer(WriteBuffer.getData(), WriteBuffer.getSize());
+            physx::PxConvexMesh* TempCookedMesh = PhysicsSDK->createConvexMesh(ReadBuffer);
+
+            if (TempCookedMesh)
+            {
+                // 이 할당이 실제 AggGeom.ConvexElems[i]에 영향을 주는지 확인
+                ConvexElemInstance.CookedPxConvexMesh = TempCookedMesh;
+                UE_LOG(LogLevel::Display, TEXT("Successfully cooked AND created PxConvexMesh for element %d. Pointer: %p"), i, TempCookedMesh);
+            }
+            else
+            {
+                UE_LOG(LogLevel::Error, TEXT("Failed to create PxConvexMesh from cooked data for element %d (createConvexMesh returned null)."), i);
+                ConvexElemInstance.CookedPxConvexMesh = nullptr;
+            }
+        }
+        else
+        {
+            UE_LOG(LogLevel::Error, TEXT("Failed to cook convex mesh for element %d. CookResult: %d"), i, static_cast<int>(CookResult)); // CookResult 값도 로그에 추가
+        }
+    }
+}
 float UBodySetup::GetVolume(const FVector& Scale) const
 {
     return GetScaledVolume(Scale);

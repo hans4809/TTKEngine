@@ -13,6 +13,7 @@ namespace physx
     class PxPhysics;
     class PxMaterial;
     class PxFilterData;
+    class PxConvexMesh;
 }
 class UPrimitiveComponent;
 class UPhysicalMaterial;
@@ -39,7 +40,7 @@ public:
     physx::PxShape* AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
     physx::PxShape* AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
     physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
-    
+    physx::PxShape* AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& LocalPose);
     // 물리 속성 설정 및 조회
     void SetBodyType(EPhysBodyType NewType);
     EPhysBodyType GetBodyType() const { return CurrentBodyType; }

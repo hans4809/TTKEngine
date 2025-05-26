@@ -191,7 +191,7 @@ void UStaticMeshComponent::DestroyPhysicsState()
 void UStaticMeshComponent::OnCreatePhysicsState()
 {
     //임시 테스트 용 ---
-    FTransform ShapeLocalPose = FTransform::Identity;
+    FTransform ShapeLocalPose = GetWorldTransform();
 
     BodyInstance.Initialize(this, FPhysXSDKManager::GetInstance().GetPhysicsSDK());
 
@@ -251,6 +251,15 @@ void UStaticMeshComponent::OnCreatePhysicsState()
                 float Radius = Elem.Radius; // Sphyl의 반지름
                 float HalfHeight = Elem.Length * 0.5f;
                 BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, MyMaterial, ShapeLocalPose);
+            }
+        }
+        break;
+        case EPhysBodyShapeType::Convex:
+        {
+            for (const FKConvexElem& Elem : Setup->AggGeom.ConvexElems)
+            {
+              
+                BodyInstance.AddConvexGeometry(Elem.CookedPxConvexMesh, MyMaterial, ShapeLocalPose);
             }
         }
         break;

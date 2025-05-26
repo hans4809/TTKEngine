@@ -735,7 +735,7 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
 
 
     UBodySetup* newBodySetup = FObjectFactory::ConstructObject<UBodySetup>(staticMesh);
-   
+
     staticMesh->SetBodySetup(newBodySetup);
     const FVector Min = staticMeshRenderData->BoundingBoxMin;
     const FVector Max = staticMeshRenderData->BoundingBoxMax;
@@ -771,6 +771,18 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
         newBodySetup->AggGeom.SphylElems.Add(SphylElem);
     }
 
+    {
+        FKConvexElem ConvexElem;
+
+        for (const FVertexSimple& vert : staticMeshRenderData->Vertices)
+        {
+            ConvexElem.VertexData.Add(FVector(vert.x, vert.y, vert.z));
+        }
+
+        ConvexElem.SetTransform(FTransform::Identity);
+        ConvexElem.UpdateElemBox();
+        newBodySetup->AggGeom.ConvexElems.Add(ConvexElem);
+    }
 
     // (4) PhysicsCooking: PhysX SDK를 위해 물리 메쉬 생성
     newBodySetup->InvalidatePhysicsData();   // 내부 데이터 초기화 플래그
