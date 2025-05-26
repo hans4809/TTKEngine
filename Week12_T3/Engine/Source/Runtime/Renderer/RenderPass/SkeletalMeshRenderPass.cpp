@@ -146,7 +146,7 @@ void FSkeletalMeshRenderPass::Execute(const std::shared_ptr<FViewportClient> InV
         if (!SkeletalMeshComponent->GetSkeletalMesh()) continue;
         
         USkeleton* Skeleton = SkeletalMeshComponent->GetSkeletalMesh()->GetSkeleton();
-        if (Skeleton != nullptr) continue;
+        if (Skeleton == nullptr) continue;
 
         FRefSkeletal RefSkeletal = Skeleton->GetRefSkeletal();
 

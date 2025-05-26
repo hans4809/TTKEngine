@@ -15,7 +15,7 @@
 uint32 USkeletalMesh::GetMaterialIndex(FName MaterialSlotName) const
 {
     for (uint32 materialIndex = 0; materialIndex < MaterialSlots.Num(); materialIndex++) {
-        if (MaterialSlots[materialIndex]->MaterialSlotName == MaterialSlotName)
+        if (MaterialSlots[materialIndex].MaterialSlotName == MaterialSlotName)
             return materialIndex;
     }
 
@@ -24,16 +24,16 @@ uint32 USkeletalMesh::GetMaterialIndex(FName MaterialSlotName) const
 
 void USkeletalMesh::GetUsedMaterials(TArray<UMaterial*>& Out) const
 {
-    for (const FMaterialSlot* Material : MaterialSlots)
+    for (const FMaterialSlot& Material : MaterialSlots)
     {
-        Out.Emplace(Material->Material);
+        Out.Emplace(Material.Material);
     }
 }
 
 void USkeletalMesh::SetData(const FString& FilePath)
 {
-    FSkeletalMeshRenderData SkeletalMeshRenderData = FFBXLoader::GetCopiedSkeletalRenderData(FilePath);
-    FRefSkeletal RefSkeletal = FFBXLoader::GetRefSkeletal(FilePath);
+    const FSkeletalMeshRenderData SkeletalMeshRenderData = FFBXLoader::GetCopiedSkeletalRenderData(FilePath);
+    const FRefSkeletal RefSkeletal = FFBXLoader::GetRefSkeletal(FilePath);
     USkeleton* Skeleton = FObjectFactory::ConstructObject<USkeleton>(this); // TODO: Map에 저장하고 들고오기 
     Skeleton->SetRefSkeletal(RefSkeletal);
 
@@ -59,11 +59,11 @@ void USkeletalMesh::SetData(const FSkeletalMeshRenderData& InRenderData, USkelet
 
     MaterialSlots.Empty();
     for (int materialIndex = 0; materialIndex < Skeleton->GetRefSkeletal().Materials.Num(); materialIndex++) {
-        FMaterialSlot* newMaterialSlot = new FMaterialSlot();
+        FMaterialSlot newMaterialSlot;
         // Change
 
-        newMaterialSlot->Material = FManagerOBJ::GetMaterial(Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName);
-        newMaterialSlot->MaterialSlotName = Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName;
+        newMaterialSlot.Material = FManagerOBJ::GetMaterial(Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName);
+        newMaterialSlot.MaterialSlotName = Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName;
         
         MaterialSlots.Add(newMaterialSlot);
     }

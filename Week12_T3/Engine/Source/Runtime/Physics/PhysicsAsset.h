@@ -46,7 +46,7 @@ public:
      * 어느 바디 쌍 사이의 충돌이 비활성화되었는지 나타내는 테이블입니다. 내부적으로 사용됩니다.
      * 물리 엔진 내부에서도 접근하므로 물리 연산 중에는 변경하면 안전하지 않습니다.
      */
-    TMap<FRigidBodyIndexPair, bool>        CollisionDisableTable;
+    TMap<FRigidBodyIndexPair, bool> CollisionDisableTable;
 
     const TArray<FName>& GetPhysicalAnimationProfileNames() const
     {

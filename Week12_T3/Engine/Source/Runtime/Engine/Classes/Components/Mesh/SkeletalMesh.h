@@ -18,7 +18,7 @@ public:
 
     FSkeletalMeshRenderData& GetRenderData() { return SkeletalMeshRenderData; }
     USkeleton* GetSkeleton() const { return Skeleton;}
-    const TArray<FMaterialSlot*>& GetMaterials() const { return MaterialSlots; }
+    const TArray<FMaterialSlot>& GetMaterials() const { return MaterialSlots; }
     uint32 GetMaterialIndex(FName MaterialSlotName) const;
     void GetUsedMaterials(TArray<UMaterial*>& Out) const;
     
@@ -40,7 +40,7 @@ private:
     
     FSkeletalMeshRenderData SkeletalMeshRenderData;
     USkeleton* Skeleton = nullptr;
-    TArray<FMaterialSlot*> MaterialSlots;
+    TArray<FMaterialSlot> MaterialSlots;
 
     void UpdateChildBones(int ParentIndex);
     void ApplyRotationToBone(int BoneIndex, float DeltaAngleInDegrees, const FVector& RotationAxis);

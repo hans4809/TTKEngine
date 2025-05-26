@@ -37,7 +37,7 @@ UMaterial* USkeletalMeshComponent::GetMaterial(uint32 ElementIndex) const
     
         if (SkeletalMesh->GetMaterials().IsValidIndex(ElementIndex))
         {
-            return SkeletalMesh->GetMaterials()[ElementIndex]->Material;
+            return SkeletalMesh->GetMaterials()[ElementIndex].Material;
         }
     }
     return nullptr;
@@ -55,9 +55,9 @@ TArray<FName> USkeletalMeshComponent::GetMaterialSlotNames() const
     TArray<FName> MaterialNames;
     if (SkeletalMesh == nullptr) return MaterialNames;
 
-    for (const FMaterialSlot* Material : SkeletalMesh->GetMaterials())
+    for (const FMaterialSlot& Material : SkeletalMesh->GetMaterials())
     {
-        MaterialNames.Emplace(Material->MaterialSlotName);
+        MaterialNames.Emplace(Material.MaterialSlotName);
     }
 
     return MaterialNames;
