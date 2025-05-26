@@ -53,7 +53,10 @@ int UGizmoBaseComponent::CheckRayIntersection(FVector& RayOrigin, FVector& RayDi
     }
     return nIntersections;
 }
-
+void UGizmoBaseComponent::OnRegister()
+{
+    UActorComponent::OnRegister();
+}
 void UGizmoBaseComponent::TickComponent(float DeltaTime)
 {
     UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);

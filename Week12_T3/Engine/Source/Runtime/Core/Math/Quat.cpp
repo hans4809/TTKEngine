@@ -247,3 +247,8 @@ FQuat FQuat::Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float S
         Scale0 * Quat1.Y + Scale1 * Quat2.Y,
         Scale0 * Quat1.Z + Scale1 * Quat2.Z);
 }
+
+FQuat FQuat::PToFQuat(physx::PxQuat InPxQuat)
+{
+    return FQuat(InPxQuat.w, InPxQuat.x, InPxQuat.y, InPxQuat.z);
+}

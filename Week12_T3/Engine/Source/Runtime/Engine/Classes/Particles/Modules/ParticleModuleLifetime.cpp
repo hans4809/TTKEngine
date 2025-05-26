@@ -14,7 +14,6 @@ void UParticleModuleLifeTime::InitializeDefaults()
 void UParticleModuleLifeTime::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, float Interp, FBaseParticle* ParticleBase)
 {
     ParticleBase->Lifetime = Lifetime.GetValue();
-    UE_LOG(LogLevel::Display, "Lifetime Value : %f", ParticleBase->Lifetime);
 }
 
 EModuleType UParticleModuleLifeTime::GetType() const

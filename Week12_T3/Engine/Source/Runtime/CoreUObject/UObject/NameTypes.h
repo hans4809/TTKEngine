@@ -15,6 +15,10 @@ class FName
 
     uint32 DisplayIndex;    // 원본 문자열의 Hash
     uint32 ComparisonIndex; // 비교시 사용되는 Hash
+#if defined(_DEBUG)
+    // .natvis에서 사용하는 디버그용 FNameEntry 포인터
+    const void* DebugEntryPtr = nullptr;
+#endif
 
 public:
     FName() : DisplayIndex(0), ComparisonIndex(0) {}

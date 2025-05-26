@@ -46,7 +46,7 @@ public:
     /** 현재 Actor가 제거중인지 여부를 반환합니다. */
     bool IsActorBeingDestroyed() const
     {
-        return bActorIsBeingDestroyed;
+        return bActorIsBeingDestroyed == 1;
     }
 
     /**
@@ -234,8 +234,12 @@ private:
     /** 에디터 모드에서도 Tick이 작동하게 할 것인지 여부 */
     bool bTickInEditor = false;
     
+    
     /** 본인이 소유하고 있는 컴포넌트들의 정보 */
     TArray<UActorComponent*> OwnedComponents;
+
+    /** UWorld에서 AddComponent로 추가된 본인이 소유하고 있는 컴포넌트들의 정보 */
+    TArray<UActorComponent*> PendingOwnedComponentAdds;
     
     /** 현재 Actor가 삭제 처리중인지 여부 */ 
     uint8 bActorIsBeingDestroyed : 1 = 0; // 초기화하기
@@ -285,9 +289,9 @@ T* AActor::AddComponent(EComponentOrigin Origin)
 
     // TODO: RegisterComponent() 생기면 제거
     //Component->InitializeComponent();
-    Component->RegisterComponent();
+    //Component->RegisterComponent();
     Component->ComponentOrigin = Origin;
-
+    PendingOwnedComponentAdds.Add(Component);
     return Component;
 }
 
