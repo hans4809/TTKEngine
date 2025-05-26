@@ -53,6 +53,10 @@ void UBillboardComponent::SetTexture(FString _fileName)
 {
 	//Texture = GEngineLoop.ResourceManager.GetTexture(_fileName);
     Texture = UAssetManager::Get().Get<UTexture>(_fileName);
+    if (!Texture)
+    {
+        Texture = UAssetManager::Get().Load<UTexture>(_fileName);
+    }
 }
 
 // void UBillboardComponent::SetUUIDParent(USceneComponent* _parent)

@@ -34,27 +34,43 @@
 #include "DummyObject.h"
 #include "Asset/AssetManager.h"
 #include "Particles/ParticleSystem.h"
-#include <Particles/Modules/ParticleModuleSubUV.h>
-#include <Particles/Modules/ParticleModuleColor.h>
+#include "Particles/Modules/ParticleModuleSubUV.h"
+#include "Particles/Modules/ParticleModuleColor.h"
+
+#include "PhysicsEngine/PhysScene_PhysX.h"
+#include "PhysicsEngine/PhysXSDKManager.h"
+#include "PhysicsEngine/BodyInstance.h"
+
+#include <PxScene.h>
+#include <PxRigidActor.h>
+#include <PxPhysics.h>
 
 void UWorld::InitWorld()
 {
     FParticleSystemWorldManager::OnWorldInit(this);
-    
+    LocalGizmo = nullptr;
     // TODO: Load Scene
     if (Level == nullptr)
     {
         Level = FObjectFactory::ConstructObject<ULevel>(this);
     }
+    if (!InitializePhysicsScene())
+    {
+        UE_LOG(LogLevel::Error, "FATAL ERROR: UWorld::InitWorld - Failed to initialize physics scene!");
+
+    }
     PreLoadResources();
-    if (WorldType == EWorldType::Editor)
+
+    /*if (WorldType == EWorldType::Editor)
     {
         LoadScene("NewScene.scene");
     }
     else
     {
         CreateBaseObject(WorldType);
-    }
+    }*/
+    CreateBaseObject(WorldType);
+
 }
 
 void UWorld::LoadLevel(const FString& LevelName)
@@ -68,6 +84,7 @@ void UWorld::PreLoadResources()
 {
     FManagerOBJ::CreateStaticMesh(TEXT("Assets/CastleObj.obj"));
 }
+#include "Components/PrimitiveComponents/MeshComponents/StaticMeshComponents/CubeComp.h"
 
 void UWorld::CreateBaseObject(EWorldType::Type WorldType)
 {
@@ -79,77 +96,16 @@ void UWorld::CreateBaseObject(EWorldType::Type WorldType)
     if (LocalGizmo == nullptr && WorldType)
     {
         LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>(this);
-        UParticleModuleLocation* Loc = nullptr;
-        // TODO : Serialize Save/Load Test 코드 나중에 삭제해야댐
-        //DummyTest::TestDummyObject2Serialization(GEngine);
-        if(WorldType == EWorldType::Editor)
-        {
-            AActor* TestActor = SpawnActor<AActor>();
-            UParticleSystemComponent* TestComp = TestActor->AddComponent<UParticleSystemComponent>(EComponentOrigin::Runtime);
-            // TODO : ParticleSystemAsset SaveLoad Test 코드
-
-            UParticleSystem* TestParticleSystem = UAssetManager::Get().Get<UParticleSystem>(TEXT("TestParticle"));
-            if (TestParticleSystem == nullptr)
-            {
-                TestParticleSystem = FObjectFactory::ConstructObject<UParticleSystem>(this);
-                
-                UParticleEmitter* NewEmitter = FObjectFactory::ConstructObject<UParticleSpriteEmitter>(nullptr);
-                UParticleLODLevel* NewLODLevel = FObjectFactory::ConstructObject<UParticleLODLevel>(nullptr);
-            
-                NewLODLevel->RequiredModule = FObjectFactory::ConstructObject<UParticleModuleRequired>(nullptr);
-                NewLODLevel->TypeDataModule = FObjectFactory::ConstructObject<UParticleModuleTypeDataMesh>(nullptr);
-                //dynamic_cast<UParticleModuleTypeDataMesh*>(NewLODLevel->TypeDataModule)->Mesh = FManagerOBJ::CreateStaticMesh(L"apple_mid.obj");
-                NewLODLevel->Modules.Add(NewLODLevel->TypeDataModule);
-                NewLODLevel->Modules.Add(NewLODLevel->RequiredModule);
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSpawn>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleVelocity>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLifeTime>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLocation>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSize>(nullptr));
-                NewLODLevel->TypeDataModule = FObjectFactory::ConstructObject<UParticleModuleTypeDataMesh>(nullptr);
-                dynamic_cast<UParticleModuleTypeDataMesh*>(NewLODLevel->TypeDataModule)->Mesh = FManagerOBJ::CreateStaticMesh(L"Assets/apple_mid.obj");
-                NewLODLevel->Modules.Add(NewLODLevel->TypeDataModule);
-
-                NewEmitter->LODLevels.Add(NewLODLevel);
-                TestParticleSystem->Emitters.Add(NewEmitter);
-                
-                UParticleEmitter* NewEmitter2 = FObjectFactory::ConstructObject<UParticleSpriteEmitter>(nullptr);
-                UParticleLODLevel* NewLODLevel2 = FObjectFactory::ConstructObject<UParticleLODLevel>(nullptr);
-
-                NewLODLevel2->RequiredModule = FObjectFactory::ConstructObject<UParticleModuleRequired>(nullptr);
-                NewLODLevel2->Modules.Add(NewLODLevel2->RequiredModule);
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSpawn>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleVelocity>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLifeTime>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLocation>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSize>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSubUV>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleColor>(nullptr));
-
-                NewEmitter2->LODLevels.Add(NewLODLevel2);
-                TestParticleSystem->Emitters.Add(NewEmitter2);
-            }
-            TestComp->Template = TestParticleSystem;
-            
-            for (auto& emitter : TestParticleSystem->Emitters)
-            {
-                for (auto& lodLevel : emitter->LODLevels)
-                {
-                    for (auto& Module : lodLevel->Modules)
-                    {
-                        Module->InitializeDefaults();
-                    }
-                }
-            }
-            if (Loc) {
-                Cast<UDistributionVectorUniform>(Loc->StartLocation.Distribution)->MinValue = FVector(100, 100, 100);
-                Cast<UDistributionVectorUniform>(Loc->StartLocation.Distribution)->MaxValue = FVector(100, 100, 100);
-
-            }
-            TestComp->Activate();
-        }
-
+        LocalGizmo->SetActorLabel(TEXT("Gizmo"));
     }
+    /* if (WorldType == EWorldType::Editor)
+     {
+         AActor* TestActor = SpawnActor<AActor>();
+
+         UCubeComp* TestComp = TestActor->AddComponent<UCubeComp>(EComponentOrigin::Editor);
+         FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
+         TestComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+     }*/
 }
 
 
@@ -158,6 +114,72 @@ void UWorld::ReleaseBaseObject()
     LocalGizmo = nullptr;
 }
 
+void UWorld::SyncPhysicsActor(physx::PxActor* PActor)
+{
+    switch (PActor->getType())
+    {
+    case physx::PxActorType::eRIGID_DYNAMIC:
+    {
+        FBodyInstance* BodyInst = static_cast<FBodyInstance*>(PActor->userData);
+        if (BodyInst == nullptr) return;
+
+        auto* OwnerComp = BodyInst->GetOwnerComponent();
+
+        if (OwnerComp == nullptr) return;
+        if (physx::PxRigidActor* Rigid = PActor->is<physx::PxRigidActor>())
+        {
+            physx::PxTransform PxT = Rigid->getGlobalPose();
+
+            FVector Location = FVector::PToFVector(PxT.p);
+            FQuat   Rotation = FQuat::PToFQuat(PxT.q);
+
+            AActor* Actor = OwnerComp->GetOwner();
+            if (Actor && !Actor->IsActorBeingDestroyed())
+            {
+                Actor->SetActorLocation(Location);
+                Actor->SetActorRotation(Rotation.Rotator());
+            }
+            else
+            {
+                CurrentPhysicsScene->RemoveObject(BodyInst);
+                Actor = nullptr;
+            }
+        }
+    }
+    break;
+
+    case physx::PxActorType::eRIGID_STATIC:
+    {
+        // 정적 강체는 위치 변경이 없으므로 기본적으로 스킵
+    }
+    break;
+    default:
+    {
+        // 기타 타입(eAGGREGATE, 사용자 정의 등)은 필요에 따라 처리
+    }
+    break;
+    }
+}
+void UWorld::SyncPhysicsActors()
+{
+    if (!CurrentPhysicsScene)
+        return;
+
+
+    physx::PxActorTypeFlags Flags =
+        physx::PxActorTypeFlag::eRIGID_DYNAMIC |
+        physx::PxActorTypeFlag::eRIGID_STATIC;
+
+    physx::PxU32 NumActors = CurrentPhysicsScene->GetNbActors(Flags);
+    TArray<physx::PxActor*> PxActors;
+    PxActors.SetNum(NumActors);
+    CurrentPhysicsScene->GetActors(Flags, PxActors.GetData(), NumActors);
+
+    for (physx::PxActor* PActor : PxActors)
+    {
+        SyncPhysicsActor(PActor);
+    }
+}
 void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 {
     if (tickType == LEVELTICK_ViewportsOnly)
@@ -166,9 +188,15 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
         {
             LocalGizmo->Tick(deltaSeconds);
         }
-        
+
         FGameManager::Get().EditorTick(deltaSeconds);
     }
+    if (CurrentPhysicsScene)//&& (tickType == LEVELTICK_All || tickType == LEVELTICK_ViewportsOnly))
+    {
+        CurrentPhysicsScene->Simulate(deltaSeconds); //내부에서 FetchResult 호출
+        SyncPhysicsActors();
+    }
+
     // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
     if (tickType == LEVELTICK_All)
     {
@@ -188,14 +216,67 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 
         FGameManager::Get().Tick(deltaSeconds);
     }
-    
+
     FParticleSystemWorldManager::Get(this)->Tick(deltaSeconds, tickType);
+}
+
+bool UWorld::InitializePhysicsScene()
+{
+    if (CurrentPhysicsScene)
+    {
+        UE_LOG(LogLevel::Display, " UWorld::InitializePhysicsScene - Physics scene already initialized.");
+        return true;
+    }
+
+    // 1. PhysX SDK가 초기화되었는지 확인하고 PxPhysics* 가져오기
+    if (!FPhysXSDKManager::GetInstance().Initalize())
+    {
+        UE_LOG(LogLevel::Error, "UWorld::InitializePhysicsScene - FPhysXSDKManager is not initialized.");
+        return false;
+    }
+    physx::PxPhysics* PxSDK = FPhysXSDKManager::GetInstance().GetPhysicsSDK();
+    physx::PxPvd* PxPvd = FPhysXSDKManager::GetInstance().Pvd;
+    if (!PxSDK)
+    {
+        UE_LOG(LogLevel::Error, "UWorld::InitializePhysicsScene - Failed to get PxPhysics SDK from FPhysXSDKManager.");
+        return false;
+    }
+
+    // 2. FPhysScene_PhysX 인스턴스 생성 (FPhysScene 인터페이스 포인터로 받음)
+    //    FPhysScene_PhysX 생성자는 PxPhysics*와 UWorld* (this)를 받을 수 있음
+    FPhysScene_PhysX* NewPhysXScene = new FPhysScene_PhysX(PxSDK, PxPvd, this);
+    CurrentPhysicsScene = NewPhysXScene; // FPhysScene* 타입으로 업캐스팅하여 저장
+
+    // 3. 생성된 물리 씬 초기화 (이 내부에서 PxScene 생성)
+    if (!CurrentPhysicsScene->Initialize())
+    {
+        UE_LOG(LogLevel::Error, "UWorld::InitializePhysicsScene - Failed to initialize FPhysScene_PhysX.");
+        delete CurrentPhysicsScene;
+        CurrentPhysicsScene = nullptr;
+        return false;
+    }
+    UE_LOG(LogLevel::Display, "UWorld::InitializePhysicsScene - Physics scene initialized successfully.");
+    return true;
+}
+
+void UWorld::ShutdownPhysicsScene()
+{
+    if (CurrentPhysicsScene)
+    {
+        CurrentPhysicsScene->Shutdown();
+        delete CurrentPhysicsScene;
+        CurrentPhysicsScene = nullptr;
+    }
+}
+FPhysScene* UWorld::GetPhysicsScene() const
+{
+    return CurrentPhysicsScene;
 }
 
 void UWorld::Release()
 {
     FParticleSystemWorldManager::OnWorldCleanup(this);
-    
+
     if (WorldType == EWorldType::Editor)
     {
         SaveScene("Assets/Scenes/AutoSave.Scene");
@@ -209,14 +290,14 @@ void UWorld::Release()
     {
         LocalGizmo->Destroy();
     }
-
+    ShutdownPhysicsScene();
     GUObjectArray.MarkRemoveObject(Level);
     // TODO Level -> Release로 바꾸기
     // Level->Release();
     GUObjectArray.MarkRemoveObject(this);
 
-	pickingGizmo = nullptr;
-	ReleaseBaseObject();
+    pickingGizmo = nullptr;
+    ReleaseBaseObject();
 }
 
 void UWorld::ClearScene()
@@ -224,7 +305,7 @@ void UWorld::ClearScene()
     // 1. PickedActor제거
     SelectedActors.Empty();
     // 2. 모든 Actor Destroy
-    
+
     for (AActor* actor : TObjectRange<AActor>())
     {
         if (actor->GetWorld() == this)
@@ -300,10 +381,10 @@ void UWorld::DuplicateSelectedActors()
     for (AActor* Actor : SelectedActors)
     {
         AActor* DupedActor = Cast<AActor>(Actor->Duplicate(this));
-        FString TypeName = DupedActor->GetActorLabel().Left(DupedActor->GetActorLabel().Find("_", ESearchCase::IgnoreCase,ESearchDir::FromEnd));
+        FString TypeName = DupedActor->GetActorLabel().Left(DupedActor->GetActorLabel().Find("_", ESearchCase::IgnoreCase, ESearchDir::FromEnd));
         DupedActor->SetActorLabel(TypeName);
         FVector DupedLocation = DupedActor->GetActorLocation();
-        DupedActor->SetActorLocation(FVector(DupedLocation.X+50, DupedLocation.Y+50, DupedLocation.Z));
+        DupedActor->SetActorLocation(FVector(DupedLocation.X + 50, DupedLocation.Y + 50, DupedLocation.Z));
         Level->GetActors().Add(DupedActor);
         Level->PendingBeginPlayActors.Add(DupedActor);
         newSelectedActors.Add(DupedActor);
@@ -316,7 +397,7 @@ void UWorld::DuplicateSelectedActorsOnLocation()
     for (AActor* Actor : SelectedActors)
     {
         AActor* DupedActor = Cast<AActor>(Actor->Duplicate(this));
-        FString TypeName = DupedActor->GetActorLabel().Left(DupedActor->GetActorLabel().Find("_", ESearchCase::IgnoreCase,ESearchDir::FromEnd));
+        FString TypeName = DupedActor->GetActorLabel().Left(DupedActor->GetActorLabel().Find("_", ESearchCase::IgnoreCase, ESearchDir::FromEnd));
         DupedActor->SetActorLabel(TypeName);
         Level->GetActors().Add(DupedActor);
         Level->PendingBeginPlayActors.Add(DupedActor);
@@ -359,10 +440,9 @@ bool UWorld::DestroyActor(AActor* ThisActor)
     return true;
 }
 
-
 void UWorld::SetPickingGizmo(UObject* Object)
 {
-	pickingGizmo = Cast<USceneComponent>(Object);
+    pickingGizmo = Cast<USceneComponent>(Object);
 }
 
 void UWorld::Serialize(FArchive& ar) const
@@ -396,7 +476,7 @@ void UWorld::Deserialize(FArchive& ar)
         }
     }
     Level->PostLoad();
-    
+
 }
 
 /*************************임시******************************/
@@ -423,14 +503,14 @@ void UWorld::BeginPlay()
                 break;
             }
         }
-        
+
         if (bCharacterExist == false)
         {
             ACharacter* Character = SpawnActor<ACharacter>();
             PlayerController->Possess(Character);
             Character->SetActorScale(FVector(0.2f, 0.2f, 0.2f));
         }
-        
+
         APlayerCameraManager* PlayerCameraManager = SpawnActor<APlayerCameraManager>();
         PlayerController->SetPlayerCameraManager(PlayerCameraManager);
     }

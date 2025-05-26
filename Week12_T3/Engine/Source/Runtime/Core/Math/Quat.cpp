@@ -274,3 +274,8 @@ bool FQuat::operator==(const FQuat& Other) const
 
     return bNegatedEqual;
 }
+
+FQuat FQuat::PToFQuat(physx::PxQuat InPxQuat)
+{
+    return FQuat(InPxQuat.w, InPxQuat.x, InPxQuat.y, InPxQuat.z);
+}

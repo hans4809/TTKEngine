@@ -91,17 +91,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PX_PHYSX_STATIC_LIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\filebuf;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\characterkinematic;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\collision;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\cooking;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geometry;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geomutils;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\task;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\gpu;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\solver;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\pvd;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\foundation;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geometry;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geomuitls;ProjectDir)Engine\Source\ThirdParty\PhysX\include\gpu;ProjectDir)Engine\Source\ThirdParty\PhysX\include\pvd;ProjectDir)Engine\Source\ThirdParty\PhysX\include\solver;ProjectDir)Engine\Source\ThirdParty\PhysX\include\task;ProjectDir)Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\extensions;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\filebuf;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\characterkinematic;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\collision;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\cooking;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\task</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>DirectXTK.lib;PhysXVehicle_static_64.lib;PhysXExtensions_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXCommon_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXFoundation_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysXExtensions_static_64.lib;PhysXCooking_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXPvdSDK_static_64.lib;PhysX_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>;$(ProjectDir)Engine\Source\ThirdParty\PhysX\bin\win.x86_64.vc142.md\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -115,11 +115,11 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PX_PHYSX_STATIC_LIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\filebuf;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\characterkinematic;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\collision;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\cooking;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geometry;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geomutils;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\task;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\gpu;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\solver;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\pvd;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\foundation;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geometry;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geomuitls;ProjectDir)Engine\Source\ThirdParty\PhysX\include\gpu;ProjectDir)Engine\Source\ThirdParty\PhysX\include\pvd;ProjectDir)Engine\Source\ThirdParty\PhysX\include\solver;ProjectDir)Engine\Source\ThirdParty\PhysX\include\task;ProjectDir)Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\extensions;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\filebuf;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\characterkinematic;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\collision;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\cooking;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\task</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -127,7 +127,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>DirectXTK.lib;PhysXVehicle_static_64.lib;PhysXExtensions_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXCommon_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXFoundation_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysXExtensions_static_64.lib;PhysXCooking_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXPvdSDK_static_64.lib;PhysX_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>;$(ProjectDir)Engine\Source\ThirdParty\PhysX\bin\win.x86_64.vc142.md\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -139,9 +139,9 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;FBXSDK_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;FBXSDK_SHARED;%(PreprocessorDefinitions);PX_PHYSX_STATIC_LIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\FBX_SDK\2020.3.7\include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath);$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);$(ProjectDir)\Engine\Source\ThirdParty\Lua\include;%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\FBX_SDK\2020.3.7\include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath);$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);$(ProjectDir)\Engine\Source\ThirdParty\Lua\include;%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\filebuf;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\characterkinematic;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\collision;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\cooking;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geometry;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geomutils;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\task;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\gpu;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\solver;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\pvd;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\foundation;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geometry;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geomuitls;ProjectDir)Engine\Source\ThirdParty\PhysX\include\gpu;ProjectDir)Engine\Source\ThirdParty\PhysX\include\pvd;ProjectDir)Engine\Source\ThirdParty\PhysX\include\solver;ProjectDir)Engine\Source\ThirdParty\PhysX\include\task;ProjectDir)Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\extensions;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\filebuf;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\characterkinematic;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\collision;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\cooking;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\task</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -150,7 +150,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\debug;$(ProjectDir)Engine\Source\ThirdParty\DirectXTK\Lib\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories);$(VcpkgRoot)\installed\x64-windows\lib;$(LibraryPath);$(ProjectDir)Engine\Source\ThirdParty\Lua\$(Configuration)\lib;$(ProjectDir)Engine\Source\ThirdParty\PhysX\bin\win.x86_64.vc142.md\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK.lib;PhysXVehicle_static_64.lib;PhysXExtensions_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXCommon_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXFoundation_static_64.lib;libfbxsdk.lib;lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysXExtensions_static_64.lib;PhysXCooking_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXPvdSDK_static_64.lib;PhysX_static_64.lib;libfbxsdk.lib;lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\Lua\$(Configuration)\dll\lua.dll" "$(OutDir)"
@@ -163,9 +163,9 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;FBXSDK_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;FBXSDK_SHARED;%(PreprocessorDefinitions);PX_PHYSX_STATIC_LIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\FBX_SDK\2020.3.7\include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath);$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);$(ProjectDir)\Engine\Source\ThirdParty\Lua\include;%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Engine\Source\ThirdParty\FBX_SDK\2020.3.7\include;$(ProjectDir)\Shaders;$(ProjectDir)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)\Engine\Source\ThirdParty;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath);$(ProjectDir)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)\Engine\Source\Runtime;$(ProjectDir)\Engine\Source\Runtime\Windows;$(ProjectDir)\Engine\Source\ThirdParty\include;$(ProjectDir)\Engine\Source\Editor;$(ProjectDir)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)\Engine\Source\Runtime\Core;$(ProjectDir)\Engine\Source\Runtime\Launch;$(ProjectDir)\Engine\Source\Runtime\Engine;$(ProjectDir)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)\Engine\Source;$(ProjectDir);$(ProjectDir)\Engine\Source\ThirdParty\Lua\include;%(AdditionalIncludeDirectories);$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\common;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\filebuf;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\characterkinematic;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\collision;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\cooking;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geometry;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\geomutils;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\task;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\gpu;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\solver;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\pvd;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\PhysX\include\foundation;$(ProjectDir)Engine\Source\ThirdParty\PhysX\include\foundation;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geometry;ProjectDir)Engine\Source\ThirdParty\PhysX\include\geomuitls;ProjectDir)Engine\Source\ThirdParty\PhysX\include\gpu;ProjectDir)Engine\Source\ThirdParty\PhysX\include\pvd;ProjectDir)Engine\Source\ThirdParty\PhysX\include\solver;ProjectDir)Engine\Source\ThirdParty\PhysX\include\task;ProjectDir)Engine\Source\ThirdParty\PhysX\include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\extensions;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\filebuf;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\characterkinematic;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\collision;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\cooking;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\vehicle;$(ProjectDir)Engine\Source\ThirdParty\PhysX\Include\task</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -177,7 +177,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\release;$(SolutionDir)Week12_T3\Engine\Source\ThirdParty\DirectXTK\Lib\x64\Release;%(AdditionalLibraryDirectories);$(VcpkgRoot)\installed\x64-windows\lib;$(LibraryPath);$(ProjectDir)Engine\Source\ThirdParty\Lua\$(Configuration)\lib;$(ProjectDir)Engine\Source\ThirdParty\PhysX\bin\win.x86_64.vc142.md\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK.lib;PhysXVehicle_static_64.lib;PhysXExtensions_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXCommon_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXFoundation_static_64.lib;libfbxsdk.lib;lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysXExtensions_static_64.lib;PhysXCooking_static_64.lib;PhysXVehicle_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXPvdSDK_static_64.lib;PhysX_static_64.lib;libfbxsdk.lib;lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -188,6 +188,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesDetailsPanel.cpp" />
@@ -444,6 +445,12 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Core\Coroutine\LuaCoroutine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Coroutine\WaitObjects.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\USpringArmComponent.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\HitResult.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysXSDKManager.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\PhysScene.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsMaterial.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\OverlapResult.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysScene_PhysX.cpp" />
     <ClCompile Include="Shaders\BlurPixelShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -477,8 +484,11 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Animation\CustomAnimInstance\TestAnimInstance.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\PhysicsCore\SweepResult.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\SimulationEventCallback.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesDetailsPanel.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesEmitterPanel.h" />
@@ -604,6 +614,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Launch\ShowFlags.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\PlayerCameraManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\AssetManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysicsFilterData.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\AggregateGeom.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.h" />
@@ -802,7 +813,15 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Engine\Camera\CameraShake\RollCameraShake.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Camera\CameraShake\HitCameraShake.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Animation\CustomAnimInstance\TestAnimInstance.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\HitResult.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysXSDKManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysScene.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysicsMaterial.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\OverlapResult.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysScene_PhysX.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\SweepResult.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\SimulationEventCallback.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DebugDepthPixelShader.hlsl">

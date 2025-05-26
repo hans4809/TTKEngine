@@ -3,14 +3,18 @@
 #include "Quat.h"
 #include "Vector.h"
 #include "Rotator.h"
-
+#include <PxTransform.h>
 class FTransform
 {
 public:
     FTransform() : Rotation(FQuat::Identity), Location(FVector::ZeroVector), Scale(FVector::OneVector) {}
     FTransform(FQuat InRotation, FVector InLocation, FVector InScale) : Rotation(InRotation), Location(InLocation), Scale(InScale) {}
     FTransform(const FMatrix& InMatrix);
-
+    FTransform(const  physx::PxTransform& PxTransform) 
+    {
+        Location = FVector::PToFVector(PxTransform.p);
+        Rotation = FQuat::PToFQuat(PxTransform.q);
+    };
     FQuat Rotation;
     FVector Location;
     FVector Scale;
@@ -69,6 +73,10 @@ public:
 
 private:
     static bool Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D);
+    physx::PxTransform ToPxTransform() const // const 멤버 함수로 변경
+    {
+        return physx::PxTransform(Location.ToPxVec3(), Rotation.ToPxQuat());
+    }
 };
 inline const FTransform FTransform::Identity = FTransform();
 

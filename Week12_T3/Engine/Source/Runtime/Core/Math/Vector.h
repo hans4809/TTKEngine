@@ -6,6 +6,12 @@
 #include "Container/String.h"
 #include "Serialization/Archive.h"
 
+namespace physx 
+{
+    struct PxVec3;
+}
+
+
 struct FVector2D
 {
     float X, Y;
@@ -71,7 +77,6 @@ struct FVector
     FVector& operator/=(float Scalar);
 
     FVector operator-() const;
-
     // 인덱스 접근 연산자 추가
     float& operator[](int Index)
     {
@@ -210,6 +215,8 @@ struct FVector
         return DirectX::XMFLOAT3(X, Y, Z);
     }
 
+    physx::PxVec3 ToPxVec3() const;
+
     FVector ClampMaxSize(float MaxSize) const
     {
         if (MaxSize < 1.e-4f)
@@ -251,7 +258,7 @@ struct FVector
     static const FVector UpVector;
     static const FVector ForwardVector;
     static const FVector RightVector;
-
+    static const FVector PToFVector(physx::PxVec3 InPxVec3);
     // Unit X Axis Vector (1, 0, 0)
     static const FVector XAxisVector;
     // Unit Y Axis Vector (0, 1, 0)

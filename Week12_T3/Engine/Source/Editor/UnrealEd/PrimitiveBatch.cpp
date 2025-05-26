@@ -101,8 +101,8 @@ void UPrimitiveBatch::AddOBB(const FBoundingBox& localAABB, const FVector& cente
     };
     
     FOBB faceBB;
-    for (int32 i = 0; i < 8; ++i) {
-        // 모델 매트릭스로 점을 변환 후, center를 더해준다.
+    for (int32 i = 0; i < 8; ++i) 
+    {
         faceBB.corners[i] =  modelMatrix.TransformPosition(localVertices[i]);
     }
 

@@ -3,6 +3,8 @@
 #include "Container/String.h"
 #include "Serialization/Archive.h"
 
+#include <PxQuat.h>
+
 // 쿼터니언
 struct FQuat
 {
@@ -66,6 +68,13 @@ struct FQuat
     static FQuat Slerp(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
     
     static FQuat Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
+
+    static FQuat PToFQuat(physx::PxQuat InPxQuat);
+
+    physx::PxQuat ToPxQuat() const
+    {
+        return physx::PxQuat(X, Y, Z, W);
+    }
 
     FString ToString() const;
 

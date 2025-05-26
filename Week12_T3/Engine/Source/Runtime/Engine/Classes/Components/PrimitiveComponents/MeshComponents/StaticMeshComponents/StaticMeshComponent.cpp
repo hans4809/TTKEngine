@@ -7,6 +7,11 @@
 #include "Classes/Engine/FLoaderOBJ.h"
 #include "Components/Mesh/StaticMesh.h"
 #include "CoreUObject/UObject/Casts.h"
+#include "GameFramework/Actor.h"
+#include "PhysicsEngine/BodyInstance.h"
+#include "PhysicsEngine/PhysXSDKManager.h"
+#include "PhysicsEngine/PhysicsMaterial.h"
+#include "PhysicsEngine/PhysScene_PhysX.h"
 
 uint32 UStaticMeshComponent::GetNumMaterials() const
 {
@@ -167,3 +172,24 @@ void UStaticMeshComponent::TickComponent(float DeltaTime)
     //Timer += DeltaTime * 0.005f;
     //SetLocation(GetWorldLocation()+ (FVector(1.0f,1.0f, 1.0f) * sin(Timer)));
 }
+
+void UStaticMeshComponent::OnCreatePhysicsState()
+{
+    //임시 테스트 용 ---
+    FTransform ShapeLocalPose = FTransform::Identity;
+
+    BodyInstance = new FBodyInstance();
+    BodyInstance->Initialize(this, FPhysXSDKManager::GetInstance().GetPhysicsSDK());
+    BodyInstance->CreatePhysicsState(FTransform::Identity, EPhysBodyType::Dynamic);
+    UPhysicalMaterial* MyMaterial = new UPhysicalMaterial(FPhysXSDKManager::GetInstance().GetPhysicsSDK(), 1, 1, 1);
+
+    BodyInstance->AddBoxGeometry(FVector(.5f, .5f, .5f), MyMaterial, ShapeLocalPose);
+    
+    AActor* Owner = GetOwner();
+    
+    if (!Owner) return;
+    
+    FPhysScene* PhysScene = Owner->GetWorld()->GetPhysicsScene();
+    BodyInstance->AddObject(PhysScene);
+
+} 
