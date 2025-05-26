@@ -557,6 +557,8 @@
     <ClInclude Include="Engine\Source\Runtime\Serialization\Archive2.h" />
     <ClInclude Include="Engine\Source\Runtime\Serialization\MemoryArchive.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\APostProcessVolume.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\CameraRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
