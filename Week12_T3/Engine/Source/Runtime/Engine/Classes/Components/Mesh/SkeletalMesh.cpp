@@ -1,5 +1,6 @@
 #include "SkeletalMesh.h"
 
+#include "Define.h"
 #include "Renderer/RenderResourceManager.h"
 #include "LaunchEngineLoop.h"
 #include "Renderer/Renderer.h"
@@ -14,7 +15,7 @@
 uint32 USkeletalMesh::GetMaterialIndex(FName MaterialSlotName) const
 {
     for (uint32 materialIndex = 0; materialIndex < MaterialSlots.Num(); materialIndex++) {
-        if (MaterialSlots[materialIndex]->MaterialSlotName == MaterialSlotName)
+        if (MaterialSlots[materialIndex].MaterialSlotName == MaterialSlotName)
             return materialIndex;
     }
 
@@ -23,16 +24,16 @@ uint32 USkeletalMesh::GetMaterialIndex(FName MaterialSlotName) const
 
 void USkeletalMesh::GetUsedMaterials(TArray<UMaterial*>& Out) const
 {
-    for (const FMaterialSlot* Material : MaterialSlots)
+    for (const FMaterialSlot& Material : MaterialSlots)
     {
-        Out.Emplace(Material->Material);
+        Out.Emplace(Material.Material);
     }
 }
 
 void USkeletalMesh::SetData(const FString& FilePath)
 {
-    FSkeletalMeshRenderData SkeletalMeshRenderData = FFBXLoader::GetCopiedSkeletalRenderData(FilePath);
-    FRefSkeletal* RefSkeletal = FFBXLoader::GetRefSkeletal(FilePath);
+    const FSkeletalMeshRenderData SkeletalMeshRenderData = FFBXLoader::GetCopiedSkeletalRenderData(FilePath);
+    const FRefSkeletal RefSkeletal = FFBXLoader::GetRefSkeletal(FilePath);
     USkeleton* Skeleton = FObjectFactory::ConstructObject<USkeleton>(this); // TODO: Map에 저장하고 들고오기 
     Skeleton->SetRefSkeletal(RefSkeletal);
 
@@ -57,12 +58,12 @@ void USkeletalMesh::SetData(const FSkeletalMeshRenderData& InRenderData, USkelet
     }
 
     MaterialSlots.Empty();
-    for (int materialIndex = 0; materialIndex < Skeleton->GetRefSkeletal()->Materials.Num(); materialIndex++) {
-        FMaterialSlot* newMaterialSlot = new FMaterialSlot();
+    for (int materialIndex = 0; materialIndex < Skeleton->GetRefSkeletal().Materials.Num(); materialIndex++) {
+        FMaterialSlot newMaterialSlot;
         // Change
 
-        newMaterialSlot->Material = FManagerOBJ::GetMaterial(Skeleton->GetRefSkeletal()->Materials[materialIndex]->GetMaterialInfo().MTLName);
-        newMaterialSlot->MaterialSlotName = Skeleton->GetRefSkeletal()->Materials[materialIndex]->GetMaterialInfo().MTLName;
+        newMaterialSlot.Material = FManagerOBJ::GetMaterial(Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName);
+        newMaterialSlot.MaterialSlotName = Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName;
         
         MaterialSlots.Add(newMaterialSlot);
     }
@@ -71,7 +72,7 @@ void USkeletalMesh::SetData(const FSkeletalMeshRenderData& InRenderData, USkelet
 void USkeletalMesh::UpdateBoneHierarchy()
 {
     // 먼저 루트 뼈들의 글로벌 트랜스폼을 설정
-    for (int32 RootIndex : Skeleton->GetRefSkeletal()->RootBoneIndices)
+    for (int32 RootIndex : Skeleton->GetRefSkeletal().RootBoneIndices)
     {
         // 루트 뼈는 로컬 트랜스폼이 곧 글로벌 트랜스폼이 됨
         SkeletalMeshRenderData.Bones[RootIndex].GlobalTransform =
@@ -88,7 +89,7 @@ void USkeletalMesh::UpdateBoneHierarchy()
 void USkeletalMesh::UpdateChildBones(int ParentIndex)
 {
     // BoneTree 구조를 사용하여 현재 부모 뼈의 모든 자식을 찾음
-    const FBoneNode& ParentNode = Skeleton->GetRefSkeletal()->BoneTree[ParentIndex];
+    const FBoneNode& ParentNode = Skeleton->GetRefSkeletal().BoneTree[ParentIndex];
     
     // 모든 자식 뼈를 순회
     for (int32 ChildIndex : ParentNode.ChildIndices)
@@ -208,11 +209,11 @@ void USkeletalMesh::UpdateSkinnedVertices()
         return;
 
 
-    if (Skeleton->GetRefSkeletal()->RawVertices.Num() == SkeletalMeshRenderData.Vertices.Num())
+    if (Skeleton->GetRefSkeletal().RawVertices.Num() == SkeletalMeshRenderData.Vertices.Num())
     {
         for (int i = 0; i < SkeletalMeshRenderData.Vertices.Num(); i++)
         {
-            SkeletalMeshRenderData.Vertices[i].Position = Skeleton->GetRefSkeletal()->RawVertices[i].Position;
+            SkeletalMeshRenderData.Vertices[i].Position = Skeleton->GetRefSkeletal().RawVertices[i].Position;
         }
     }
 

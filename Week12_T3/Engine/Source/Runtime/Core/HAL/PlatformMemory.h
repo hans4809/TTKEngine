@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+#include <cassert>
 #include <iostream>
 
 #include "Core/HAL/PlatformType.h"
@@ -55,6 +56,26 @@ public:
 
     template <EAllocationType AllocType>
     static uint64 GetAllocationCount();
+
+    
+    /**  
+     * 주어진 메모리 주소의 데이터를 캐시에 미리 로드하도록 힌트를 보냅니다.  
+     * CPU 아키텍처별로 적절한 프리페치 명령을 사용합니다.  
+     */
+    FORCEINLINE static void Prefetch(const void* Ptr)
+    {
+        _mm_prefetch(static_cast<const char*>(Ptr), _MM_HINT_T0);
+    }
+
+    FORCEINLINE static void Prefetch(const void* Ptr, int32 Offset)
+    {
+        Prefetch(reinterpret_cast<const void*>(reinterpret_cast<std::uintptr_t>(Ptr) + Offset));
+    }
+
+    FORCEINLINE static void PrefetchBlock(const void* Ptr)
+    {
+        Prefetch(Ptr);
+    }
 };
 
 

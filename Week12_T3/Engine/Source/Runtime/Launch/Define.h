@@ -11,6 +11,7 @@
 #include <d3d11.h>
 
 #include "Math/Matrix.h"
+#include "UObject/ObjectMacros.h"
 
 class FArchive;
 
@@ -276,104 +277,6 @@ struct FOBB
     FVector corners[8];
 };
 
-struct FBoundingBox
-{
-    FBoundingBox(){}
-    FBoundingBox(FVector _min, FVector _max) : min(_min), max(_max) {}
-	FVector min; // Minimum extents
-    float padding0;
-	FVector max; // Maximum extents
-    float padding1;
-    bool IntersectRay(const FVector& rayOrigin, const FVector& rayDir, float& outDistance) const
-    {
-        float tmin = -FLT_MAX;
-        float tmax = FLT_MAX;
-        const float epsilon = 1e-6f;
-
-        // X축 처리
-        if (fabs(rayDir.X) < epsilon)
-        {
-            // 레이가 X축 방향으로 거의 평행한 경우,
-            // 원점의 x가 박스 [min.x, max.x] 범위 밖이면 교차 없음
-            if (rayOrigin.X < min.X || rayOrigin.X > max.X)
-                return false;
-        }
-        else
-        {
-            float t1 = (min.X - rayOrigin.X) / rayDir.X;
-            float t2 = (max.X - rayOrigin.X) / rayDir.X;
-            if (t1 > t2)  std::swap(t1, t2);
-
-            // tmin은 "현재까지의 교차 구간 중 가장 큰 min"
-            tmin = (t1 > tmin) ? t1 : tmin;
-            // tmax는 "현재까지의 교차 구간 중 가장 작은 max"
-            tmax = (t2 < tmax) ? t2 : tmax;
-            if (tmin > tmax)
-                return false;
-        }
-
-        // Y축 처리
-        if (fabs(rayDir.Y) < epsilon)
-        {
-            if (rayOrigin.Y < min.Y || rayOrigin.Y > max.Y)
-                return false;
-        }
-        else
-        {
-            float t1 = (min.Y - rayOrigin.Y) / rayDir.Y;
-            float t2 = (max.Y - rayOrigin.Y) / rayDir.Y;
-            if (t1 > t2)  std::swap(t1, t2);
-
-            tmin = (t1 > tmin) ? t1 : tmin;
-            tmax = (t2 < tmax) ? t2 : tmax;
-            if (tmin > tmax)
-                return false;
-        }
-
-        // Z축 처리
-        if (fabs(rayDir.Z) < epsilon)
-        {
-            if (rayOrigin.Z < min.Z || rayOrigin.Z > max.Z)
-                return false;
-        }
-        else
-        {
-            float t1 = (min.Z - rayOrigin.Z) / rayDir.Z;
-            float t2 = (max.Z - rayOrigin.Z) / rayDir.Z;
-            if (t1 > t2)  std::swap(t1, t2);
-
-            tmin = (t1 > tmin) ? t1 : tmin;
-            tmax = (t2 < tmax) ? t2 : tmax;
-            if (tmin > tmax)
-                return false;
-        }
-
-        // 여기까지 왔으면 교차 구간 [tmin, tmax]가 유효하다.
-        // tmax < 0 이면, 레이가 박스 뒤쪽에서 교차하므로 화면상 보기엔 교차 안 한다고 볼 수 있음
-        if (tmax < 0.0f)
-            return false;
-
-        // outDistance = tmin이 0보다 크면 그게 레이가 처음으로 박스를 만나는 지점
-        // 만약 tmin < 0 이면, 레이의 시작점이 박스 내부에 있다는 의미이므로, 거리를 0으로 처리해도 됨.
-        outDistance = (tmin >= 0.0f) ? tmin : 0.0f;
-
-        return true;
-    }
-    bool IntersectAABB(FBoundingBox Other) const
-    {
-        return (min.X <= Other.max.X && max.X >= Other.min.X) &&
-            (min.Y <= Other.max.Y && max.Y >= Other.min.Y) &&
-            (min.Z <= Other.max.Z && max.Z >= Other.min.Z);
-    }
-    void Serialize(FArchive& Ar) const
-    {
-        Ar << min << max;
-    }
-    void Deserialize(FArchive& Ar)
-    {
-        Ar >> min >> max;
-    }
-};
 struct FCone
 {
     FVector ConeApex; // 원뿔의 꼭짓점

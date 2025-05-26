@@ -48,7 +48,7 @@ namespace EAxisList
 // 4x4 행렬 연산
 struct alignas(16) FMatrix
 {
-    public:
+public:
     alignas(16) float M[4][4];
 
 public:

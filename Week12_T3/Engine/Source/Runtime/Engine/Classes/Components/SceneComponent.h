@@ -8,6 +8,7 @@
 #include <sol\sol.hpp>
 
 #include "Define.h"
+#include "Math/BoundingBox.h"
 
 class USceneComponent;
 

@@ -116,6 +116,9 @@ inline bool FEditorStateManager::IsValidTransition(EEditorState To)
 
     case EEditorState::Stopped:
         return To == EEditorState::Editing;
+    default:
+        UE_LOG(LogLevel::Warning, "FEditorStateManager::IsValidTransition UnKnown State!!"); 
+        return false;
     }
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "Define.h"
+#include "Math/BoundingBox.h"
 #include "Windows/D3D11RHI/CBStructDefine.h"
 
 class UPrimitiveBatch

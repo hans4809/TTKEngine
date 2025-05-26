@@ -23,7 +23,7 @@ public:
 
     virtual int CheckRayIntersection(FVector& RayOrigin, FVector& RayDirection, float& pNearHitDistance) override;
     virtual void TickComponent(float DeltaTime) override;
-
+    virtual void OnRegister() override;
 private:
     EGizmoType GizmoType;
 
@@ -31,5 +31,5 @@ public:
     EGizmoType GetGizmoType() const { return GizmoType; }
     void SetGizmoType(const EGizmoType InGizmoType) { GizmoType = InGizmoType; }
 
-    float GizmoScale = 0.2f;
+    float GizmoScale = 0.1f;
 };
