@@ -130,15 +130,6 @@ void FPhysScene_PhysX::AddObject(FBodyInstance* BodyInstance)
         if (ActorToAdd)
         {
             PxSceneInstance->addActor(*ActorToAdd);
-            bool  res = Pvd->isConnected();
-            if (res)
-            {
-                UE_LOG(LogLevel::Warning, "connect");
-            }
-            else
-            {
-                UE_LOG(LogLevel::Warning, "disconnect");
-            }
         }
         else
         {
