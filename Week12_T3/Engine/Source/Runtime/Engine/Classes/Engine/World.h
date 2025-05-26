@@ -17,7 +17,11 @@ class UCameraComponent;
 class USceneComponent;
 class UTransformGizmo;
 class USkeletalMesh;
-
+class FPhysScene;
+namespace physx
+{
+    class PxActor;
+}
 class UWorld : public UObject
 {
     DECLARE_CLASS(UWorld, UObject)
@@ -30,7 +34,14 @@ public:
     void PreLoadResources();
     void CreateBaseObject(EWorldType::Type WorldType);
     void ReleaseBaseObject();
+    void SyncPhysicsActor(physx::PxActor* PActor);
+    void SyncPhysicsActors();
     void Tick(ELevelTick tickType, float deltaSeconds);
+
+    bool InitializePhysicsScene(); // 물리 씬 초기화
+    void ShutdownPhysicsScene();  // 물리 씬 종료
+    FPhysScene* GetPhysicsScene() const;
+
     void Release();
     void LoadScene(const FString& FileName);
     void SaveScene(const FString& FileName);
@@ -59,6 +70,8 @@ public:
     bool DestroyActor(AActor* ThisActor);
 
 private:
+    FPhysScene* CurrentPhysicsScene = nullptr;
+
     const FString defaultMapName = "Default";
     ULevel* Level = nullptr;
     /** World에서 관리되는 모든 Actor의 목록 */
@@ -119,7 +132,7 @@ T* UWorld::SpawnActor()
     T* Actor = FObjectFactory::ConstructObject<T>(this);
     // TODO: 일단 AddComponent에서 Component마다 초기화
     // 추후에 RegisterComponent() 만들어지면 주석 해제
-    // Actor->InitializeComponents();
+    Actor->InitializeComponents();
     
     Level->GetActors().Add(Actor);
     Level->PendingBeginPlayActors.Add(Actor);

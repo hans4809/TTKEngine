@@ -35,8 +35,7 @@ public:
     static FGraphicsDevice GraphicDevice;
     static FRenderer Renderer;
     static FResourceManager ResourceManager;
-    
-
+  
 private:
     TArray<HWND> AppWindows;
     HWND DefaultWindow;

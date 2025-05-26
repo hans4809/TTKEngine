@@ -90,8 +90,8 @@ void UCapsuleShapeComponent::UpdateBroadAABB()
     Max.Y = FMath::Max(Max.Y, BottomMax.Y);
     Max.Z = FMath::Max(Max.Z, BottomMax.Z);
 
-    BroadAABB.min = Min;
-    BroadAABB.max = Max;
+    BroadAABB.Min = Min;
+    BroadAABB.Max = Max;
 }
 
 bool UCapsuleShapeComponent::TestOverlaps(const UShapeComponent* OtherShape) const

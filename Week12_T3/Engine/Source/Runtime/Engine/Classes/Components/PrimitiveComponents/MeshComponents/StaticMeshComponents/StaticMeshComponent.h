@@ -52,7 +52,8 @@ public:
     UStaticMesh* GetStaticMesh() const { return staticMesh; }
     void SetStaticMesh(UStaticMesh* value);
 
-    
+    virtual void OnCreatePhysicsState() override;
+
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;
     virtual void LoadAndConstruct(const FActorComponentInfo& Info) override;

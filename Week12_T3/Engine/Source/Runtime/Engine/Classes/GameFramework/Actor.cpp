@@ -20,11 +20,15 @@ void AActor::BeginPlay()
 
 void AActor::Tick(const float DeltaTime)
 {
-
     if (!RootComponent)
     {
         return;
     }
+    for (UActorComponent* Component : PendingOwnedComponentAdds)
+    {
+        Component->RegisterComponent();
+    }
+    PendingOwnedComponentAdds.Empty();
     // TODO: 임시로 Actor에서 Tick 돌리기
     // TODO: 나중에 삭제를 Pending으로 하던가 해서 복사비용 줄이기
     const auto CopyComponents = OwnedComponents;
@@ -243,7 +247,7 @@ UActorComponent* AActor::AddComponent(UClass* InClass, FName InName, bool bTryRo
         UE_LOG(LogLevel::Error, TEXT("UActorComponent failed: ComponentClass is null."));
         return nullptr;
     }
-    
+
     if (InClass->IsChildOf<UActorComponent>())
     {
         UActorComponent* Component = static_cast<UActorComponent*>(FObjectFactory::ConstructObject(InClass, this, InName));
@@ -253,7 +257,7 @@ UActorComponent* AActor::AddComponent(UClass* InClass, FName InName, bool bTryRo
             UE_LOG(LogLevel::Error, TEXT("UActorComponent failed: Class '%s' is not derived from AActor."), *InClass->GetName());
             return nullptr;
         }
-        
+
         OwnedComponents.Add(Component);
         Component->Owner = this;
 
@@ -285,7 +289,7 @@ UActorComponent* AActor::AddComponent(UClass* InClass, FName InName, bool bTryRo
 
         return Component;
     }
-    
+
     UE_LOG(LogLevel::Error, TEXT("UActorComponent failed: ComponentClass is null."));
     return nullptr;
 }
@@ -332,7 +336,7 @@ void AActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
     }
 
     TMap<const USceneComponent*, USceneComponent*> SceneCloneMap;
-    
+
     for (UActorComponent* Component : Actor->OwnedComponents)
     {
         auto DuplicatedComponent = static_cast<UActorComponent*>(Component->Duplicate(this));
@@ -343,7 +347,7 @@ void AActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
         /** Todo. UActorComponent를 상속 받는 컴포넌트는 오류가 발생 코드 로직 수정 필요
          *   임시로 IsA 검사 후 Root 설정
          */
-        if (DuplicatedComponent->IsA(USceneComponent::StaticClass())) 
+        if (DuplicatedComponent->IsA(USceneComponent::StaticClass()))
         {
             RootComponent = Cast<USceneComponent>(DuplicatedComponent);
         }

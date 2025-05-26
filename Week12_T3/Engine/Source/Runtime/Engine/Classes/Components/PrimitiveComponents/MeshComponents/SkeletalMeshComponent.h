@@ -1,6 +1,7 @@
 #pragma once
 #include "MeshComponent.h"
 #include "Components/Mesh/SkeletalMesh.h"
+#include "Physics/BodySetup/BodySetup.h"
 
 class UAnimInstance;
 class UStaticMeshComponent;
@@ -44,13 +45,28 @@ public:
     USkeletalMesh* LoadSkeletalMesh(const FString& FilePath);
 
     UAnimInstance* GetAnimInstance() const { return AnimInstance; }
-    void SetAnimInstance(UAnimInstance* InAnimInstance) { AnimInstance = InAnimInstance; };
+    void SetAnimInstance(UAnimInstance* InAnimInstance) { AnimInstance = InAnimInstance; }
+    
+    int32 GetBoneIndex(FName BoneName) const;
+
+    
+    /**
+     * 본 인덱스를 이용해 월드 공간 상의 본 트랜스폼을 가져옵니다.
+     * 컴포넌트 트랜스폼도 함께 지정할 수 있습니다.
+     *
+     * @param BoneIndex 가져올 본의 인덱스
+     *
+     * @return 지정된 인덱스의 본 트랜스폼 (월드 공간 기준)
+     */
+    FTransform GetBoneTransform(int32 BoneIndex) const;
+    
     UAnimSingleNodeInstance* GetSingleNodeInstance() const;
     void CreateBoneComponents();
     void UpdateBoneHierarchy();
 
     int SelectedSubMeshIndex = -1;
 
+    UPROPERTY(EditAnywhere, bool, bConsiderAllBodiesForBounds, = true)
 public:
     void PlayAnimation(UAnimSequence* NewAnimToPlay, bool bLooping);
 

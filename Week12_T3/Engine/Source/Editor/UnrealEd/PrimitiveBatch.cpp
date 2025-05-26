@@ -52,14 +52,14 @@ void UPrimitiveBatch::GenerateGrid(float spacing, int gridCount)
 void UPrimitiveBatch::AddAABB(const FBoundingBox& localAABB, const FVector& center, const FMatrix& modelMatrix)
 {
     FVector localVertices[8] = {
-         { localAABB.min.X, localAABB.min.Y, localAABB.min.Z },
-         { localAABB.max.X, localAABB.min.Y, localAABB.min.Z },
-         { localAABB.min.X, localAABB.max.Y, localAABB.min.Z },
-         { localAABB.max.X, localAABB.max.Y, localAABB.min.Z },
-         { localAABB.min.X, localAABB.min.Y, localAABB.max.Z },
-         { localAABB.max.X, localAABB.min.Y, localAABB.max.Z },
-         { localAABB.min.X, localAABB.max.Y, localAABB.max.Z },
-         { localAABB.max.X, localAABB.max.Y, localAABB.max.Z }
+         { localAABB.Min.X, localAABB.Min.Y, localAABB.Min.Z },
+         { localAABB.Max.X, localAABB.Min.Y, localAABB.Min.Z },
+         { localAABB.Min.X, localAABB.Max.Y, localAABB.Min.Z },
+         { localAABB.Max.X, localAABB.Max.Y, localAABB.Min.Z },
+         { localAABB.Min.X, localAABB.Min.Y, localAABB.Max.Z },
+         { localAABB.Max.X, localAABB.Min.Y, localAABB.Max.Z },
+         { localAABB.Min.X, localAABB.Max.Y, localAABB.Max.Z },
+         { localAABB.Max.X, localAABB.Max.Y, localAABB.Max.Z }
     };
 
     FVector worldVertices[8];
@@ -81,8 +81,8 @@ void UPrimitiveBatch::AddAABB(const FBoundingBox& localAABB, const FVector& cent
         max.Z = (worldVertices[i].Z > max.Z) ? worldVertices[i].Z : max.Z;
     }
     FBoundingBox BoundingBox;
-    BoundingBox.min = min;
-    BoundingBox.max = max;
+    BoundingBox.Min = min;
+    BoundingBox.Max = max;
     BoundingBoxes.Add(BoundingBox);
 }
 void UPrimitiveBatch::AddOBB(const FBoundingBox& localAABB, const FVector& center, const FMatrix& modelMatrix)
@@ -90,19 +90,19 @@ void UPrimitiveBatch::AddOBB(const FBoundingBox& localAABB, const FVector& cente
     // 1) 로컬 AABB의 8개 꼭짓점
     FVector localVertices[8] =
     {
-        { localAABB.min.X, localAABB.min.Y, localAABB.min.Z },
-        { localAABB.max.X, localAABB.min.Y, localAABB.min.Z },
-        { localAABB.min.X, localAABB.max.Y, localAABB.min.Z },
-        { localAABB.max.X, localAABB.max.Y, localAABB.min.Z },
-        { localAABB.min.X, localAABB.min.Y, localAABB.max.Z },
-        { localAABB.max.X, localAABB.min.Y, localAABB.max.Z },
-        { localAABB.min.X, localAABB.max.Y, localAABB.max.Z },
-        { localAABB.max.X, localAABB.max.Y, localAABB.max.Z }
+        { localAABB.Min.X, localAABB.Min.Y, localAABB.Min.Z },
+        { localAABB.Max.X, localAABB.Min.Y, localAABB.Min.Z },
+        { localAABB.Min.X, localAABB.Max.Y, localAABB.Min.Z },
+        { localAABB.Max.X, localAABB.Max.Y, localAABB.Min.Z },
+        { localAABB.Min.X, localAABB.Min.Y, localAABB.Max.Z },
+        { localAABB.Max.X, localAABB.Min.Y, localAABB.Max.Z },
+        { localAABB.Min.X, localAABB.Max.Y, localAABB.Max.Z },
+        { localAABB.Max.X, localAABB.Max.Y, localAABB.Max.Z }
     };
     
     FOBB faceBB;
-    for (int32 i = 0; i < 8; ++i) {
-        // 모델 매트릭스로 점을 변환 후, center를 더해준다.
+    for (int32 i = 0; i < 8; ++i) 
+    {
         faceBB.corners[i] =  modelMatrix.TransformPosition(localVertices[i]);
     }
 

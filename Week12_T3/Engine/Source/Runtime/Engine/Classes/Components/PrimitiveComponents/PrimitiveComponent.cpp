@@ -6,6 +6,12 @@
 #include "Physics/FCollisionManager.h"
 #include "UserInterface/Console.h"
 
+#include <PxRigidActor.h>
+#include "PhysicsEngine/PhysXSDKManager.h"
+#include "PhysicsEngine/PhysicsMaterial.h"
+
+#include "Engine/World.h"
+
 UPrimitiveComponent::UPrimitiveComponent()
     : Super()
 {
@@ -16,14 +22,24 @@ UPrimitiveComponent::~UPrimitiveComponent()
 {
 }
 
+void UPrimitiveComponent::BeginPlay()
+{
+}
 void UPrimitiveComponent::InitializeComponent()
 {
-     Super::InitializeComponent();
+    Super::InitializeComponent();
 }
+
 
 void UPrimitiveComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
+}
+void UPrimitiveComponent::OnRegister()
+{
+    Super::OnRegister();
+    OnCreatePhysicsState();
+
 }
 
 int UPrimitiveComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
@@ -73,7 +89,7 @@ int UPrimitiveComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDi
 }
 
 bool UPrimitiveComponent::IntersectRayTriangle(const FVector& rayOrigin, const FVector& rayDirection, const FVector& v0, const FVector& v1,
-                                               const FVector& v2, float& hitDistance)
+    const FVector& v2, float& hitDistance)
 {
     const float epsilon = 1e-6f;
     FVector edge1 = v1 - v0;
@@ -149,18 +165,22 @@ void UPrimitiveComponent::NotifyEndOverlap(const UPrimitiveComponent* OtherCompo
 bool UPrimitiveComponent::MoveComponent(const FVector& Delta)
 {
     if (!GetOwner()) return false;
-    
+
     FVector NewLocation = GetOwner()->GetActorLocation() + Delta;
     GetOwner()->SetActorLocation(NewLocation);
 
     return true;
 }
 
+void UPrimitiveComponent::OnCreatePhysicsState()
+{
+}
+
 std::unique_ptr<FActorComponentInfo> UPrimitiveComponent::GetComponentInfo()
 {
     auto Info = std::make_unique<FPrimitiveComponentInfo>();
     SaveComponentInfo(*Info);
-    
+
     return Info;
 }
 
@@ -170,7 +190,7 @@ void UPrimitiveComponent::SaveComponentInfo(FActorComponentInfo& OutInfo)
     Super::SaveComponentInfo(*Info);
     Info->ComponentVelocity = ComponentVelocity;
     Info->VBIBTopologyMappingName = VBIBTopologyMappingName;
-    
+
 }
 
 void UPrimitiveComponent::LoadAndConstruct(const FActorComponentInfo& Info)

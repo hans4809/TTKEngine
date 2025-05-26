@@ -1,5 +1,6 @@
 #include "NameTypes.h"
 
+#include <cassert>
 #include <atomic>
 #include <cwchar>
 #include <mutex>
@@ -331,9 +332,11 @@ private:
 
 public:
     /** Hash로 원본 문자열을 가져옵니다. */
-    FNameEntry Resolve(uint32 Hash) const
+   const FNameEntry& Resolve(uint32 Hash) const
     {
-        return *DisplayPool.Find(Hash);
+       const FNameEntry* Entry = DisplayPool.Find(Hash);
+       assert(Entry);
+       return *Entry;
     }
 
     /**
@@ -397,6 +400,9 @@ struct FNameHelper
         FName Result;
         Result.DisplayIndex = DisplayId.Value;
         Result.ComparisonIndex = ResolveComparisonId(DisplayId).Value;
+#if defined(_DEBUG)
+        Result.DebugEntryPtr = &FNamePool::Get().Resolve(DisplayId.Value);
+#endif
         return Result;
     }
 

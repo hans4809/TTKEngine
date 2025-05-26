@@ -16,6 +16,7 @@
 #include "UnrealEd/UnrealEd.h"
 #include "UObject/Casts.h"
 
+
 FGraphicsDevice FEngineLoop::GraphicDevice;
 FRenderer FEngineLoop::Renderer;
 FResourceManager FEngineLoop::ResourceManager;

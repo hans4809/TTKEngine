@@ -73,8 +73,8 @@ void ULightComponentBase::LoadAndConstruct(const FActorComponentInfo& Info)
 
 void ULightComponentBase::InitializeLight()
 {
-    AABB.max = { 1.f,1.f,0.1f };
-    AABB.min = { -1.f,-1.f,-0.1f };
+    AABB.Max = { 1.f,1.f,0.1f };
+    AABB.Min = { -1.f,-1.f,-0.1f };
 }
 
 void ULightComponentBase::TickComponent(float DeltaTime)

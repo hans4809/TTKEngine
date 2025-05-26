@@ -119,3 +119,6 @@ inline ANSICHAR* ConvertWcharToAnsi(const WCHAR* WideStr)
 // 임시로 사용
 #include <string>
 using FWString = std::wstring;
+
+// Prefetch
+#define PLATFORM_CACHE_LINE_SIZE	64

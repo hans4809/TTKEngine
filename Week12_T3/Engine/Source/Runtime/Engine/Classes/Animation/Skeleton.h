@@ -1,6 +1,7 @@
 #pragma once
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
+#include "Skeletal/SkeletalDefine.h"
 
 struct FRefSkeletal;
 class USkeleton : public UObject
@@ -9,9 +10,8 @@ class USkeleton : public UObject
 public:
     USkeleton() = default;
     
-    FRefSkeletal* GetRefSkeletal() const { return RefSkeletal; }
-    void SetRefSkeletal(FRefSkeletal* InRefSkeletal) { RefSkeletal = InRefSkeletal; }
+    FRefSkeletal& GetRefSkeletal() { return RefSkeletal; }
+    void SetRefSkeletal(const FRefSkeletal& InRefSkeletal) { RefSkeletal = InRefSkeletal; }
 private:
-    // FIXING 전방선언 -> 값
-    FRefSkeletal* RefSkeletal;
+    FRefSkeletal RefSkeletal;
 };

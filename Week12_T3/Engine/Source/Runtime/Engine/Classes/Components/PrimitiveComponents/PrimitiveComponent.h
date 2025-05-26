@@ -3,7 +3,7 @@
 #include "Serialization/Archive.h"
 
 struct HitResult;
-
+class FBodyInstance;
 struct FPrimitiveComponentInfo : FSceneComponentInfo
 {
     DECLARE_ACTORCOMPONENT_INFO(FPrimitiveComponentInfo);
@@ -39,14 +39,18 @@ class UPrimitiveComponent : public USceneComponent
 public:
     UPrimitiveComponent();
     virtual ~UPrimitiveComponent() override;
-
+    virtual void BeginPlay() override;
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
+    virtual void OnRegister() override;
+    
+
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance);
     bool IntersectRayTriangle(
         const FVector& rayOrigin, const FVector& rayDirection,
         const FVector& v0, const FVector& v1, const FVector& v2, float& hitDistance
     );
+
     virtual UObject* Duplicate(UObject* InOuter) override;
     virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
@@ -61,9 +65,11 @@ public:
 
     bool MoveComponent(const FVector& Delta) override;
     FVector ComponentVelocity;
-
+  
+    virtual void OnCreatePhysicsState();
+    FBodyInstance* GetBodyInstance() { return BodyInstance; }
 public:
-    
+
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;
     virtual void LoadAndConstruct(const FActorComponentInfo& Info);
@@ -71,6 +77,7 @@ public:
     FName GetVBIBTopologyMappingName() const { return VBIBTopologyMappingName; }
 protected:
     FName VBIBTopologyMappingName;
+    FBodyInstance* BodyInstance = nullptr;
 
 private:
     bool bGenerateOverlapEvents = true;
