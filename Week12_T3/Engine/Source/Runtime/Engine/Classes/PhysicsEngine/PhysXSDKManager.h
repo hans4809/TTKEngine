@@ -11,7 +11,9 @@
 namespace physx
 {
     class PxPvdTransport;
+    class PxCooking;
 };
+class UPhysicalMaterial;
 class FPhysXSDKManager
 {
 public:
@@ -28,8 +30,10 @@ public:
         static FPhysXSDKManager Inst;
         return Inst;
     }
+    UPhysicalMaterial* GetDefaultMaterial();
     bool Initalize();
     void Shutdown();
+    physx::PxCooking* GetCooking() const { return PxCookingInstance; }
     physx::PxPhysics* GetPhysicsSDK();
 public:
     physx::PxDefaultAllocator DefaultAllocatorCallback;
@@ -38,7 +42,10 @@ public:
     physx::PxPvdTransport* Transport;
     physx::PxFoundation* PxFoundationInstance;
     physx::PxPhysics* PxSDKInstance;
+
+    physx::PxCooking* PxCookingInstance;
 private:
-    bool bIsInitalized = false;
+    bool bIsInitialized = false;
+    UPhysicalMaterial* DefaultPhysicalMaterial = nullptr;
 };
 

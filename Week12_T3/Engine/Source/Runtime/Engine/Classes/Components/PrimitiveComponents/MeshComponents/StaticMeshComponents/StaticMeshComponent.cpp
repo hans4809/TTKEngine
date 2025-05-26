@@ -13,6 +13,11 @@
 #include "PhysicsEngine/PhysicsMaterial.h"
 #include "PhysicsEngine/PhysScene_PhysX.h"
 
+#include "Physics/BodySetup/BodySetup.h"
+#include <PxRigidActor.h>
+#include <PxScene.h>
+
+
 uint32 UStaticMeshComponent::GetNumMaterials() const
 {
     if (staticMesh == nullptr) return 0;
@@ -28,7 +33,7 @@ UMaterial* UStaticMeshComponent::GetMaterial(uint32 ElementIndex) const
         {
             return OverrideMaterials[ElementIndex];
         }
-    
+
         if (staticMesh->GetMaterials().IsValidIndex(ElementIndex))
         {
             return staticMesh->GetMaterials()[ElementIndex]->Material;
@@ -121,7 +126,7 @@ int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayD
 
 
 void UStaticMeshComponent::SetStaticMesh(UStaticMesh* value)
-{ 
+{
     staticMesh = value;
     OverrideMaterials.SetNum(value->GetMaterials().Num());
     AABB = FBoundingBox(staticMesh->GetRenderData()->BoundingBoxMin, staticMesh->GetRenderData()->BoundingBoxMax);
@@ -132,7 +137,7 @@ std::unique_ptr<FActorComponentInfo> UStaticMeshComponent::GetComponentInfo()
 {
     auto Info = std::make_unique<FStaticMeshComponentInfo>();
     SaveComponentInfo(*Info);
-    
+
     return Info;
 }
 
@@ -173,23 +178,97 @@ void UStaticMeshComponent::TickComponent(float DeltaTime)
     //SetLocation(GetWorldLocation()+ (FVector(1.0f,1.0f, 1.0f) * sin(Timer)));
 }
 
+void UStaticMeshComponent::DestroyPhysicsState()
+{
+    physx::PxScene* CurrentScene = BodyInstance.GetPxRigidActor()->getScene();
+    if (CurrentScene)
+    {
+        physx::PxRigidActor* RigidActor = BodyInstance.GetPxRigidActor();
+        CurrentScene->removeActor(*RigidActor);
+    }
+    BodyInstance.ReleasePhysicsState();
+}
 void UStaticMeshComponent::OnCreatePhysicsState()
 {
     //임시 테스트 용 ---
     FTransform ShapeLocalPose = FTransform::Identity;
 
-    BodyInstance = new FBodyInstance();
-    BodyInstance->Initialize(this, FPhysXSDKManager::GetInstance().GetPhysicsSDK());
-    BodyInstance->CreatePhysicsState(FTransform::Identity, EPhysBodyType::Dynamic);
+    BodyInstance.Initialize(this, FPhysXSDKManager::GetInstance().GetPhysicsSDK());
+
+    FTransform ComponentWorldTransform = GetWorldTransform();
+
+
     UPhysicalMaterial* MyMaterial = new UPhysicalMaterial(FPhysXSDKManager::GetInstance().GetPhysicsSDK(), 1, 1, 1);
 
-    BodyInstance->AddBoxGeometry(FVector(.5f, .5f, .5f), MyMaterial, ShapeLocalPose);
-    
-    AActor* Owner = GetOwner();
-    
-    if (!Owner) return;
-    
-    FPhysScene* PhysScene = Owner->GetWorld()->GetPhysicsScene();
-    BodyInstance->AddObject(PhysScene);
+    bool bActorCreated = BodyInstance.CreatePhysicsState(GetWorldTransform(), BodyType);
 
-} 
+    if (!bActorCreated || !BodyInstance.IsPhysicsStateCreated())
+    {
+        UE_LOG(LogLevel::Error, TEXT("OnCreatePhysicsState: Failed to create PxActor for %s"), *GetName());
+        return;
+    }
+
+    if (!staticMesh)
+    {
+        return;
+    }
+
+    UBodySetup* Setup = staticMesh->GetBodySetup();
+
+    if (Setup)
+    {
+        UPhysicalMaterial* PhysMat = GetPhysicalMaterial();
+
+
+        physx::PxMaterial* PxMat = PhysMat->GetPxMaterial();
+
+        if (!PxMat)
+            PxMat = FPhysXSDKManager::GetInstance().GetDefaultMaterial()->GetPxMaterial();
+
+        switch (ShapeType)
+        {
+        case EPhysBodyShapeType::Sphere :
+        {
+            for (const FKSphereElem& Elem : Setup->AggGeom.SphereElems)
+            {
+                BodyInstance.AddSphereGeometry(Elem.Radius, MyMaterial, ShapeLocalPose);
+            }
+        }
+        break;
+        case EPhysBodyShapeType::Box:
+        {
+            for (const FKBoxElem& Elem : Setup->AggGeom.BoxElems)
+            {
+                FVector HalfExtents(Elem.X * 0.5f, Elem.Y * 0.5f, Elem.Z * 0.5f);
+                BodyInstance.AddBoxGeometry(HalfExtents, MyMaterial, ShapeLocalPose);
+            }
+        }
+        break;
+        case EPhysBodyShapeType::Sphyl:
+        {
+            for (const FKSphylElem& Elem : Setup->AggGeom.SphylElems)
+            {
+                float Radius = Elem.Radius; // Sphyl의 반지름
+                float HalfHeight = Elem.Length * 0.5f;
+                BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, MyMaterial, ShapeLocalPose);
+            }
+        }
+        break;
+        default:
+            break;
+        }
+        // 5. Dynamic 바디의 경우 질량 및 관성 설정
+        if (BodyType != EPhysBodyType::Static)
+        {
+            BodyInstance.UpdateMassAndInertia(Setup->CalculateMass(this));
+        }
+    }
+
+    AActor* Owner = GetOwner();
+
+    if (!Owner) return;
+
+    FPhysScene* PhysScene = Owner->GetWorld()->GetPhysicsScene();
+    BodyInstance.AddObject(PhysScene);
+
+}

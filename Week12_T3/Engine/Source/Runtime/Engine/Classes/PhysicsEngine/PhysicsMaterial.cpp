@@ -27,8 +27,8 @@ UPhysicalMaterial::~UPhysicalMaterial()
 }
 
 float UPhysicalMaterial::GetStaticFriction() const
-{ 
-    return PxMaterialInstance ? PxMaterialInstance->getStaticFriction() : 0.0f;
+{
+    return StaticFriction;
 }
 
 void UPhysicalMaterial::SetStaticFriction(float NewValue)
@@ -37,11 +37,12 @@ void UPhysicalMaterial::SetStaticFriction(float NewValue)
     {
         PxMaterialInstance->setStaticFriction(NewValue);
     }
+    StaticFriction = NewValue;
 }
 
 float UPhysicalMaterial::GetDynamicFriction() const
 {
-    return PxMaterialInstance ? PxMaterialInstance->getDynamicFriction() : 0.0f;
+    return DynamicFriction;
 }
 
 void UPhysicalMaterial::SetDynamicFriction(float NewValue)
@@ -50,11 +51,12 @@ void UPhysicalMaterial::SetDynamicFriction(float NewValue)
     {
         PxMaterialInstance->setDynamicFriction(NewValue);
     }
+    DynamicFriction = NewValue;
 }
 
 float UPhysicalMaterial::GetRestitution() const
 {
-    return PxMaterialInstance ? PxMaterialInstance->getRestitution() : 0.0f;
+    return Restitution;
 }
 
 void UPhysicalMaterial::SetRestitution(float NewValue)
@@ -63,4 +65,6 @@ void UPhysicalMaterial::SetRestitution(float NewValue)
     {
         PxMaterialInstance->setRestitution(NewValue);
     }
+    Restitution = NewValue;
+
 }

@@ -1,4 +1,5 @@
 #include "BodySetup.h"
+#include "PhysicsEngine/PhysXSDKManager.h"
 
 UBodySetup::UBodySetup()
 {
@@ -81,8 +82,23 @@ bool UBodySetup::AddCollisionElemFrom(const FKAggregateGeom& FromAggGeom, const 
     return false;
 }
 
-void UBodySetup::CreatePhysicsMeshes()
+void UBodySetup::InvalidatePhysicsData()
 {
+    //For ConvexElems
+//    for (FKConvexElem& Convex : AggGeom.ConvexElems)
+//    {
+//       // Convex.ResetChaosConvexMesh();  // ConvexElem 내부 리소스 해제
+//    }
+}
+
+void UBodySetup::CreatePhysicsMeshes()
+{ 
+    //For ConvexElems
+  /*  physx::PxCooking* Cooking = FPhysXSDKManager::GetInstance().GetCooking();
+    if (Cooking)
+    {
+      
+    }*/
 }
 
 float UBodySetup::GetVolume(const FVector& Scale) const

@@ -9,7 +9,7 @@ class UClass;
 class AActor;
 class UActorComponent;
 class FFunctionRegistry;
-
+class FProperty;
 // for sol2 typing
 namespace SolTypeBinding
 {
@@ -104,6 +104,8 @@ public:
 
     virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) {} // 하위 클래스에서 override
     virtual void PostDuplicate() {};
+
+    virtual void PostEditChangeProperty(const FProperty* PropertyThatChanged) {};
 private:
     friend class FObjectFactory;
     friend class FSceneMgr;
