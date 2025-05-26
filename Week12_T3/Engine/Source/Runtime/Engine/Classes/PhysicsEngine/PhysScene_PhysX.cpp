@@ -39,7 +39,7 @@ bool FPhysScene_PhysX::Initialize()
 
     physx::PxSceneDesc sceneDesc(PxSDK->getTolerancesScale());
 
-    sceneDesc.gravity = physx::PxVec3(0.0f, 0.f, -9.8f);
+    sceneDesc.gravity = physx::PxVec3(0.0f, 0.f, -0.18f);
 
     unsigned int numCores = std::thread::hardware_concurrency();
 
@@ -52,7 +52,7 @@ bool FPhysScene_PhysX::Initialize()
     }
     sceneDesc.cpuDispatcher = CpuDispatcher;
 
-  
+
     // 이벤트 콜백 설정
     EventCallback = new FSimulationEventCallback(this);
 
@@ -168,7 +168,8 @@ void FPhysScene_PhysX::RemoveObject(FBodyInstance* BodyInstance)
 
 void FPhysScene_PhysX::Simulate(float DeltaTime)
 {
-    PxSceneInstance->simulate(1.0f / 60.f);
+    if (DeltaTime < 0) return;
+    PxSceneInstance->simulate(DeltaTime);
     PxSceneInstance->fetchResults(true); //블로킹 방식으로 결과 가져오기
 }
 
@@ -205,4 +206,15 @@ void FPhysScene_PhysX::SetGravity(const FVector& NewGravity)
     {
         UE_LOG(LogLevel::Warning, TEXT("FPhysScene_PhysX::SetGravity: PxSceneInstance is null."));
     }
+}
+
+physx::PxU32 FPhysScene_PhysX::GetNbActors(physx::PxActorTypeFlags Flags) const
+{
+    // PhysX PxScene 객체의 getNbActors 호출
+    return PxSceneInstance->getNbActors(Flags);
+}
+
+void FPhysScene_PhysX::GetActors(physx::PxActorTypeFlags Flags, physx::PxActor** OutActors, physx::PxU32 MaxCount) const
+{
+    PxSceneInstance->getActors(Flags, OutActors, MaxCount);
 }

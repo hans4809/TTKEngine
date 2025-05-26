@@ -24,7 +24,7 @@ public:
     void SetRestitution(float NewValue);
 
 private:
-    physx::PxPhysics* OwningPxPhysicsSDK;
-    physx::PxMaterial* PxMaterialInstance;
+    physx::PxPhysics* OwningPxPhysicsSDK = nullptr;
+    physx::PxMaterial* PxMaterialInstance = nullptr;
 };
 

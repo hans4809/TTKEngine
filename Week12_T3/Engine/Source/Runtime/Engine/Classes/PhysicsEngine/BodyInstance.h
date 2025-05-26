@@ -23,19 +23,19 @@ enum class EPhysBodyType
     Dynamic,
     Kinematic
 };
-
+class FPhysScene;
 class FBodyInstance
 {
 public:
-    FBodyInstance(UPrimitiveComponent* InOwnerComponent, physx::PxPhysics* InPxPhysicsSDK);
+    FBodyInstance();
     ~FBodyInstance();
 public:
-
+    void Initialize(UPrimitiveComponent* InOwnerComponent, physx::PxPhysics* InPxPhysicsSDK);
    //UPROPERTY(VisibleAnywhere, USceneComponent*, RootComponent, = nullptr)
     bool CreatePhysicsState(const FTransform& InitialTransform, EPhysBodyType BodyType);
    
     void ReleasePhysicsState();
-    
+    void AddObject(FPhysScene* PhysScene);
     physx::PxShape* AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
     physx::PxShape* AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
     physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
@@ -48,8 +48,11 @@ public:
     void UpdateMassAndInertia(float DensityOrMass, const FVector* MassLocalPose = nullptr);
 
     void SetLinearVelocity(const FVector& Velocity);
+    
     FVector GetLinearVelocity() const;
+    
     void SetAngularVelocity(const FVector& AngVelocity);
+    
     FVector GetAngularVelocity() const;
 
     void AddForce(const FVector& Force, bool bWakeUp = true);

@@ -2,6 +2,7 @@
 
 #include "BodyInstance.h"
 #include "PhysicsMaterial.h"
+#include "PhysScene_PhysX.h"
 #include "Components/PrimitiveComponents/PrimitiveComponent.h"
 #include <PxPhysicsAPI.h> 
 #include <PxRigidDynamic.h>
@@ -12,13 +13,17 @@
 #include <geometry/PxCapsuleGeometry.h>
 #include <extensions/PxRigidBodyExt.h>
 
-FBodyInstance::FBodyInstance(UPrimitiveComponent* InOwnerComponent, physx::PxPhysics* InPxPhysicsSDK)
-    : OwnerComponent(InOwnerComponent)
-    , PxPhysicsSDK(InPxPhysicsSDK)
+FBodyInstance::FBodyInstance()
+    : OwnerComponent(nullptr)
+    , PxPhysicsSDK(nullptr)
     , PxActor(nullptr)
     , CurrentBodyType(EPhysBodyType::Static)
 {
-    // OwnerComponent와 PxPhysicsSDK는 유효해야 함
+}
+void FBodyInstance::Initialize(UPrimitiveComponent* InOwnerComponent, physx::PxPhysics* InPxPhysicsSDK)
+{
+    OwnerComponent = InOwnerComponent;
+    PxPhysicsSDK = InPxPhysicsSDK;
     assert(OwnerComponent != nullptr && "OwnerComponent cannot be null in FBodyInstance constructor");
     assert(PxPhysicsSDK != nullptr && "PxPhysicsSDK cannot be null in FBodyInstance constructor");
 }
@@ -37,18 +42,18 @@ bool FBodyInstance::CreatePhysicsState(const FTransform& InitialTransform, EPhys
 
     physx::PxTransform InitialPxTransform = InitialTransform.ToPxTransform();
 
-    if (CurrentBodyType == EPhysBodyType::Static)
-    {
-        PxActor = PxPhysicsSDK->createRigidStatic(InitialPxTransform);
-    }
-    else
+    //if (CurrentBodyType == EPhysBodyType::Static)
+    //{
+    //    PxActor = PxPhysicsSDK->createRigidStatic(InitialPxTransform);
+    //}
+    //else
     {
         // Dynamic 또는 Kinematic
         PxActor = PxPhysicsSDK->createRigidDynamic(InitialPxTransform);
-        if (PxActor && CurrentBodyType == EPhysBodyType::Kinematic)
+    /*    if (PxActor && CurrentBodyType == EPhysBodyType::Kinematic)
         {
             static_cast<physx::PxRigidDynamic*>(PxActor)->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
-        }
+        }*/
     }
 
     if (!PxActor)
@@ -60,7 +65,7 @@ bool FBodyInstance::CreatePhysicsState(const FTransform& InitialTransform, EPhys
     // userData 설정: PhysX 콜백 등에서 이 FBodyInstance 또는 OwnerComponent를 다시 찾아올 수 있도록 함
     PxActor->userData = this;
 
-    return false;
+    return true;
 }
 
 void FBodyInstance::ReleasePhysicsState()
@@ -72,24 +77,31 @@ void FBodyInstance::ReleasePhysicsState()
     }
 }
 
+void FBodyInstance::AddObject(FPhysScene* PhysScene)
+{
+    PhysScene->AddObject(this);
+}
 physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose)
 {
     if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
     {
-
         UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxActor, SDK, Material, or PxMaterial."));
         return nullptr;
     }
 
     physx::PxBoxGeometry BoxGeom(HalfExtents.ToPxVec3());
-
-    // 셰이프 생성 시 PxShapeFlag::eEXCLUSIVE_SHAPE (true)를 사용하면 액터 해제 시 같이 해제됨
-    physx::PxShape* NewShape = PxPhysicsSDK->createShape(BoxGeom, *(Material->GetPxMaterial()), true);
-
+    physx::PxShapeFlags shapeFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSIMULATION_SHAPE);
+    physx::PxShape* NewShape = PxPhysicsSDK->createShape(BoxGeom, *Material->GetPxMaterial(), true, shapeFlags);
+    
     if (NewShape)
     {
         NewShape->setLocalPose(LocalPose.ToPxTransform());
+        physx::PxFilterData filterData;
+        filterData.word0 = 1;   // 예: 그룹 1
+        filterData.word1 = 0xFFFFFFFF; // 모든 그룹과 충돌
+        NewShape->setSimulationFilterData(filterData);
         PxActor->attachShape(*NewShape);
+        UpdateMassAndInertia(10);
     }
     else
     {
@@ -100,7 +112,31 @@ physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysi
 
 physx::PxShape* FBodyInstance::AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& LocalPose)
 {
-    return nullptr;
+    if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
+    {
+        UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxActor, SDK, Material, or PxMaterial."));
+        return nullptr;
+    }
+
+    physx::PxSphereGeometry SphereGeom(Radius);
+    physx::PxShapeFlags shapeFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSIMULATION_SHAPE);
+    physx::PxShape* NewShape = PxPhysicsSDK->createShape(SphereGeom, *Material->GetPxMaterial(), true, shapeFlags);
+
+    if (NewShape)
+    {
+        NewShape->setLocalPose(LocalPose.ToPxTransform());
+        physx::PxFilterData filterData;
+        filterData.word0 = 1;   // 예: 그룹 1
+        filterData.word1 = 0xFFFFFFFF; // 모든 그룹과 충돌
+        NewShape->setSimulationFilterData(filterData);
+        PxActor->attachShape(*NewShape);
+        UpdateMassAndInertia(10);
+    }
+    else
+    {
+        UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: PxShape creation failed."));
+    }
+    return NewShape;
 }
 
 physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& LocalPose)
@@ -118,6 +154,19 @@ void FBodyInstance::SetMass(float Mass)
 
 void FBodyInstance::UpdateMassAndInertia(float DensityOrMass, const FVector* MassLocalPose)
 {
+    if (PxActor && CurrentBodyType == EPhysBodyType::Dynamic)
+    {
+        physx::PxRigidDynamic* DynActor = static_cast<physx::PxRigidDynamic*>(PxActor);
+        if (DynActor)
+        {
+            // 밀도를 사용하여 질량과 관성 업데이트
+            physx::PxRigidBodyExt::updateMassAndInertia(*DynActor, DensityOrMass);
+
+            // 또는 고정 질량을 사용한다면 (그리고 관성 텐서를 수동으로 계산하거나 기본값 사용)
+            // DynActor->setMass(DensityOrMass); 
+            // PxRigidBodyExt::setMassAndUpdateInertia(*DynActor, DensityOrMass); // 질량을 설정하고 관성도 업데이트
+        }
+    }
 }
 
 void FBodyInstance::SetLinearVelocity(const FVector& Velocity)

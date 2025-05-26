@@ -18,6 +18,10 @@ class USceneComponent;
 class UTransformGizmo;
 class USkeletalMesh;
 class FPhysScene;
+namespace physx
+{
+    class PxActor;
+}
 class UWorld : public UObject
 {
     DECLARE_CLASS(UWorld, UObject)
@@ -30,6 +34,8 @@ public:
     void PreLoadResources();
     void CreateBaseObject(EWorldType::Type WorldType);
     void ReleaseBaseObject();
+    void SyncPhysicsActor(physx::PxActor* PActor);
+    void SyncPhysicsActors();
     void Tick(ELevelTick tickType, float deltaSeconds);
 
     bool InitializePhysicsScene(); // 물리 씬 초기화
@@ -126,7 +132,7 @@ T* UWorld::SpawnActor()
     T* Actor = FObjectFactory::ConstructObject<T>(this);
     // TODO: 일단 AddComponent에서 Component마다 초기화
     // 추후에 RegisterComponent() 만들어지면 주석 해제
-    // Actor->InitializeComponents();
+    Actor->InitializeComponents();
     
     Level->GetActors().Add(Actor);
     Level->PendingBeginPlayActors.Add(Actor);

@@ -34,7 +34,11 @@ public:
 
     virtual void SetGravity(const FVector& NewGravity);
 
+    virtual physx::PxU32 GetNbActors(physx::PxActorTypeFlags Flags) const override;
+
+    virtual void GetActors(physx::PxActorTypeFlags Flags, physx::PxActor** OutActors, physx::PxU32 MaxCount) const override;
 private:
+
     physx::PxPhysics* PxSDK; // PxScene 생성에 사용된 SDK
 
     physx::PxPvd* Pvd;

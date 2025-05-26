@@ -4,7 +4,7 @@
 #include <PxMaterial.h>
 
 UPhysicalMaterial::UPhysicalMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution)
-    :OwningPxPhysicsSDK(InPxPhysicsSDK), PxMaterialInstance(nullptr)
+    :OwningPxPhysicsSDK(InPxPhysicsSDK)
 {
     if (OwningPxPhysicsSDK)
     {
