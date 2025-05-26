@@ -84,12 +84,14 @@ void FDepthOfFieldRenderPass::UpdateConstantBuffer(const std::shared_ptr<FEditor
     FRenderResourceManager* renderResourceManager = FEngineLoop::Renderer.GetResourceManager();
     
     FDepthOfFieldConstants Params;
-    Params.FocalLength = PostProcessVolumes[0]->PostProcess.FocalLength;
     Params.Aperture = PostProcessVolumes[0]->PostProcess.Aperture;
     Params.FocusDistance = PostProcessVolumes[0]->PostProcess.FocusDistance;
     Params.SensorWidth = PostProcessVolumes[0]->PostProcess.SensorWidth;
     Params.MaxCoCRadius = PostProcessVolumes[0]->PostProcess.MaxCoCRadius;
     Params.SampleCount = PostProcessVolumes[0]->PostProcess.SampleCount;
+
+    float CalcFocal = (PostProcessVolumes[0]->PostProcess.SensorWidth * 0.5) / tanf(InViewportClient->GetViewFOV() * (PI/180.0f) * 0.5f);
+    Params.FocalLength = CalcFocal;
     
     float ShowFlag = InViewportClient->GetViewMode() == EViewModeIndex::VMI_DepthOfField ? 1.0f : 0.0f;
     Params.UserData = FVector2D { ShowFlag, 0.0f };

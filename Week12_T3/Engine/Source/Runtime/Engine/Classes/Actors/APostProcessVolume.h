@@ -6,7 +6,6 @@ struct PostProcessSettings
     DECLARE_STRUCT(PostProcessSettings);
 
     // Depth of field
-    UPROPERTY(EPropertyFlags::EditAnywhere, float, FocalLength, = 35.0f)
     UPROPERTY(EPropertyFlags::EditAnywhere, float, FocusDistance, = 1000.0f)
     UPROPERTY(EPropertyFlags::EditAnywhere, float, SensorWidth, = 36.0f)
     UPROPERTY(EPropertyFlags::EditAnywhere, float, Aperture, = 1.2f)

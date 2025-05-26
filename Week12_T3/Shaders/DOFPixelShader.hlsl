@@ -35,13 +35,35 @@ cbuffer FFogCameraConstant : register(b2)
     float FarPlane;
 };
 
-float CalculateCircleOfConfusion(float Depth)
+float CalculateCircleOfConfusion(float Depth) // Depth는 LinearDepth (미터 단위로 가정)
 {
-    float Numerator  = abs(Depth - FocusDistance) / Depth;
-    float LensFactor = (FocalLength * FocalLength) / (Aperture * (FocusDistance - FocalLength));
-    float SensorNorm = 1.0 / SensorWidth;
-    float RawCoC     = Numerator * LensFactor * SensorNorm;
-    return clamp(RawCoC, 0.0, MaxCoCRadius);
+    if (Depth <= 0.0001f) // 물체가 카메라 위치 또는 그 뒤, 혹은 극도로 가까울 때
+    {
+        return (abs(Depth - FocusDistance) < 0.0001f) ? 0.0f : 0.0f;
+    }
+    if (FocalLength <= 0.0f || Aperture <= 0.0f || SensorWidth <= 0.0f)
+    {
+        return 0.0f;
+    }
+
+    // 초점 거리가 렌즈의 초점 길이(FocalLength)와 같거나 더 가까운 경우.
+    float focusMinusFocal = FocusDistance - FocalLength;
+    if (focusMinusFocal <= 0.00001f)
+    {
+        if (abs(Depth - FocusDistance) < 0.0001f)
+        {
+            return 0.0f;
+        }
+        if (focusMinusFocal <= 0.0f) return MaxCoCRadius;
+    }
+    
+    float Numerator = abs(Depth - FocusDistance) / Depth;
+    float LensFactor = (FocalLength * FocalLength) / (Aperture * focusMinusFocal);
+    float SensorFactor = 1.0 / SensorWidth;
+    float RawCoC_NormalizedDiameter = Numerator * LensFactor * SensorFactor;
+    float CoC_PixelRadius = RawCoC_NormalizedDiameter * ScreenSize.x * 0.5f;
+    
+    return clamp(CoC_PixelRadius, 0.0, MaxCoCRadius);
 }
 
 struct VS_OUT
