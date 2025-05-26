@@ -46,7 +46,7 @@ public:
     /** 현재 Actor가 제거중인지 여부를 반환합니다. */
     bool IsActorBeingDestroyed() const
     {
-        return bActorIsBeingDestroyed;
+        return bActorIsBeingDestroyed == 1;
     }
 
     /**

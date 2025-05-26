@@ -134,10 +134,15 @@ void UWorld::SyncPhysicsActor(physx::PxActor* PActor)
             FQuat   Rotation = FQuat::PToFQuat(PxT.q);
 
             AActor* Actor = OwnerComp->GetOwner();
-            if (Actor)
+            if (Actor && !Actor->IsActorBeingDestroyed())
             {
                 Actor->SetActorLocation(Location);
                 Actor->SetActorRotation(Rotation.Rotator());
+            }
+            else
+            {
+                CurrentPhysicsScene->RemoveObject(BodyInst);
+                Actor = nullptr;
             }
         }
     }
