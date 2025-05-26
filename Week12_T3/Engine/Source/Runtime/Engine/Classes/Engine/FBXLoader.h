@@ -23,9 +23,9 @@ public:
     static FSkeletalMeshRenderData GetCopiedSkeletalRenderData(const FString& FilePath);
     static TMap<FName, FSkeletalMeshRenderData*> GetAllSkeletalMeshData() { return SkeletalMeshData; }
     
-    static FRefSkeletal* GetRefSkeletal(FString FilePath);
+    static FRefSkeletal GetRefSkeletal(FString FilePath);
     static FSkeletalMeshRenderData* ParseBin(FString FilePath);
-    static TMap<FName, FRefSkeletal*> GetAllRefSkeletal() { return RefSkeletalData; }
+    static TMap<FName, FRefSkeletal> GetAllRefSkeletal() { return RefSkeletalData; }
 
     static TMap<FName, UAnimDataModel*> GetAllAnimData() { return AnimDataMap; }
     static UAnimDataModel* GetAnimData(const FString& FilePath);
@@ -33,19 +33,19 @@ public:
     static void UpdateBoundingBox(FSkeletalMeshRenderData& MeshData);
 private:
     // Skeletal
-    static void ExtractFBXMeshData(const FbxScene* Scene, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal);
-    static void ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal);
-    static void ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal);
-    static void ExtractVertices(FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal);
+    static void ExtractFBXMeshData(const FbxScene* Scene, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal);
+    static void ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal);
+    static void ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal);
+    static void ExtractVertices(FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal);
     static void ExtractNormal(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex);
     static void ExtractUV(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex);
     static void ExtractTangent(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex);
-    static void ExtractSkinningData(FbxMesh* Mesh, FRefSkeletal* RefSkeletal);
+    static void ExtractSkinningData(FbxMesh* Mesh, FRefSkeletal& OutRefSkeletal);
     static void StoreWeights(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex);
     static void StoreVertex(FSkeletalVertex& vertex, FSkeletalMeshRenderData* MeshData);
-    static void ProcessSkinning(FbxSkin* skin, FSkeletalMeshRenderData* mesh_data, FRefSkeletal* RefSkeletal, int base_vertex_index);
+    static void ProcessSkinning(FbxSkin* skin, FSkeletalMeshRenderData* mesh_data, FRefSkeletal& OutRefSkeletal, int base_vertex_index);
     static void ExtractIndices(FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, int BaseVertexIndex);
-    static void ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal, int BaseIndexOffset);
+    static void ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal, int BaseIndexOffset);
     
     static FObjMaterialInfo ConvertFbxToObjMaterialInfo(FbxSurfaceMaterial* FbxMat, const FString& BasePath = TEXT(""));
     static FSkeletalVertex& GetVertexFromControlPoint(FbxMesh* Mesh, int PolygonIndex, int VertexIndex);
@@ -63,7 +63,7 @@ private:
 
     inline static TMap<FName, FSkeletalMeshRenderData*> SkeletalMeshData;
     inline static TMap<FString, USkeletalMesh*> SkeletalMeshMap;
-    inline static TMap<FName, FRefSkeletal*> RefSkeletalData;
+    inline static TMap<FName, FRefSkeletal> RefSkeletalData;
     inline static TMap<FName, UAnimDataModel*> AnimDataMap;
 
     // data structure for parsing

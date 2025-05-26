@@ -109,8 +109,8 @@ void UBoxShapeComponent::UpdateBroadAABB()
         Max.Z = FMath::Max(Max.Z, WorldCorner.Z);
     }
 
-    BroadAABB.min = Center + Min;
-    BroadAABB.max = Center + Max;
+    BroadAABB.Min = Center + Min;
+    BroadAABB.Max = Center + Max;
 }
 
 bool UBoxShapeComponent::TestOverlaps(const UShapeComponent* OtherShape) const

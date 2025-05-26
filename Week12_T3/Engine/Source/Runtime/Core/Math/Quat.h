@@ -1,5 +1,6 @@
 #pragma once
 #include "Matrix.h"
+#include "Container/String.h"
 #include "Serialization/Archive.h"
 
 #include <PxQuat.h>
@@ -7,7 +8,7 @@
 // 쿼터니언
 struct FQuat
 {
-    float W, X, Y, Z;
+    float X, Y, Z, W;
 
     // 기본 생성자
     explicit FQuat()
@@ -74,6 +75,10 @@ struct FQuat
     {
         return physx::PxQuat(X, Y, Z, W);
     }
+
+    FString ToString() const;
+
+    bool operator==(const FQuat& Other) const;
 };
 
 inline const FQuat FQuat::Identity = FQuat(1.0f, 0.0f, 0.0f, 0.0f);

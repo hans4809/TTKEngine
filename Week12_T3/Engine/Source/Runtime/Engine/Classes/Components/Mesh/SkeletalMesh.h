@@ -4,6 +4,7 @@
 #include "UObject/ObjectMacros.h"
 
 class USkeleton;
+struct FMaterialSlot;
 
 class USkeletalMesh : public UObject
 {
@@ -17,7 +18,7 @@ public:
 
     FSkeletalMeshRenderData& GetRenderData() { return SkeletalMeshRenderData; }
     USkeleton* GetSkeleton() const { return Skeleton;}
-    const TArray<FMaterialSlot*>& GetMaterials() const { return MaterialSlots; }
+    const TArray<FMaterialSlot>& GetMaterials() const { return MaterialSlots; }
     uint32 GetMaterialIndex(FName MaterialSlotName) const;
     void GetUsedMaterials(TArray<UMaterial*>& Out) const;
     
@@ -38,8 +39,8 @@ public:
 private:
     
     FSkeletalMeshRenderData SkeletalMeshRenderData;
-    USkeleton* Skeleton;
-    TArray<FMaterialSlot*> MaterialSlots;
+    USkeleton* Skeleton = nullptr;
+    TArray<FMaterialSlot> MaterialSlots;
 
     void UpdateChildBones(int ParentIndex);
     void ApplyRotationToBone(int BoneIndex, float DeltaAngleInDegrees, const FVector& RotationAxis);

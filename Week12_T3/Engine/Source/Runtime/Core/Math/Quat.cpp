@@ -248,6 +248,33 @@ FQuat FQuat::Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float S
         Scale0 * Quat1.Z + Scale1 * Quat2.Z);
 }
 
+FString FQuat::ToString() const
+{
+    return FString::Printf(TEXT("X=%.9f Y=%.9f Z=%.9f W=%.9f"), X, Y, Z, W);
+}
+
+bool FQuat::operator==(const FQuat& Other) const
+{
+    // 1) 직접 비교: q == Other
+    bool bDirectEqual =
+        FMath::IsNearlyEqual(W, Other.W, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(X, Other.X, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Y, Other.Y, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Z, Other.Z, KINDA_SMALL_NUMBER);
+
+    if (bDirectEqual)
+        return true;
+
+    // 2) 부호 반전 비교: q == -Other
+    bool bNegatedEqual =
+        FMath::IsNearlyEqual(W, -Other.W, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(X, -Other.X, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Y, -Other.Y, KINDA_SMALL_NUMBER) &&
+        FMath::IsNearlyEqual(Z, -Other.Z, KINDA_SMALL_NUMBER);
+
+    return bNegatedEqual;
+}
+
 FQuat FQuat::PToFQuat(physx::PxQuat InPxQuat)
 {
     return FQuat(InPxQuat.w, InPxQuat.x, InPxQuat.y, InPxQuat.z);

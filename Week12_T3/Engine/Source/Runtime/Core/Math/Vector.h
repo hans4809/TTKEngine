@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 
 #include "MathUtility.h"
+#include "Container/String.h"
 #include "Serialization/Archive.h"
 
 namespace physx 
@@ -158,6 +159,16 @@ struct FVector
         return result;
     }
 
+    float GetMin() const
+    {
+        return FMath::Min3(X,Y,Z);
+    }
+    
+    float GetAbsMin() const
+    {
+        return FMath::Min3(FMath::Abs(X), FMath::Abs(Y), FMath::Abs(Z));
+    }
+
     FVector Max(const FVector& Other) const
     {
         FVector result = *this;
@@ -186,6 +197,9 @@ struct FVector
         // 두 벡터의 차 벡터의 크기를 계산
         return ((*this - other).Magnitude());
     }
+
+    FString ToString() const;
+    bool IsUniform(float Tolerance = KINDA_SMALL_NUMBER) const;
 
     static float Distance(const FVector& V1, const FVector& V2)
     {
@@ -236,6 +250,9 @@ struct FVector
             FMath::Abs(Y) <= Tolerance &&
             FMath::Abs(Z) <= Tolerance;
     }
+
+    FVector GetAbs() const;
+    
     static const FVector ZeroVector;
     static const FVector OneVector;
     static const FVector UpVector;
@@ -306,4 +323,24 @@ inline FVector& FVector::operator/=(float Scalar)
 inline FVector FVector::operator-() const
 {
     return { -X, -Y, -Z };
+}
+
+inline FString FVector::ToString() const
+{
+    // FString::Printf를 사용하여 포맷팅된 문자열 생성
+    // TEXT() 매크로는 리터럴 문자열을 TCHAR 타입으로 만들어줍니다.
+    return FString::Printf(TEXT("X=%3.3f Y=%3.3f Z=%3.3f"), X, Y, Z);
+
+    // 필요에 따라 소수점 정밀도 지정 가능: 예) "X=%.2f Y=%.2f Z=%.2f"
+    // return FString::Printf(TEXT("X=%.2f Y=%.2f Z=%.2f"), x, y, z);
+}
+
+inline bool FVector::IsUniform(const float Tolerance) const
+{
+    return FMath::Abs(X - Y) <= Tolerance && FMath::Abs(X - Z) <= Tolerance && FMath::Abs(Y - Z) <= Tolerance;
+}
+
+inline FVector FVector::GetAbs() const
+{
+    return FVector(FMath::Abs(X), FMath::Abs(Y), FMath::Abs(Z));
 }
