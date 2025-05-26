@@ -57,7 +57,7 @@ void FSimulationEventCallback::onSleep(physx::PxActor** actors, physx::PxU32 cou
 
 void FSimulationEventCallback::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 {
-    UE_LOG(LogLevel::Display, " FSimulationEventCallback::onContact called");
+    UE_LOG(LogLevel::Warning, " FSimulationEventCallback::onContact called");
     
     FBodyInstance* BodyInstanceA = GetBodyInstanceFromActor(pairHeader.actors[0]);
     FBodyInstance* BodyInstanceB = GetBodyInstanceFromActor(pairHeader.actors[1]);
@@ -75,17 +75,19 @@ void FSimulationEventCallback::onContact(const physx::PxContactPairHeader& pairH
 
         if (cp.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
         {
+            UE_LOG(LogLevel::Warning, "eNOTIFY_TOUCH_FOUND");
            // if (CompA) CompA->HandleContact(CompB, cp, physx::PxPairFlag::eNOTIFY_TOUCH_FOUND); // 컴포넌트에 이벤트 전달
            // if (CompB) CompB->HandleContact(CompA, cp, physx::PxPairFlag::eNOTIFY_TOUCH_FOUND);
         }
         if (cp.events & physx::PxPairFlag::eNOTIFY_TOUCH_LOST) 
         {
+            UE_LOG(LogLevel::Warning, " eNOTIFY_TOUCH_LOST");
            // if (CompA) CompA->HandleContact(CompB, cp, physx::PxPairFlag::eNOTIFY_TOUCH_LOST);
            // if (CompB) CompB->HandleContact(CompA, cp, physx::PxPairFlag::eNOTIFY_TOUCH_LOST);
         }
         if (cp.events & physx::PxPairFlag::eNOTIFY_CONTACT_POINTS)
         {
-         
+            UE_LOG(LogLevel::Warning, " eNOTIFY_CONTACT_POINTS");
         }
         // ... 기타 PxPairFlag 확인 (eNOTIFY_THRESHOLD_FORCE_FOUND 등)
     }

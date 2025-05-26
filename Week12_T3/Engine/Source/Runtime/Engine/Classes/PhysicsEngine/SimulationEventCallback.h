@@ -9,7 +9,8 @@ class FBodyInstance;
 class UPrimitiveComponent;
 class AActor;
 
-class FSimulationEventCallback : public physx::PxSimulationEventCallback {
+class FSimulationEventCallback : public physx::PxSimulationEventCallback 
+{
 public:
     // 생성자 (선택적으로 물리 씬 포인터 등을 받을 수 있음)
     FSimulationEventCallback(FPhysScene_PhysX* OwningScene = nullptr);
