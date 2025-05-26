@@ -18,3 +18,8 @@ physx::PxVec3 FVector::ToPxVec3() const
 {
     return physx::PxVec3(X, Y, Z);
 }
+
+const FVector FVector::PToFVector(physx::PxVec3 InPxVec3)
+{
+    return FVector(InPxVec3.x, InPxVec3.y, InPxVec3.z);
+}

@@ -68,6 +68,8 @@ struct FQuat
     
     static FQuat Slerp_NotNormalized(const FQuat& Quat1, const FQuat& Quat2, float Slerp);
 
+    static FQuat PToFQuat(physx::PxQuat InPxQuat);
+
     physx::PxQuat ToPxQuat() const
     {
         return physx::PxQuat(X, Y, Z, W);

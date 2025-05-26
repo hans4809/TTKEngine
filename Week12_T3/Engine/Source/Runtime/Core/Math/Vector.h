@@ -241,7 +241,7 @@ struct FVector
     static const FVector UpVector;
     static const FVector ForwardVector;
     static const FVector RightVector;
-
+    static const FVector PToFVector(physx::PxVec3 InPxVec3);
     // Unit X Axis Vector (1, 0, 0)
     static const FVector XAxisVector;
     // Unit Y Axis Vector (0, 1, 0)
