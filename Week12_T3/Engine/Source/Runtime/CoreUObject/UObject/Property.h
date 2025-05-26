@@ -157,6 +157,20 @@ public:
     > TypeSpecificData;
 };
 
+/* Property를 Display할 떄 부모순으로 출력할 수 있도록 도와주는 Trait Class*/
+class FDisplayMemberRecursiveTrait
+{
+protected:
+    /*
+     *   구조체와 연결된 멤버를 재귀적으로 디스플레이 합니다.
+     *  @param CurrentStructToDisplay 현재 디스플레이할 UStruct.
+     *  @param StructInstanceDataPtr 구조체 인스턴스 데이터에 대한 포인터.
+     *  @param TopLevelOwnerObject 최상위 소유자 객체.
+    */
+    void DisplayMemberRecursive(const UStruct* CurrentStructToDisplay, void* StructInstanceDataPtr, UObject* TopLevelOwnerObject) const;
+
+};
+
 
 struct FNumericProperty : public FProperty
 {

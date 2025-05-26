@@ -1,5 +1,9 @@
 #include "PhysicsTreePreviewEditorPanel.h"
 #include "LevelEditor/SLevelEditor.h"
+#include <Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h>
+#include "Classes/GameFramework/Actor.h"
+#include <Actors/SkeletalMeshActor.h>
+#include "Classes/Animation/Skeleton.h"
 
 void PhysicsTreePreviewEditorPanel::Initialize(SLevelEditor* levelEditor, float InWidth, float InHeight)
 {
@@ -48,17 +52,29 @@ void PhysicsTreePreviewEditorPanel::Render()
     {
         PickedActor = *World->GetSelectedActors().begin();
     }
-
+    
+    USkeletalMeshComponent* SkeletalMeshComp;
+    ASkeletalMeshActor* SkeletalActor = Cast<ASkeletalMeshActor>(PickedActor);
+    if (SkeletalActor) {
+        SkeletalMeshComp = SkeletalActor->GetSkeletalMeshComponent();
+        if (SkeletalMeshComp) {
+            USkeleton* SkeletonAsset = SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton();
+            if (SkeletonAsset)
+            {
+                FRefSkeletal* RefSkeletal = SkeletonAsset->GetRefSkeletal();
+                if (RefSkeletal)
+                {
+                    // 2BoneTree 루트부터 그리기
+                    for (int32 RootIndex : RefSkeletal->RootBoneIndices)
+                    {
+                        DrawBoneNodeRecursive(RefSkeletal, RootIndex, RefSkeletal->BoneTree, RefSkeletal->RawBones);
+                    }
+                }
+            }
+        }
+    }
 
     ImGui::End();
-}
-
-void PhysicsTreePreviewEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent)
-{
-}
-
-void PhysicsTreePreviewEditorPanel::DrawActorComponent(UActorComponent* Component, UActorComponent*& PickedComponent)
-{
 }
 
 void PhysicsTreePreviewEditorPanel::OnResize(HWND hWnd)
@@ -68,3 +84,35 @@ void PhysicsTreePreviewEditorPanel::OnResize(HWND hWnd)
     Width = clientRect.right - clientRect.left;
     Height = clientRect.bottom - clientRect.top;
 }
+
+void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal* RefSkeletal, int32 BoneIndex, const TArray<FBoneNode>& BoneTree, const TArray<FBone>& RawBones)
+{
+    const FBone& Bone = RawBones[BoneIndex];
+    std::stringstream ss;
+    ss << Bone.BoneName.ToAnsiString() << "##Bone" << BoneIndex;
+
+    bool bOpen = ImGui::TreeNodeEx(ss.str().c_str(), ImGuiTreeNodeFlags_DefaultOpen | 
+        ImGuiTreeNodeFlags_OpenOnArrow|
+        ImGuiTreeNodeFlags_AllowItemOverlap
+    );
+
+    if (ImGui::IsItemClicked())
+    {
+        // 📌 노드 클릭 시 상세 패널로 전달 (임시 전역/싱글톤으로 선택된 BoneIndex 저장)
+        SelectedBoneIndex = BoneIndex;
+    }
+
+    if (bOpen)
+    {
+        if (BoneTree.IsValidIndex(BoneIndex))
+        {
+            const TArray<int>& ChildIndices = BoneTree[BoneIndex].ChildIndices;
+            for (int32 ChildIndex : ChildIndices)
+            {
+                DrawBoneNodeRecursive(RefSkeletal, ChildIndex, BoneTree, RawBones);
+            }
+        }
+        ImGui::TreePop();
+    }
+}
+

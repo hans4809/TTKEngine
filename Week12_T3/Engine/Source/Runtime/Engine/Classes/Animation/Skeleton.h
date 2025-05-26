@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
@@ -12,5 +12,6 @@ public:
     FRefSkeletal* GetRefSkeletal() const { return RefSkeletal; }
     void SetRefSkeletal(FRefSkeletal* InRefSkeletal) { RefSkeletal = InRefSkeletal; }
 private:
+    // FIXING 전방선언 -> 값
     FRefSkeletal* RefSkeletal;
 };

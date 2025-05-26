@@ -1876,6 +1876,7 @@ void PropertyEditorPanel::DrawPhysicsAssetPreviewButton(const FString& FilePath)
             SkeletalMeshActor->SetActorLabel("PhysicsPreviewSkeletalMeshActor");
             SkeletalMeshActor->GetSkeletalMeshComponent()->SetAnimInstance(nullptr);
 
+            World->SetSelectedActor(SkeletalMeshActor);
             // Mesh 설정
             // 새로운 SkeletalMeshComponent 생성
             //USkeletalMeshComponent* NewSkeletalMeshComp = SkeletalMeshActor->AddComponent<USkeletalMeshComponent>(EComponentOrigin::Editor);
