@@ -20,7 +20,7 @@ cbuffer DepthOfFieldParameters : register(b1)
     
     float  MaxCoCRadius;     // 최대 CoC 반경 (픽셀)
     uint   SampleCount;      // 디스크 샘플 개수
-    float2 Pad;
+    float2 UserData;
 };
 
 cbuffer FFogCameraConstant : register(b2)
@@ -55,8 +55,26 @@ float4 mainPS(VS_OUT input) : SV_Target
     float Depth      = SceneDepthTex.Sample(postProcessingSampler, input.uv).r;
     float zNdc = Depth * 2.0 - 1.0f;
     float LinearDepth = 2 * NearPlane * FarPlane / (FarPlane + NearPlane - zNdc * (FarPlane - NearPlane));
-    
     float CoCRadius  = CalculateCircleOfConfusion(LinearDepth);
+
+    // 3) DebugMode (ShowFlag) 분기
+    if (UserData.x > 0.5f)  // ShowFlag
+    {
+        // DepthDelta < 0 : Near  → 녹색
+        // DepthDelta = 0 : Focus → 검은색
+        // DepthDelta > 0 : Far   → 파란색
+        float DepthDelta   = LinearDepth - FocusDistance;
+        float CoCMagnitude = saturate(CoCRadius / MaxCoCRadius);
+
+        float3 DebugColor = float3(0,0,0);
+        if (DepthDelta < 0.0f)
+            DebugColor.g = CoCMagnitude;
+        else if (DepthDelta > 0.0f)
+            DebugColor.b = CoCMagnitude;
+
+        return float4(DebugColor, 1.0f);
+    }
+    
     if (CoCRadius < 1.0)
         return SceneColorTex.Sample(postProcessingSampler, input.uv);
     
@@ -65,7 +83,7 @@ float4 mainPS(VS_OUT input) : SV_Target
     float  TotalWeight = 0;
 
     // 원형 디스크 샘플링
-    [unroll(12)]
+    [loop]
     for (uint i = 0; i < SampleCount; ++i)
     {
         float Angle  = i * (6.2831853 / SampleCount);

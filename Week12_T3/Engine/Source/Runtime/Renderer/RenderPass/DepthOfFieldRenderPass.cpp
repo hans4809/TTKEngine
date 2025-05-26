@@ -1,6 +1,5 @@
-#include "CameraRenderPass.h"
+#include "DepthOfFieldRenderPass.h"
 
-#include "EditorEngine.h"
 #include "LaunchEngineLoop.h"
 #include "Actors/APostProcessVolume.h"
 #include "D3D11RHI/CBStructDefine.h"
@@ -11,14 +10,14 @@
 #include "UObject/Casts.h"
 #include "UObject/UObjectIterator.h"
 
-FCameraRenderPass::FCameraRenderPass(const FName& InShaderName) : FBaseRenderPass(InShaderName)
+FDepthOfFieldRenderPass::FDepthOfFieldRenderPass(const FName& InShaderName) : FBaseRenderPass(InShaderName)
 {
     FRenderResourceManager* RenderResourceManager = FEngineLoop::Renderer.GetResourceManager();
-    DOFCBuffer = RenderResourceManager->CreateConstantBuffer(sizeof(FPostProcessConstants));
+    DOFCBuffer = RenderResourceManager->CreateConstantBuffer(sizeof(FDepthOfFieldConstants));
     CameraCBuffer = RenderResourceManager->CreateConstantBuffer(sizeof(FFogCameraConstant));
 }
 
-void FCameraRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
+void FDepthOfFieldRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
     for (AActor* Actor : TObjectRange<AActor>())
     {
@@ -34,7 +33,7 @@ void FCameraRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
     }
 }
 
-void FCameraRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportClient)
+void FDepthOfFieldRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportClient)
 {
     if (PostProcessVolumes.IsEmpty()) return;
     
@@ -59,33 +58,32 @@ void FCameraRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportClien
     Graphics.DeviceContext->PSSetShaderResources(1, 1, &PreviousSRV);
 }
 
-void FCameraRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
+void FDepthOfFieldRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 {
     if (PostProcessVolumes.IsEmpty()) return;
     
     FGraphicsDevice& Graphics = FEngineLoop::GraphicDevice;
     
-    auto viewPort = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
-    if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
-    {
-        UpdateScreenConstant(InViewportClient);
-        UpdateCameraConstant(InViewportClient);
-        UpdateConstantBuffer(EditorEngine);
-    }
+    auto EditorViewPort = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
+
+    UpdateScreenConstant(InViewportClient);
+    UpdateCameraConstant(EditorViewPort);
+    UpdateConstantBuffer(EditorViewPort);
+    
     Graphics.DeviceContext->Draw(6, 0);
 }
 
-void FCameraRenderPass::ClearRenderObjects()
+void FDepthOfFieldRenderPass::ClearRenderObjects()
 {
     PostProcessVolumes.Empty();
 }
 
-void FCameraRenderPass::UpdateConstantBuffer(class UEditorEngine* Engine) const
+void FDepthOfFieldRenderPass::UpdateConstantBuffer(const std::shared_ptr<FEditorViewportClient>& InViewportClient) const
 {
     const FGraphicsDevice& Graphics = FEngineLoop::GraphicDevice;
     FRenderResourceManager* renderResourceManager = FEngineLoop::Renderer.GetResourceManager();
     
-    FPostProcessConstants Params;
+    FDepthOfFieldConstants Params;
     Params.FocalLength = PostProcessVolumes[0]->PostProcess.FocalLength;
     Params.Aperture = PostProcessVolumes[0]->PostProcess.Aperture;
     Params.FocusDistance = PostProcessVolumes[0]->PostProcess.FocusDistance;
@@ -93,23 +91,25 @@ void FCameraRenderPass::UpdateConstantBuffer(class UEditorEngine* Engine) const
     Params.MaxCoCRadius = PostProcessVolumes[0]->PostProcess.MaxCoCRadius;
     Params.SampleCount = PostProcessVolumes[0]->PostProcess.SampleCount;
     
+    float ShowFlag = InViewportClient->GetViewMode() == EViewModeIndex::VMI_DepthOfField ? 1.0f : 0.0f;
+    Params.UserData = FVector2D { ShowFlag, 0.0f };
+    
     renderResourceManager->UpdateConstantBuffer(DOFCBuffer, &Params);
     Graphics.DeviceContext->PSSetConstantBuffers(1, 1, &DOFCBuffer);
 }
 
-void FCameraRenderPass::UpdateCameraConstant(const std::shared_ptr<FViewportClient>& InViewportClient) const
+void FDepthOfFieldRenderPass::UpdateCameraConstant(const std::shared_ptr<FEditorViewportClient>& InViewportClient) const
 {
     const FGraphicsDevice& Graphics = FEngineLoop::GraphicDevice;
     FRenderResourceManager* renderResourceManager = FEngineLoop::Renderer.GetResourceManager();
-    std::shared_ptr<FEditorViewportClient> curEditorViewportClient = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
 
     FFogCameraConstant CameraConstants;
-    CameraConstants.InvProjMatrix = FMatrix::Inverse(curEditorViewportClient->GetProjectionMatrix());
-    CameraConstants.InvViewMatrix = FMatrix::Inverse(curEditorViewportClient->GetViewMatrix());
-    CameraConstants.CameraPos = curEditorViewportClient->ViewTransformPerspective.GetLocation();
-    CameraConstants.NearPlane = curEditorViewportClient->GetNearClip();
-    CameraConstants.CameraForward = curEditorViewportClient->ViewTransformPerspective.GetForwardVector();
-    CameraConstants.FarPlane = curEditorViewportClient->GetFarClip();
+    CameraConstants.InvProjMatrix = FMatrix::Inverse(InViewportClient->GetProjectionMatrix());
+    CameraConstants.InvViewMatrix = FMatrix::Inverse(InViewportClient->GetViewMatrix());
+    CameraConstants.CameraPos = InViewportClient->ViewTransformPerspective.GetLocation();
+    CameraConstants.NearPlane = InViewportClient->GetNearClip();
+    CameraConstants.CameraForward = InViewportClient->ViewTransformPerspective.GetForwardVector();
+    CameraConstants.FarPlane = InViewportClient->GetFarClip();
 
     renderResourceManager->UpdateConstantBuffer(CameraCBuffer, &CameraConstants);
 

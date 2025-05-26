@@ -237,7 +237,7 @@ struct alignas(16) UTextureCountConstants
     FVector2D Padding;
 };
 
-struct alignas(16) FPostProcessConstants
+struct alignas(16) FDepthOfFieldConstants
 {
     float FocalLength;
     float Aperture;
@@ -246,5 +246,5 @@ struct alignas(16) FPostProcessConstants
     
     float MaxCoCRadius;
     uint32 SampleCount;
-    FVector2D Padding;
+    FVector2D UserData;
 };

@@ -3,14 +3,15 @@
 
 enum EViewModeIndex : uint8
 {
-    VMI_Lit_Goroud = 0,
-    VMI_Lit_Lambert = 1,
-    VMI_Lit_Phong = 2,
+    VMI_Gouraud = 0,
+    VMI_Lambert = 1,
+    VMI_Phong = 2,
     VMI_Unlit = 3,
     VMI_Wireframe = 4,
     VMI_Depth = 5,
     VMI_Normal = 6,
-    MAXCOUNT = 7,
+    VMI_DepthOfField = 7,
+    MAX_COUNT = 8,
 };
 
 enum ELevelTick : uint8
