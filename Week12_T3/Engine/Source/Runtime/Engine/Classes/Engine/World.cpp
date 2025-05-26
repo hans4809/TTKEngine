@@ -39,7 +39,8 @@
 
 #include "PhysicsEngine/PhysScene_PhysX.h"
 #include "PhysicsEngine/PhysXSDKManager.h"
-
+#include "PhysicsEngine/BodyInstance.h"
+#include <PxRigidActor.h>
 void UWorld::InitWorld()
 {
     FParticleSystemWorldManager::OnWorldInit(this);
@@ -79,6 +80,7 @@ void UWorld::PreLoadResources()
 {
     FManagerOBJ::CreateStaticMesh(TEXT("Assets/CastleObj.obj"));
 }
+#include "Components/PrimitiveComponents/MeshComponents/StaticMeshComponents/CubeComp.h"
 
 void UWorld::CreateBaseObject(EWorldType::Type WorldType)
 {
@@ -90,77 +92,15 @@ void UWorld::CreateBaseObject(EWorldType::Type WorldType)
     if (LocalGizmo == nullptr && WorldType)
     {
         LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>(this);
-        UParticleModuleLocation* Loc = nullptr;
-        // TODO : Serialize Save/Load Test 코드 나중에 삭제해야댐
-        //DummyTest::TestDummyObject2Serialization(GEngine);
-        if (WorldType == EWorldType::Editor)
-        {
-            AActor* TestActor = SpawnActor<AActor>();
-            UParticleSystemComponent* TestComp = TestActor->AddComponent<UParticleSystemComponent>(EComponentOrigin::Runtime);
-            // TODO : ParticleSystemAsset SaveLoad Test 코드
-
-            UParticleSystem* TestParticleSystem = UAssetManager::Get().Get<UParticleSystem>(TEXT("TestParticle"));
-            if (TestParticleSystem == nullptr)
-            {
-                TestParticleSystem = FObjectFactory::ConstructObject<UParticleSystem>(this);
-
-                UParticleEmitter* NewEmitter = FObjectFactory::ConstructObject<UParticleSpriteEmitter>(nullptr);
-                UParticleLODLevel* NewLODLevel = FObjectFactory::ConstructObject<UParticleLODLevel>(nullptr);
-
-                NewLODLevel->RequiredModule = FObjectFactory::ConstructObject<UParticleModuleRequired>(nullptr);
-                NewLODLevel->TypeDataModule = FObjectFactory::ConstructObject<UParticleModuleTypeDataMesh>(nullptr);
-                //dynamic_cast<UParticleModuleTypeDataMesh*>(NewLODLevel->TypeDataModule)->Mesh = FManagerOBJ::CreateStaticMesh(L"apple_mid.obj");
-                NewLODLevel->Modules.Add(NewLODLevel->TypeDataModule);
-                NewLODLevel->Modules.Add(NewLODLevel->RequiredModule);
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSpawn>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleVelocity>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLifeTime>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLocation>(nullptr));
-                NewLODLevel->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSize>(nullptr));
-                NewLODLevel->TypeDataModule = FObjectFactory::ConstructObject<UParticleModuleTypeDataMesh>(nullptr);
-                dynamic_cast<UParticleModuleTypeDataMesh*>(NewLODLevel->TypeDataModule)->Mesh = FManagerOBJ::CreateStaticMesh(L"Assets/apple_mid.obj");
-                NewLODLevel->Modules.Add(NewLODLevel->TypeDataModule);
-
-                NewEmitter->LODLevels.Add(NewLODLevel);
-                TestParticleSystem->Emitters.Add(NewEmitter);
-
-                UParticleEmitter* NewEmitter2 = FObjectFactory::ConstructObject<UParticleSpriteEmitter>(nullptr);
-                UParticleLODLevel* NewLODLevel2 = FObjectFactory::ConstructObject<UParticleLODLevel>(nullptr);
-
-                NewLODLevel2->RequiredModule = FObjectFactory::ConstructObject<UParticleModuleRequired>(nullptr);
-                NewLODLevel2->Modules.Add(NewLODLevel2->RequiredModule);
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSpawn>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleVelocity>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLifeTime>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleLocation>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSize>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleSubUV>(nullptr));
-                NewLODLevel2->Modules.Add(FObjectFactory::ConstructObject<UParticleModuleColor>(nullptr));
-
-                NewEmitter2->LODLevels.Add(NewLODLevel2);
-                TestParticleSystem->Emitters.Add(NewEmitter2);
-            }
-            TestComp->Template = TestParticleSystem;
-
-            for (auto& emitter : TestParticleSystem->Emitters)
-            {
-                for (auto& lodLevel : emitter->LODLevels)
-                {
-                    for (auto& Module : lodLevel->Modules)
-                    {
-                        Module->InitializeDefaults();
-                    }
-                }
-            }
-            if (Loc) {
-                Cast<UDistributionVectorUniform>(Loc->StartLocation.Distribution)->MinValue = FVector(100, 100, 100);
-                Cast<UDistributionVectorUniform>(Loc->StartLocation.Distribution)->MaxValue = FVector(100, 100, 100);
-
-            }
-            TestComp->Activate();
-        }
-
     }
+    /* if (WorldType == EWorldType::Editor)
+     {
+         AActor* TestActor = SpawnActor<AActor>();
+
+         UCubeComp* TestComp = TestActor->AddComponent<UCubeComp>(EComponentOrigin::Editor);
+         FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
+         TestComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+     }*/
 }
 
 
@@ -180,7 +120,7 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 
         FGameManager::Get().EditorTick(deltaSeconds);
     }
-    if (CurrentPhysicsScene && (tickType == LEVELTICK_All || tickType == LEVELTICK_PauseTick))
+    if (CurrentPhysicsScene)//&& (tickType == LEVELTICK_All || tickType == LEVELTICK_ViewportsOnly))
     {
         CurrentPhysicsScene->Simulate(deltaSeconds);
     }
@@ -223,6 +163,7 @@ bool UWorld::InitializePhysicsScene()
         return false;
     }
     physx::PxPhysics* PxSDK = FPhysXSDKManager::GetInstance().GetPhysicsSDK();
+    physx::PxPvd* PxPvd = FPhysXSDKManager::GetInstance().Pvd;
     if (!PxSDK)
     {
         UE_LOG(LogLevel::Error, "UWorld::InitializePhysicsScene - Failed to get PxPhysics SDK from FPhysXSDKManager.");
@@ -231,7 +172,7 @@ bool UWorld::InitializePhysicsScene()
 
     // 2. FPhysScene_PhysX 인스턴스 생성 (FPhysScene 인터페이스 포인터로 받음)
     //    FPhysScene_PhysX 생성자는 PxPhysics*와 UWorld* (this)를 받을 수 있음
-    FPhysScene_PhysX* NewPhysXScene = new FPhysScene_PhysX(PxSDK, this);
+    FPhysScene_PhysX* NewPhysXScene = new FPhysScene_PhysX(PxSDK, PxPvd, this);
     CurrentPhysicsScene = NewPhysXScene; // FPhysScene* 타입으로 업캐스팅하여 저장
 
     // 3. 생성된 물리 씬 초기화 (이 내부에서 PxScene 생성)
@@ -426,7 +367,6 @@ bool UWorld::DestroyActor(AActor* ThisActor)
     GUObjectArray.MarkRemoveObject(ThisActor);
     return true;
 }
-
 
 void UWorld::SetPickingGizmo(UObject* Object)
 {
