@@ -71,12 +71,13 @@ public:
 
     FVector TransformPosition(const FVector V) const;
 
-private:
-    static bool Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D);
     physx::PxTransform ToPxTransform() const // const 멤버 함수로 변경
     {
-        return physx::PxTransform(Location.ToPxVec3(), Rotation.ToPxQuat());
+            return physx::PxTransform(Location.ToPxVec3(), Rotation.ToPxQuat());
     }
+
+private:
+    static bool Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D);
 };
 inline const FTransform FTransform::Identity = FTransform();
 
