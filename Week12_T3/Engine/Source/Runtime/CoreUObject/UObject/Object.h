@@ -3,12 +3,32 @@
 #include "Container/String.h"
 #include "sol/sol.hpp"
 
+class FObjectDuplicator;
 class FArchive2;
 class UWorld;
 class UClass;
 class AActor;
 class UActorComponent;
 class FFunctionRegistry;
+
+enum EObjectFlags
+{
+    // Do not add new flags unless they truly belong here. There are alternatives.
+    // if you change any the bit of any of the RF_Load flags, then you will need legacy serialization
+    RF_NoFlags					= 0x00000000,	///< No flags, used to avoid a cast
+
+    // This first group of flags mostly has to do with what kind of object it is. Other than transient, these are the persistent object flags.
+    // The garbage collector also tends to look at these.
+    RF_Public					=0x00000001,	///< Object is visible outside its package.
+
+    RF_Transactional			=0x00000008,	///< Object is transactional.
+    
+    RF_Transient				=0x00000040,	///< Don't save object.
+    
+    RF_DuplicateTransient		=0x00800000,	///< Object should not be included in any type of duplication (copy/paste, binary duplication, etc.)
+};
+
+#define RF_AllFlags				(EObjectFlags)0xffffffff	///< All flags, used mainly for error checking
 
 // for sol2 typing
 namespace SolTypeBinding
@@ -102,10 +122,13 @@ public:
 
     virtual UObject* Duplicate(UObject* InOuter);
 
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) {} // 하위 클래스에서 override
+    // Src가 런타임에 직접 생성·소유한 자식 UObject들(예: 컴포넌트, 인라인 서브오브젝트)을 별도로 복제
+    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator) {} // 하위 클래스에서 override
+    // 복제가 전부 끝난 뒤 “초기화가 필요한 상태”를 정리하고, 사용자 정의 후처리(override) 콜백을 호출
     virtual void PostDuplicate() {};
 private:
     friend class FObjectFactory;
+    friend class FObjectDuplicator;
     friend class FSceneMgr;
     friend class UClass;
     friend class UStruct;
@@ -116,7 +139,8 @@ private:
     FName NamePrivate;
     UClass* ClassPrivate = nullptr;
     UObject* OuterPrivate = nullptr;
-
+    
+    uint32 ObjectFlags = RF_NoFlags;
 public:
     UObject();
     virtual ~UObject();
@@ -149,6 +173,10 @@ public:
         return IsA(T::StaticClass());
     }
     void MarkAsGarbage();
+
+    bool HasAnyFlags(const uint32 Flags) const    { return (ObjectFlags & Flags) != 0; }
+    void SetFlags   (const uint32 Flags)          { ObjectFlags |= Flags; }
+    void ClearFlags (const uint32 Flags)          { ObjectFlags &= ~Flags; }
 
 public:
     //void* operator new(size_t Size);

@@ -35,20 +35,6 @@ void UBoxShapeComponent::TickComponent(float DeltaTime)
     }
 }
 
-UObject* UBoxShapeComponent::Duplicate(UObject* InOuter)
-{
-    UBoxShapeComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-
-    return NewComp;
-}
-
-void UBoxShapeComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void UBoxShapeComponent::PostDuplicate()
 {
     Super::PostDuplicate();

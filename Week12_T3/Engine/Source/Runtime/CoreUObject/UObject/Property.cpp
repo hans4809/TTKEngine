@@ -15,6 +15,11 @@ void FProperty::Serialize(FArchive2& Ar, void* DataPtr) const
     Ar.SerializeRaw(DataPtr, Size);
 }
 
+void FProperty::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    FPlatformMemory::Memcpy(DstPtr, SrcPtr, Size);
+}
+
 void FUnresolvedPtrProperty::Resolve()
 {
     FProperty::Resolve();

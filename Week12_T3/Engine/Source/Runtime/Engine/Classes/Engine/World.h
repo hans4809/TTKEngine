@@ -31,7 +31,7 @@ public:
 
     void InitWorld();
     void LoadLevel(const FString& LevelName);
-    void PreLoadResources();
+
     void CreateBaseObject(EWorldType::Type WorldType);
     void ReleaseBaseObject();
     void SyncPhysicsActor(physx::PxActor* PActor);
@@ -46,8 +46,6 @@ public:
     void LoadScene(const FString& FileName);
     void SaveScene(const FString& FileName);
     void ClearScene();
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* SourceObj, UObject* InOuter) override;
     virtual void PostDuplicate() override;
 
     virtual UWorld* GetWorld() const override;
@@ -73,7 +71,8 @@ private:
     FPhysScene* CurrentPhysicsScene = nullptr;
 
     const FString defaultMapName = "Default";
-    ULevel* Level = nullptr;
+
+    UPROPERTY(ULevel*, Level, = nullptr)
     /** World에서 관리되는 모든 Actor의 목록 */
     /** Actor가 Spawn되었고, 아직 BeginPlay가 호출되지 않은 Actor들 */
     TSet<AActor*> SelectedActors;

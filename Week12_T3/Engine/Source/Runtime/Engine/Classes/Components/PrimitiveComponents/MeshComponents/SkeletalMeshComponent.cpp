@@ -300,22 +300,6 @@ void USkeletalMeshComponent::SkinningVertex()
 //     SetStaticMesh(Mesh);
 // }
 
-UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
-{
-    USkeletalMeshComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void USkeletalMeshComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UMeshComponent::DuplicateSubObjects(Source, InOuter);
-    // TODO: SkeletalMesh 복사
-    SkeletalMesh = Cast<USkeletalMesh>(Cast<USkeletalMeshComponent>(Source)->SkeletalMesh->Duplicate(this));
-    AnimInstance = Cast<UAnimInstance>(Cast<USkeletalMeshComponent>(Source)->AnimInstance->Duplicate(this));
-}
-
 void USkeletalMeshComponent::PostDuplicate() {}
 
 void USkeletalMeshComponent::BeginPlay()

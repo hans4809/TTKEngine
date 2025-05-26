@@ -39,14 +39,6 @@ void APawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
     AActor::EndPlay(EndPlayReason);
 }
 
-UObject* APawn::Duplicate(UObject* InOuter)
-{
-    APawn* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    ClonedActor->DuplicateSubObjects(this, InOuter);
-    ClonedActor->PostDuplicate();
-    return ClonedActor;
-}
-
 void APawn::PossessedBy(AController* NewController)
 {
     Controller = NewController;

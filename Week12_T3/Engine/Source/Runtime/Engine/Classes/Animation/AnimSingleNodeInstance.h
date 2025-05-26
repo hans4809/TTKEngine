@@ -7,7 +7,6 @@ class UAnimSingleNodeInstance : public UAnimInstance
 public:
     UAnimSingleNodeInstance();
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
 public:
     virtual void SetAnimationAsset(UAnimSequence* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 

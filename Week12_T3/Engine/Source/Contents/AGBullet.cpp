@@ -99,19 +99,6 @@ void AGBullet::OnHit(const UPrimitiveComponent* Other)
         ReturnToPool();
 }
 
-UObject* AGBullet::Duplicate(UObject* InOuter)
-{
-    AGBullet* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewActor->DuplicateSubObjects(this, InOuter);
-    return NewActor;
-}
-
-void AGBullet::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-    AGBullet* Origin = Cast<AGBullet>(Source);
-}
-
 void AGBullet::PostDuplicate()
 {
     Super::PostDuplicate();

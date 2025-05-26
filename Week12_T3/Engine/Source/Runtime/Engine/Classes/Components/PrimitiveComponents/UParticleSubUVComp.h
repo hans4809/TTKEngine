@@ -40,8 +40,6 @@ public:
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
 
-    UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     void SetRowColumnCount(int _cellsPerRow, int _cellsPerColumn);
 
     // ID3D11Buffer* vertexSubUVBuffer;

@@ -20,9 +20,6 @@ class UAnimInstance : public UObject
 public:
     UAnimInstance() = default;
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
-
     // APawn* TryGetPawnOwner() const;
     AActor* GetOwningActor() const;
     USkeletalMeshComponent* GetOwningComponent() const;

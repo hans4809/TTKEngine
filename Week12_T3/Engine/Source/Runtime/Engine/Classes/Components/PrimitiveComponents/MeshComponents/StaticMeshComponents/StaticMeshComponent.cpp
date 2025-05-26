@@ -152,18 +152,6 @@ void UStaticMeshComponent::LoadAndConstruct(const FActorComponentInfo& Info)
     SetStaticMesh(Mesh);
 
 }
-UObject* UStaticMeshComponent::Duplicate(UObject* InOuter)
-{
-    UStaticMeshComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void UStaticMeshComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UMeshComponent::DuplicateSubObjects(Source, InOuter);
-}
 
 void UStaticMeshComponent::PostDuplicate() {}
 

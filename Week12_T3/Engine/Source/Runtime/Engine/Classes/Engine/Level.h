@@ -12,12 +12,12 @@ class ULevel : public UObject
 public:
     ULevel();
     ~ULevel();
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* SourceObj, UObject* InOuter) override;
+    void InitLevel();
     virtual void PostDuplicate() override;
     
 private:
-    TArray<AActor*> Actors;
+    UPROPERTY(TArray<AActor*>, Actors, = {})
+    
     /*
      * param1: Origin Object
      * param2: Duplicated Object

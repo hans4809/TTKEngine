@@ -9,22 +9,6 @@
 #include "Animation/AnimationRuntime.h"
 #include "Container/Array.h"
 
-UObject* UAnimInstance::Duplicate(UObject* InOuter)
-{
-    UAnimInstance* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    NewComp->SetSkeleton(Cast<USkeletalMeshComponent>(InOuter)->GetSkeletalMesh()->GetSkeleton());
-    return NewComp;
-}
-
-void UAnimInstance::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-    this->CurrentSequence = Cast<UAnimSequence>(this->CurrentSequence->Duplicate(this->CurrentSequence->GetOuter()));
-    this->PreviousSequence = Cast<UAnimSequence>(this->PreviousSequence->Duplicate(this->PreviousSequence->GetOuter()));
-}
-
 AActor* UAnimInstance::GetOwningActor() const
 {
     return GetOwningComponent()->GetOwner();

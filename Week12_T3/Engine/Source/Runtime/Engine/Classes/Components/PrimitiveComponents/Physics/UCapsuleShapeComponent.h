@@ -33,8 +33,6 @@ public:
     UCapsuleShapeComponent();
     ~UCapsuleShapeComponent() override;
 
-    UObject* Duplicate(UObject* InOuter) override;
-
     void InitializeComponent() override;
     void TickComponent(float DeltaTime) override;
 

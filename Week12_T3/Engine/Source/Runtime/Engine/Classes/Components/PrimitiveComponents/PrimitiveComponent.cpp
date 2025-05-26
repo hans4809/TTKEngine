@@ -122,19 +122,6 @@ bool UPrimitiveComponent::IntersectRayTriangle(const FVector& rayOrigin, const F
     return false;
 }
 
-UObject* UPrimitiveComponent::Duplicate(UObject* InOuter)
-{
-    UPrimitiveComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void UPrimitiveComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    USceneComponent::DuplicateSubObjects(Source, InOuter);
-}
-
 void UPrimitiveComponent::PostDuplicate()
 {
     USceneComponent::PostDuplicate();

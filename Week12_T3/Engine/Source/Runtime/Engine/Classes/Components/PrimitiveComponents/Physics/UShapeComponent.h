@@ -32,9 +32,6 @@ public:
     void BeginPlay() override;
     void TickComponent(float DeltaTime) override;
     void DestroyComponent() override;
-
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
 
     // Getter, Setter

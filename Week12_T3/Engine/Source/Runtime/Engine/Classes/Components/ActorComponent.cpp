@@ -152,17 +152,7 @@ void UActorComponent::UnregisterComponent()
     OnUnregister();
     bRegistered = false;
 }
-UObject* UActorComponent::Duplicate(UObject* InOuter)
-{
-    UActorComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-void UActorComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UObject::DuplicateSubObjects(Source, InOuter);
-}
+
 void UActorComponent::PostDuplicate()
 {
     

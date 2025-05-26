@@ -59,7 +59,6 @@ void UWorld::InitWorld()
         UE_LOG(LogLevel::Error, "FATAL ERROR: UWorld::InitWorld - Failed to initialize physics scene!");
 
     }
-    PreLoadResources();
 
     /*if (WorldType == EWorldType::Editor)
     {
@@ -79,12 +78,6 @@ void UWorld::LoadLevel(const FString& LevelName)
     // 이름으로 레벨 로드한다
     // 실패 하면 현재 레벨 유지
 }
-
-void UWorld::PreLoadResources()
-{
-    FManagerOBJ::CreateStaticMesh(TEXT("Assets/CastleObj.obj"));
-}
-#include "Components/PrimitiveComponents/MeshComponents/StaticMeshComponents/CubeComp.h"
 
 void UWorld::CreateBaseObject(EWorldType::Type WorldType)
 {
@@ -316,21 +309,6 @@ void UWorld::ClearScene()
     Level->GetActors().Empty();
     Level->PendingBeginPlayActors.Empty();
     ReleaseBaseObject();
-}
-
-UObject* UWorld::Duplicate(UObject* InOuter)
-{
-    UWorld* CloneWorld = Cast<ThisClass>(Super::Duplicate(InOuter));
-    CloneWorld->DuplicateSubObjects(this, InOuter);
-    CloneWorld->PostDuplicate();
-    return CloneWorld;
-}
-
-void UWorld::DuplicateSubObjects(const UObject* SourceObj, UObject* InOuter)
-{
-    UObject::DuplicateSubObjects(SourceObj, InOuter);
-    Level = Cast<ULevel>(Level->Duplicate(this));
-    LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>(this);
 }
 
 void UWorld::PostDuplicate()

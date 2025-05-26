@@ -156,6 +156,7 @@ enum EPropertyFlags : uint32  // NOLINT(performance-enum-size)
     EditAnywhere = 1 << 1,    // ImGui에서 읽기/쓰기 가능
     LuaReadOnly = 1 << 2,    // Lua에 읽기 전용으로 바인딩
     LuaReadWrite = 1 << 3,    // Lua에 읽기/쓰기로 바인딩
+    DuplicateTransient = 1 << 4,
     // ... 필요한 다른 플래그들 (예: SaveGame, Replicated 등)
 };
 

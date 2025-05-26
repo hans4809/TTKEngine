@@ -21,9 +21,6 @@ public:
 public:
     APlayerCameraManager();
     virtual ~APlayerCameraManager() override {};
-
-    UObject* Duplicate(UObject* InOuter) override;
-
     void Initialize(APlayerController* PC);
     
     AActor* GetViewTarget() const { return ViewTarget.Target; }

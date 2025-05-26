@@ -78,9 +78,7 @@ public:
 
     // virtual void CreateShadowMap();
 
-    // duplictae
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    // duplicta
     virtual void PostDuplicate() override;
     
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;

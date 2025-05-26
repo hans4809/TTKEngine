@@ -79,8 +79,6 @@ public:
 
     bool IsRegistered() const { return bRegistered; }
 
-    UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     void PostDuplicate() override;
 
 protected:
@@ -132,5 +130,5 @@ public:
     uint8 bAutoActive : 1;
 
 public:
-    EComponentOrigin ComponentOrigin = EComponentOrigin::None;
+    UPROPERTY(EComponentOrigin, ComponentOrigin, = EComponentOrigin::None)
 };

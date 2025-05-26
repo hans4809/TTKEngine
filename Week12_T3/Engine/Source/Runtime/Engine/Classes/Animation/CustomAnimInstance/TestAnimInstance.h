@@ -48,8 +48,6 @@ class UTestAnimInstance : public UAnimInstance
 public:
     UTestAnimInstance();
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
     void SetState(ETestState NewState) const { AnimStateMachine->SetState(NewState); }

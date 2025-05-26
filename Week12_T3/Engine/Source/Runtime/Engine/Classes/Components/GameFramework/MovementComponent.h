@@ -78,9 +78,6 @@ public:
     bool MoveComponent(const FVector& Delta);
 
     bool bInInitializeComponent;
-
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
 
 public:

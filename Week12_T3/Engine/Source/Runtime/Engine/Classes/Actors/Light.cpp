@@ -37,22 +37,6 @@ bool ALight::Destroy()
     return Super::Destroy();
 }
 
-UObject* ALight::Duplicate(UObject* InOuter)
-{
-    ALight* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewActor->DuplicateSubObjects(this, InOuter);
-    NewActor->PostDuplicate();
-    return NewActor;
-}
-
-void ALight::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-
-    LightComponent = Cast<ULightComponentBase>(LightComponent->Duplicate(LightComponent->GetOuter()));
-    BillboardComponent = Cast<UBillboardComponent>(BillboardComponent->Duplicate(BillboardComponent->GetOuter()));
-}
-
 void ALight::PostDuplicate()
 {
     Super::PostDuplicate();

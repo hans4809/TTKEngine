@@ -16,9 +16,7 @@ public:
     void Tick(float DeltaTime) override;
     
     void EndPlay(EEndPlayReason::Type EndPlayReason) override;
-
-    UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    
     void PostDuplicate() override;
 
     void OnDamaged();

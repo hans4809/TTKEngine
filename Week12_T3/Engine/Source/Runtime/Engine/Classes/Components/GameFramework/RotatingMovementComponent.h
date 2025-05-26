@@ -41,9 +41,7 @@ public:
     FRotator RotationRate;
 
     virtual void TickComponent(float DeltaTime) override;
-    
-    UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+
     void PostDuplicate() override;
     
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;

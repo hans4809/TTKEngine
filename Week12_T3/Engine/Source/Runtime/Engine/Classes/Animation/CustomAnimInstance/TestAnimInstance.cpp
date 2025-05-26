@@ -150,23 +150,6 @@ UTestAnimInstance::UTestAnimInstance()
     CurrentSequence->GetAnimationPose(CurrentPose, FAnimExtractContext(0.0f, true, false));
 }
 
-UObject* UTestAnimInstance::Duplicate(UObject* InOuter)
-{
-    UTestAnimInstance* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    NewComp->SetSkeleton(Cast<USkeletalMeshComponent>(InOuter)->GetSkeletalMesh()->GetSkeleton());
-    return NewComp;
-}
-
-void UTestAnimInstance::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UAnimInstance::DuplicateSubObjects(Source, InOuter);
-    UObject* obj = Cast<UTestAnimInstance>(Source)->AnimStateMachine->Duplicate(this);
-    AnimStateMachine = Cast<UAnimationStateMachine<ETestState>>(obj);
-}
-
-
 void UTestAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
     Super::NativeUpdateAnimation(DeltaSeconds);

@@ -36,20 +36,6 @@ void USphereShapeComponent::TickComponent(float DeltaTime)
     }
 }
 
-UObject* USphereShapeComponent::Duplicate(UObject* InOuter)
-{
-    USphereShapeComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-
-    return NewComp;
-}
-
-void USphereShapeComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void USphereShapeComponent::PostDuplicate()
 {
     Super::PostDuplicate();

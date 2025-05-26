@@ -56,20 +56,6 @@ void UShapeComponent::DestroyComponent()
     UEditorEngine::CollisionManager.Unregister(this);
 }
 
-UObject* UShapeComponent::Duplicate(UObject* InOuter)
-{
-    UShapeComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-
-    return NewComp;
-}
-
-void UShapeComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void UShapeComponent::PostDuplicate()
 {
     Super::PostDuplicate();

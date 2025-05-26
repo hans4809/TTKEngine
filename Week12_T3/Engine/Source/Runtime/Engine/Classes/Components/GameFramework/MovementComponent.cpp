@@ -63,20 +63,6 @@ bool UMovementComponent::MoveComponent(const FVector& Delta)
     return false;
 }
 
-UObject* UMovementComponent::Duplicate(UObject* InOuter)
-{
-    UMovementComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void UMovementComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UActorComponent::DuplicateSubObjects(Source, InOuter);
-    UpdatedComponent = Cast<UPrimitiveComponent>(Cast<AActor>(InOuter)->GetRootComponent());
-}
-
 void UMovementComponent::PostDuplicate()
 {
     UActorComponent::PostDuplicate();

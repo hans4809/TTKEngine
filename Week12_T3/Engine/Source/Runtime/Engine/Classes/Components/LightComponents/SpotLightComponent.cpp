@@ -25,20 +25,6 @@ void USpotLightComponent::SetOuterConeAngle(float Angle)
     OuterConeAngle = Angle;
 }
 
-UObject* USpotLightComponent::Duplicate(UObject* InOuter)
-{
-    USpotLightComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-
-    return NewComp;
-}
-
-void USpotLightComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void USpotLightComponent::PostDuplicate()
 {
 }

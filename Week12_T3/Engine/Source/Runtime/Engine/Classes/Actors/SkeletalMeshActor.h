@@ -11,9 +11,6 @@ class ASkeletalMeshActor : public AActor
 public:
     ASkeletalMeshActor();
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
-
     USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComp; }
 
 private:

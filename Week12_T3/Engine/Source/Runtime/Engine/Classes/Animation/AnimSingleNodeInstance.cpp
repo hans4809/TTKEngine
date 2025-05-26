@@ -18,14 +18,6 @@ UAnimSingleNodeInstance::UAnimSingleNodeInstance()
     CurrentSequence = FObjectFactory::ConstructObject<UAnimSequence>(this);
 }
 
-UObject* UAnimSingleNodeInstance::Duplicate(UObject* InOuter)
-{
-    UAnimSingleNodeInstance* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
 void UAnimSingleNodeInstance::SetAnimationAsset(UAnimSequence* NewAsset, bool bIsLooping, float InPlayRate)
 {
     if (NewAsset != CurrentSequence)

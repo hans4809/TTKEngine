@@ -23,14 +23,6 @@ void AController::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
-UObject* AController::Duplicate(UObject* InOuter)
-{
-    AController* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    ClonedActor->DuplicateSubObjects(this, InOuter);
-    ClonedActor->PostDuplicate();
-    return ClonedActor;
-}
-
 void AController::Possess(APawn* InPawn)
 {
     if (Pawn == InPawn)

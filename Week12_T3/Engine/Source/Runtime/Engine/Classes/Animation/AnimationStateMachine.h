@@ -7,6 +7,7 @@
 #include "UObject/ObjectMacros.h"
 
 class UAnimInstance;
+
 template <typename TState>
 class UAnimationStateMachine : public UObject
 {
@@ -14,7 +15,6 @@ class UAnimationStateMachine : public UObject
     using StateCallback = FFunctorWithContext<UAnimInstance, void, float>;
 public:
     UAnimationStateMachine() = default;
-    virtual UObject* Duplicate(UObject* InOuter) override;
 
     void AddState(TState StateName, StateCallback OnUpdate)
     {
@@ -60,7 +60,7 @@ public:
         return CurrentState;
     }
     
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    //void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
 
 private:
     TState CurrentState;
@@ -69,21 +69,12 @@ private:
 };
 
 
-template<typename TState>
-inline UObject* UAnimationStateMachine<TState>::Duplicate(UObject* InOuter)
-{
-    UAnimationStateMachine<TState>* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-template<typename TState>
-inline void UAnimationStateMachine<TState>::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UObject::DuplicateSubObjects(Source, InOuter);
-    for (auto& [State, Callback]: States)
-    {
-        Callback.Bind(Cast<UAnimInstance>(InOuter));
-    }
-}
+// template<typename TState>
+// inline void UAnimationStateMachine<TState>::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
+// {
+//     UObject::DuplicateSubObjects(Source, InOuter);
+//     for (auto& [State, Callback]: States)
+//     {
+//         Callback.Bind(Cast<UAnimInstance>(InOuter));
+//     }
+// }

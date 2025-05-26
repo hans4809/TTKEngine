@@ -61,20 +61,6 @@ void ADodge::TestRotate()
     SetActorRotation(GetActorRotation() + FRotator(0.01,0,0));
 }
 
-UObject* ADodge::Duplicate(UObject* InOuter)
-{
-    ADodge* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewActor->DuplicateSubObjects(this, InOuter);
-    return NewActor;
-}
-
-void ADodge::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-    ADodge* Origin = Cast<ADodge>(Source);
-    TestDelegate = Origin->TestDelegate;
-}
-
 void ADodge::PostDuplicate()
 {
     Super::PostDuplicate();

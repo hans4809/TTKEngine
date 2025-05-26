@@ -1,6 +1,7 @@
 #include "Actor.h"
 
 #include "EditorEngine.h"
+#include "ObjectDuplicator.h"
 #include "Engine/World.h"
 #include "Script/LuaManager.h"
 #include "UserInterface/Console.h"
@@ -318,75 +319,30 @@ void AActor::AddComponent(UActorComponent* Component)
 
 UObject* AActor::Duplicate(UObject* InOuter)
 {
-    AActor* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    ClonedActor->DuplicateSubObjects(this, InOuter);
-    ClonedActor->PostDuplicate();
-
-    return ClonedActor;
+    return Super::Duplicate(InOuter);
+    // AActor* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
+    // ClonedActor->DuplicateSubObjects(this, InOuter);
+    // ClonedActor->PostDuplicate();
+    //
+    // return ClonedActor;
 }
 
-void AActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
+void AActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator)
 {
-    UObject::DuplicateSubObjects(Source, InOuter);
+    const AActor* SrcActor = static_cast<const AActor*>(Source);
 
-    const AActor* Actor = Cast<AActor>(Source);
-    if (!Actor)
+    OwnedComponents.Empty();
+    PendingOwnedComponentAdds.Empty();
+
+    for (UActorComponent* SrcComp : SrcActor->OwnedComponents)
     {
-        return;
-    }
+        if (SrcComp->HasAnyFlags(RF_DuplicateTransient))
+            continue;
 
-    TMap<const USceneComponent*, USceneComponent*> SceneCloneMap;
-
-    for (UActorComponent* Component : Actor->OwnedComponents)
-    {
-        auto DuplicatedComponent = static_cast<UActorComponent*>(Component->Duplicate(this));
-        DuplicatedComponent->Owner = this;
-        OwnedComponents.Add(DuplicatedComponent);
-        GetWorld()->GetLevel()->GetDuplicatedObjects().Add(Component, DuplicatedComponent);
-
-        /** Todo. UActorComponent를 상속 받는 컴포넌트는 오류가 발생 코드 로직 수정 필요
-         *   임시로 IsA 검사 후 Root 설정
-         */
-        if (DuplicatedComponent->IsA(USceneComponent::StaticClass()))
-        {
-            RootComponent = Cast<USceneComponent>(DuplicatedComponent);
-        }
-        if (const USceneComponent* OldScene = Cast<USceneComponent>(Component))
-        {
-            if (USceneComponent* NewScene = Cast<USceneComponent>(DuplicatedComponent))
-            {
-                SceneCloneMap.Add(OldScene, NewScene);
-            }
-        }
-
-    }
-
-    for (const auto& Pair : SceneCloneMap)
-    {
-        const USceneComponent* Old = Pair.Key;
-        USceneComponent* New = Pair.Value;
-        if (const USceneComponent* OldParent = Old->GetAttachParent())
-        {
-            if (USceneComponent** Found = SceneCloneMap.Find(OldParent))
-            {
-                USceneComponent* NewParent = *Found;
-                New->SetupAttachment(NewParent);
-            }
-        }
-    }
-
-    if (Actor->RootComponent)
-    {
-        if (USceneComponent** Found = SceneCloneMap.Find(Actor->RootComponent))
-        {
-            SetRootComponent(*Found);
-        }
-    }
-
-    // 컴포넌트 initialize
-    for (const auto Component : OwnedComponents)
-    {
-        Component->InitializeComponent();
+        // 같은 Duplicator 인스턴스를 재사용
+        UObject* Copied = Duplicator.DuplicateObject(SrcComp);
+        UActorComponent* NewComp = static_cast<UActorComponent*>(Copied);
+        AddDuplicatedComponent(NewComp, EComponentOrigin::Duplicated);
     }
 }
 

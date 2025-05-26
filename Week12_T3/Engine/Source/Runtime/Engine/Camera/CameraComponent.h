@@ -12,9 +12,7 @@ public:
     virtual void TickComponent(float DeltaTime) override;
 
     bool IsCameraMode() const { return bRightMouseDown; }
-
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    
     virtual void PostDuplicate() override;
 
 private:
