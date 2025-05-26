@@ -2,8 +2,9 @@
 #include "UserInterface/Console.h"
 #include <PxTolerancesScale.h>
 #include <PxPhysicsAPI.h> 
+
 FPhysXSDKManager::FPhysXSDKManager()
-    : PxFoundationInstance(nullptr), PxSDKInstance(nullptr)
+    : PxFoundationInstance(nullptr), PxSDKInstance(nullptr), Pvd(nullptr)
 {
 }
 
@@ -24,7 +25,14 @@ bool FPhysXSDKManager::Initalize()
         UE_LOG(LogLevel::Error, "FPhysXSDKManager: Failed Create PxFoundation!");
         return false;
     }
-    PxSDKInstance = PxCreatePhysics(PX_PHYSICS_VERSION, *PxFoundationInstance, physx::PxTolerancesScale());
+    
+
+    Pvd = PxCreatePvd(*PxFoundationInstance);
+    Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
+
+    bool bPvdConnected = Pvd->connect(*Transport, physx::PxPvdInstrumentationFlag::eDEBUG);
+
+    PxSDKInstance = PxCreatePhysics(PX_PHYSICS_VERSION, *PxFoundationInstance, physx::PxTolerancesScale(), true, Pvd);
     if (!PxSDKInstance)
     {
         UE_LOG(LogLevel::Error, "FPhysXSDKManager: Failed Create PxSDKInstance!");
@@ -32,6 +40,8 @@ bool FPhysXSDKManager::Initalize()
         PxFoundationInstance = nullptr;
         return false;
     }
+
+    PxInitExtensions(*PxSDKInstance, Pvd);
     bIsInitalized = true;
     return true;
 

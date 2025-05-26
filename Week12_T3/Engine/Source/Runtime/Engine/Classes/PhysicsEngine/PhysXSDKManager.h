@@ -8,7 +8,10 @@
 
 #include <PxDefaultAllocator.h>
 #include <PxDefaultErrorCallback.h>
-
+namespace physx
+{
+    class PxPvdTransport;
+};
 class FPhysXSDKManager
 {
 public:
@@ -23,7 +26,6 @@ public:
     static FPhysXSDKManager& GetInstance()
     {
         static FPhysXSDKManager Inst;
-        Inst.Initalize();
         return Inst;
     }
     bool Initalize();
@@ -32,7 +34,8 @@ public:
 public:
     physx::PxDefaultAllocator DefaultAllocatorCallback;
     physx::PxDefaultErrorCallback DefaultErrorCallback;
-
+    physx::PxPvd* Pvd;
+    physx::PxPvdTransport* Transport;
     physx::PxFoundation* PxFoundationInstance;
     physx::PxPhysics* PxSDKInstance;
 private:

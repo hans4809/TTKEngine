@@ -6,13 +6,14 @@
 
 #include <PxPhysicsAPI.h> 
 #include <thread>
+#include "PhysicsEngine/PhysXSDKManager.h"
 
 #include <PxDefaultCpuDispatcher.h>
 #include <PxScene.h>
 #include <PxPhysics.h>
 
-FPhysScene_PhysX::FPhysScene_PhysX(physx::PxPhysics* InPxSDK, UWorld* InOwningWorld)
-    :PxSDK(InPxSDK), OwningEngineWorld(InOwningWorld)
+FPhysScene_PhysX::FPhysScene_PhysX(physx::PxPhysics* InPxSDK, physx::PxPvd* InPvd, UWorld* InOwningWorld)
+    :PxSDK(InPxSDK), Pvd(InPvd), OwningEngineWorld(InOwningWorld)
 {
 
 }
@@ -22,7 +23,6 @@ FPhysScene_PhysX::~FPhysScene_PhysX()
     Shutdown();
 }
 
-
 bool FPhysScene_PhysX::Initialize()
 {
     if (!PxSDK)
@@ -30,20 +30,21 @@ bool FPhysScene_PhysX::Initialize()
         UE_LOG(LogLevel::Error, TEXT("FPhysScene_PhysX::Initialize: PxSDK is null."));
         return false;
     }
-    if (PxSceneInstance) {
+
+    if (PxSceneInstance)
+    {
         UE_LOG(LogLevel::Warning, TEXT("FPhysScene_PhysX::Initialize: Scene already initialized."));
         return true; // 이미 초기화됨
     }
 
     physx::PxSceneDesc sceneDesc(PxSDK->getTolerancesScale());
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 
-    // CPU 디스패처 생성
-    // 보통은 엔진 전체에서 하나를 공유하거나, FPhysXSDKManager가 관리할 수도 있음
-    // 여기서는 씬별로 생성
+    sceneDesc.gravity = physx::PxVec3(0.0f, 0.f, -9.8f);
 
     unsigned int numCores = std::thread::hardware_concurrency();
-    CpuDispatcher = physx::PxDefaultCpuDispatcherCreate(numCores > 0 ? numCores - 1 : 0); // (코어 수 - 1) 또는 고정값
+
+    CpuDispatcher = physx::PxDefaultCpuDispatcherCreate(numCores > 0 ? numCores - 1 : 0);
+
     if (!CpuDispatcher)
     {
         UE_LOG(LogLevel::Error, TEXT("FPhysScene_PhysX::Initialize: Failed to create CpuDispatcher."));
@@ -51,9 +52,7 @@ bool FPhysScene_PhysX::Initialize()
     }
     sceneDesc.cpuDispatcher = CpuDispatcher;
 
-    // 필터 셰이더 설정
-    sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-
+  
     // 이벤트 콜백 설정
     EventCallback = new FSimulationEventCallback(this);
 
@@ -61,19 +60,29 @@ bool FPhysScene_PhysX::Initialize()
 
     // 씬 플래그 설정
     sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;  // 연속 충돌 감지 (Continuous Collision Detection) 필요시
+    sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
     sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
-
+    sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
     PxSceneInstance = PxSDK->createScene(sceneDesc);
+
     if (!PxSceneInstance)
     {
         UE_LOG(LogLevel::Error, TEXT("FPhysScene_PhysX::Initialize: Failed to create PxScene."));
         CpuDispatcher = nullptr;
 
-        // delete EventCallback;
-        // EventCallback = nullptr;
+        delete EventCallback;
+        EventCallback = nullptr;
 
         return false;
+    }
+
+    physx::PxPvdSceneClient* pvdClient = PxSceneInstance->getScenePvdClient();
+
+    if (pvdClient)
+    {
+        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
     }
 
     UE_LOG(LogLevel::Display, TEXT("FPhysScene_PhysX: Initialized successfully."));
@@ -108,7 +117,7 @@ void FPhysScene_PhysX::AddObject(FBodyInstance* BodyInstance)
         physx::PxRigidActor* ActorToAdd = BodyInstance->GetPxRigidActor();
 
         // 씬에 추가하기 전에 액터의 상태를 확인하거나 설정할 수 있음
-        // ActorToAdd->setActorFlag(physx::PxActorFlag::eVISUALIZATION, true);
+        ActorToAdd->setActorFlag(physx::PxActorFlag::eVISUALIZATION, true);
 
         /*
         * eVISUALIZATION: PhysX Visual Debugger (PVD)에 시각화 정보(모양, 위치 등)를 전송
@@ -121,6 +130,15 @@ void FPhysScene_PhysX::AddObject(FBodyInstance* BodyInstance)
         if (ActorToAdd)
         {
             PxSceneInstance->addActor(*ActorToAdd);
+            bool  res = Pvd->isConnected();
+            if (res)
+            {
+                UE_LOG(LogLevel::Warning, "connect");
+            }
+            else
+            {
+                UE_LOG(LogLevel::Warning, "disconnect");
+            }
         }
         else
         {
@@ -140,9 +158,9 @@ void FPhysScene_PhysX::RemoveObject(FBodyInstance* BodyInstance)
     {
         physx::PxRigidActor* ActorToRemove = BodyInstance->GetPxRigidActor();
         PxSceneInstance->removeActor(*ActorToRemove);
-        
+
     }
-    else 
+    else
     {
         UE_LOG(LogLevel::Warning, TEXT("FPhysScene_PhysX::RemoveActorFromScene: Invalid PxScene, BodyInstance, or PxRigidActor."));
     }
@@ -150,11 +168,8 @@ void FPhysScene_PhysX::RemoveObject(FBodyInstance* BodyInstance)
 
 void FPhysScene_PhysX::Simulate(float DeltaTime)
 {
-    if (PxSceneInstance)
-    {
-        PxSceneInstance->simulate(DeltaTime);
-        PxSceneInstance->fetchResults(true); //블로킹 방식으로 결과 가져오기
-    }
+    PxSceneInstance->simulate(1.0f / 60.f);
+    PxSceneInstance->fetchResults(true); //블로킹 방식으로 결과 가져오기
 }
 
 bool FPhysScene_PhysX::RaycastSingle(const FVector& Origin, const FVector& Direction, float MaxDistance, FHitResult& OutHit, const physx::PxQueryFilterData& FilterData, physx::PxHitFlags InQueryFlags)
@@ -182,11 +197,11 @@ bool FPhysScene_PhysX::RaycastSingle(const FVector& Origin, const FVector& Direc
 
 void FPhysScene_PhysX::SetGravity(const FVector& NewGravity)
 {
-    if (PxSceneInstance) 
+    if (PxSceneInstance)
     {
         PxSceneInstance->setGravity(NewGravity.ToPxVec3());
     }
-    else 
+    else
     {
         UE_LOG(LogLevel::Warning, TEXT("FPhysScene_PhysX::SetGravity: PxSceneInstance is null."));
     }
