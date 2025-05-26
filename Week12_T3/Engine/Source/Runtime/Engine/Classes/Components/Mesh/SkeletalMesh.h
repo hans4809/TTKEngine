@@ -37,7 +37,6 @@ public:
 
     void ResetToOriginalPose();
 private:
-    
     FSkeletalMeshRenderData SkeletalMeshRenderData;
     USkeleton* Skeleton = nullptr;
     TArray<FMaterialSlot> MaterialSlots;

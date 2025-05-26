@@ -41,8 +41,7 @@ namespace std {
     };
 }
 
-class UTestAnimInstance :
-    public UAnimInstance
+class UTestAnimInstance : public UAnimInstance
 {
     DECLARE_CLASS(UTestAnimInstance, UAnimInstance)
     DECLARE_CONTEXT_FUNC(StateCallback, void, float);

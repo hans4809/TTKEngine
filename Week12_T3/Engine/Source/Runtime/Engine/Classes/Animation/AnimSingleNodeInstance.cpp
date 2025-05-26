@@ -71,7 +71,7 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 
         if (!bLooping)
         {
-            if (!bReverse&&CurrentTime == EndTime)
+            if (!bReverse && CurrentTime == EndTime)
             {
                 CurrentTime = StartTime;
             }
@@ -131,6 +131,6 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
             BoneTransform.GetRotation(),
             BoneTransform.GetScale()
         );
-        SkeletalMesh->GetRenderData().Bones[i].LocalTransform = TransformMatrix;
+        SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
     }
 }

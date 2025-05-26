@@ -367,9 +367,10 @@ void FSkeletalMeshRenderPass::UpdateBoneConstant(USkeletalMeshComponent* Skeleta
     FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
 
     FBoneConstant BoneConstant;
-    for (int i=0;i<SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Bones.Num();i++)
+    
+    for (int i = 0; i < SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Bones.Num(); ++i)
     {
-        BoneConstant.BoneSkinningMatrices[i] = SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Bones[i].SkinningMatrix;
+        BoneConstant.BoneSkinningMatrices[i] = SkeletalMeshComponent->BoneSkinningMatrices[i];
     }
 
     renderResourceManager->UpdateConstantBuffer(renderResourceManager->GetConstantBuffer(TEXT("FBoneConstant")), &BoneConstant);

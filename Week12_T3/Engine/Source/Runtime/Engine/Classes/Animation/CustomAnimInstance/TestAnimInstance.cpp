@@ -3,9 +3,6 @@
 #include "GameFramework/Actor.h"
 #include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
 #include "Animation/AnimSequence.h"
-#include "Animation/AnimNotify/AnimNotify.h"
-#include "Components/GameFramework/ProjectileMovementComponent.h"
-#include "GameFramework/Character.h"
 
 UTestAnimInstance::UTestAnimInstance()
 {

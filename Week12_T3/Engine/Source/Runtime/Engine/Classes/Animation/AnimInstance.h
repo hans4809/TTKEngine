@@ -13,6 +13,7 @@ class FName;
 
 class USkeletalMeshComponent;
 class UAnimSequence;
+
 class UAnimInstance : public UObject
 {
     DECLARE_CLASS(UAnimInstance, UObject)
@@ -58,6 +59,5 @@ protected:
 private:
     USkeleton* Skeleton;
     FBlendedCurve BlendedCurve;
-
 };
 

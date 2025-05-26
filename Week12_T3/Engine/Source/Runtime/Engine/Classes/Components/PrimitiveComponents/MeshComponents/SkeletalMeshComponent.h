@@ -36,7 +36,6 @@ public:
     virtual uint32 GetMaterialIndex(FName MaterialSlotName) const override;
     virtual TArray<FName> GetMaterialSlotNames() const override;
     virtual void GetUsedMaterials(TArray<UMaterial*>& Out) const override;
-
     
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) override;
     
@@ -48,7 +47,6 @@ public:
     void SetAnimInstance(UAnimInstance* InAnimInstance) { AnimInstance = InAnimInstance; }
     
     int32 GetBoneIndex(FName BoneName) const;
-
     
     /**
      * 본 인덱스를 이용해 월드 공간 상의 본 트랜스폼을 가져옵니다.
@@ -63,10 +61,16 @@ public:
     UAnimSingleNodeInstance* GetSingleNodeInstance() const;
     void CreateBoneComponents();
     void UpdateBoneHierarchy();
-
+    void ResetToOriginPos();
+    void UpdateChildBones(int ParentIndex);
+    
     int SelectedSubMeshIndex = -1;
 
     UPROPERTY(EditAnywhere, bool, bConsiderAllBodiesForBounds, = true)
+
+    TArray<FMatrix> BoneLocalTransforms;
+    TArray<FMatrix> BoneWorldTransforms;
+    TArray<FMatrix> BoneSkinningMatrices;
 public:
     void PlayAnimation(UAnimSequence* NewAnimToPlay, bool bLooping);
 

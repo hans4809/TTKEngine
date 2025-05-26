@@ -71,8 +71,8 @@ public:
     void SetShadowFilterMode(EShadowFilterMode FilterMode) { CurrentShadowFilterMode = FilterMode; }
     EShadowFilterMode GetShadowFilterMode() const { return CurrentShadowFilterMode; }
 
-    void SetSkinningMode(ESkinningType FilterMode) { CurrentSkinningType = FilterMode; }
-    ESkinningType GetSkinningMode() const { return CurrentSkinningType; }
+    void SetSkinningMode(ESkinningType FilterMode) { CurrentSkinningType = ESkinningType::GPU; }
+    ESkinningType GetSkinningMode() const { return ESkinningType::GPU; }
 
 public:
     //Render Pass Demo
