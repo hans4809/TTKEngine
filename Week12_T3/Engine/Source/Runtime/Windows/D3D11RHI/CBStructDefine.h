@@ -74,6 +74,8 @@ struct alignas(16) FViewportInfo
 {
     FVector2D ViewportSize; // offset: 0, size: 8
     FVector2D ViewportOffset; // offset: 8, size: 8
+    FVector2D ScreenSize; // offset: 16, size: 8
+    FVector2D Pad;
 };
 
 struct alignas(16) FFogParams
@@ -235,3 +237,14 @@ struct alignas(16) UTextureCountConstants
     FVector2D Padding;
 };
 
+struct alignas(16) FPostProcessConstants
+{
+    float FocalLength;
+    float Aperture;
+    float FocusDistance;
+    float SensorWidth;
+    
+    float MaxCoCRadius;
+    uint32 SampleCount;
+    FVector2D Padding;
+};

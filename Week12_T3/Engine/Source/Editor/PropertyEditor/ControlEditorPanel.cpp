@@ -15,6 +15,7 @@
 
 #include "LaunchEngineLoop.h"
 #include "ShowFlags.h"
+#include "Actors/APostProcessVolume.h"
 #include "Engine/FBXLoader.h"
 #include "Actors/SkeletalMeshActor.h"
 #include "Camera/CameraComponent.h"
@@ -345,6 +346,8 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { "Effects", "Particle",       OBJ_PARTICLE },
             { "Effects", "Text",           OBJ_TEXT },
             { "Effects", "Fog",            OBJ_FOG },
+
+            { "Volume", "PostProcess", OBJ_POSTPROCESS}
         };
 
         const char* CurrentCategory = nullptr;
@@ -536,6 +539,13 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Dodge.obj"));
                         SpawnedActor = TempActor;
                         break;
+                    }
+
+                    case OBJ_POSTPROCESS:
+                    {
+                        APostProcessVolume* TempActor = World->SpawnActor<APostProcessVolume>();
+                        TempActor->SetActorLabel(TEXT("PostProcessVolume"));
+                        SpawnedActor = TempActor;
                     }
                     default:
                         break;

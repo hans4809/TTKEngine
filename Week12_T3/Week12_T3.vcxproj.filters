@@ -637,6 +637,7 @@
     <FxCompile Include="Shaders\SkeletalUberLitVertexShader.hlsl" />
     <FxCompile Include="Shaders\ParticleSystemPixelShader.hlsl" />
     <FxCompile Include="Shaders\ParticleSystemVertexShader.hlsl" />
+    <FxCompile Include="Shaders\DOFPixelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Week12_T3.natvis" />
@@ -839,6 +840,8 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Particles\ParticleEmitterInstances.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\Archive2.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Serialization\MemoryArchive.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\APostProcessVolume.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\CameraRenderPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

@@ -11,6 +11,7 @@
 #include "Engine/Engine.h"
 #include "Engine/FEditorStateManager.h"
 #include "RenderPass/BlurRenderPass.h"
+#include "RenderPass/CameraRenderPass.h"
 #include "RenderPass/EditorIconRenderPass.h"
 #include "RenderPass/FadeRenderPass.h"
 #include "RenderPass/FinalRenderPass.h"
@@ -129,6 +130,9 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateVertexPixelShader(TEXT("ParticleSystem"), nullptr);
     ParticleRenderPass = std::make_shared<FParticleRenderPass>(TEXT("ParticleSystem"));
     ParticleRenderPass->RenderPassEmitterType = DET_Sprite;
+
+    CreateVertexPixelShader(TEXT("DOF"), nullptr);
+    CameraRenderPass = std::make_shared<FCameraRenderPass>(TEXT("DOF"));
     
     FString MeshParticleName = TEXT("ParticleSystem");
     MeshParticleName += MeshParticleDefines->Name;
@@ -395,6 +399,9 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
     
     FadeRenderPass->Prepare(ActiveViewportClient);
     FadeRenderPass->Execute(ActiveViewportClient);
+    
+    CameraRenderPass->Prepare(ActiveViewportClient);
+    CameraRenderPass->Execute(ActiveViewportClient);
 
     FinalRenderPass->Prepare(ActiveViewportClient);
     FinalRenderPass->Execute(ActiveViewportClient);
@@ -425,6 +432,7 @@ void FRenderer::ClearRenderObjects() const
     FinalRenderPass->ClearRenderObjects();
     ParticleRenderPass->ClearRenderObjects();
     MeshParticleRenderPass->ClearRenderObjects();
+    CameraRenderPass->ClearRenderObjects();
 }
 
 void FRenderer::SetViewMode(const EViewModeIndex evi)
@@ -500,10 +508,13 @@ void FRenderer::AddRenderObjectsToRenderPass(UWorld* World) const
     LetterBoxRenderPass->AddRenderObjectsToRenderPass(World);
     FogRenderPass->AddRenderObjectsToRenderPass(World);
     BlurRenderPass->AddRenderObjectsToRenderPass(World);
+    
     FinalRenderPass->AddRenderObjectsToRenderPass(World);
 
     ParticleRenderPass->AddRenderObjectsToRenderPass(World);
     MeshParticleRenderPass->AddRenderObjectsToRenderPass(World);
+
+    CameraRenderPass->AddRenderObjectsToRenderPass(World);
 }
 
 FName FRenderer::GetVSName(const FName InShaderProgramName)
