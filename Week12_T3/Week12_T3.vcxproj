@@ -297,6 +297,8 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Physics\AggregateGeom.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\PhysicsAsset.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\RigidBodyIndexPair.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\FCollisionManager.cpp" />
@@ -606,6 +608,8 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupEnums.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\PhysicsAsset.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\RigidBodyIndexPair.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\FCollisionManager.h" />
@@ -985,6 +989,9 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
   </ItemGroup>
   <ItemGroup>
     <Image Include="Icon\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\PysicsAsset\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -934,9 +934,9 @@ void SkeletalPreviewPropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComp
 
         ImGui::Separator();
 
-        for (const auto& Bone : SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal()->BoneTree)
+        for (const auto& Bone : SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal().BoneTree)
         {
-            for (const auto& RootBoneIndex : SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal()->RootBoneIndices)
+            for (const auto& RootBoneIndex : SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal().RootBoneIndices)
             {
                 if (Bone.BoneIndex == RootBoneIndex)
                 {
@@ -1078,7 +1078,7 @@ void SkeletalPreviewPropertyEditorPanel::RenderForSkeletalMesh2(USkeletalMeshCom
             else
             {
                 // 루트 본부터 계층 구조 표시
-                for (const auto& RootBoneIndex : SkeletalMesh->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal()->RootBoneIndices)
+                for (const auto& RootBoneIndex : SkeletalMesh->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal().RootBoneIndices)
                 {
                     RenderBoneHierarchy(SkeletalMesh->GetSkeletalMesh(), RootBoneIndex);
                 }
@@ -1114,7 +1114,7 @@ void SkeletalPreviewPropertyEditorPanel::RenderBoneHierarchy(USkeletalMesh* Skel
     }
 
     // 자식이 없는 본은 리프 노드로 표시
-    if (SkeletalMesh->GetSkeleton()->GetRefSkeletal()->BoneTree[BoneIndex].ChildIndices.Num() == 0)
+    if (SkeletalMesh->GetSkeleton()->GetRefSkeletal().BoneTree[BoneIndex].ChildIndices.Num() == 0)
     {
         flags |= ImGuiTreeNodeFlags_Leaf;
     }
@@ -1159,7 +1159,7 @@ void SkeletalPreviewPropertyEditorPanel::RenderBoneHierarchy(USkeletalMesh* Skel
     if (isOpen)
     {
         // 모든 자식 본 표시
-        for (int32 ChildIndex : SkeletalMesh->GetSkeleton()->GetRefSkeletal()->BoneTree[BoneIndex].ChildIndices)
+        for (int32 ChildIndex : SkeletalMesh->GetSkeleton()->GetRefSkeletal().BoneTree[BoneIndex].ChildIndices)
         {
             RenderBoneHierarchy(SkeletalMesh, ChildIndex);
         }
@@ -1272,7 +1272,7 @@ void SkeletalPreviewPropertyEditorPanel::RenderForMaterial(USkeletalMeshComponen
 
     if (ImGui::TreeNodeEx("SubMeshes", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
-        auto subsets = SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal()->MaterialSubsets;
+        auto subsets = SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal().MaterialSubsets;
         for (uint32 i = 0; i < subsets.Num(); ++i)
         {
             std::string temp = "subset " + std::to_string(i);

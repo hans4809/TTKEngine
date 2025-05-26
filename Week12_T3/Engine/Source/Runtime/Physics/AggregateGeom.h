@@ -43,11 +43,11 @@ struct FKAggregateGeom
         return SphereElems.GetAllocatedSize() + SphylElems.GetAllocatedSize() + BoxElems.GetAllocatedSize() + ConvexElems.GetAllocatedSize();
     }
 
-    FORCEINLINE FKShapeElem* GetElement(const EAggCollisionShape::Type Type, const int32 Index);
+    FKShapeElem* GetElement(const EAggCollisionShape::Type Type, const int32 Index);
 
-    FORCEINLINE FKShapeElem* GetElement(const int32 InIndex);
+    FKShapeElem* GetElement(const int32 InIndex);
 
-    FORCEINLINE const FKShapeElem* GetElement(const int32 InIndex) const;
+    const FKShapeElem* GetElement(const int32 InIndex) const;
 
     const FKShapeElem* GetElementByName(const FName InName) const;
     
@@ -76,7 +76,7 @@ struct FKAggregateGeom
         SphereElems.Empty();
     }
 
-    void GetAggGeom(const FTransform& Transform, const FColor Color, const UMaterial* MatInst, bool bPerHullColor, bool bDrawSolid, bool bOutputVelocity, int32 ViewIndex, class FMeshElementCollector& Collector) const;
+    void GetAggGeom(const FTransform& Transform, const FColor Color, const UMaterial* MatInst, bool bPerHullColor, bool bDrawSolid, bool bOutputVelocity, int32 ViewIndex) const;
 
     FBoundingBox CalcAABB(const FTransform& Transform) const;
     

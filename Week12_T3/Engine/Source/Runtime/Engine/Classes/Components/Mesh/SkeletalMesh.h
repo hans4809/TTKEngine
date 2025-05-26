@@ -39,7 +39,7 @@ public:
 private:
     
     FSkeletalMeshRenderData SkeletalMeshRenderData;
-    USkeleton* Skeleton;
+    USkeleton* Skeleton = nullptr;
     TArray<FMaterialSlot*> MaterialSlots;
 
     void UpdateChildBones(int ParentIndex);

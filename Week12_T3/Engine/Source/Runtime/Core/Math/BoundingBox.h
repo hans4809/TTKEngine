@@ -34,4 +34,7 @@ struct FBoundingBox
         Extents = GetExtent();
         Center = Min + Extents;
     }
+
+    FVector GetSize() const;
+    FBoundingBox ExpandBy(FVector V) const;
 };

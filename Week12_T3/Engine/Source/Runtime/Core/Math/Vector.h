@@ -194,6 +194,7 @@ struct FVector
     }
 
     FString ToString() const;
+    bool IsUniform(float Tolerance = KINDA_SMALL_NUMBER) const;
 
     static float Distance(const FVector& V1, const FVector& V2)
     {
@@ -325,6 +326,11 @@ inline FString FVector::ToString() const
 
     // 필요에 따라 소수점 정밀도 지정 가능: 예) "X=%.2f Y=%.2f Z=%.2f"
     // return FString::Printf(TEXT("X=%.2f Y=%.2f Z=%.2f"), x, y, z);
+}
+
+inline bool FVector::IsUniform(const float Tolerance) const
+{
+    return FMath::Abs(X - Y) <= Tolerance && FMath::Abs(X - Z) <= Tolerance && FMath::Abs(Y - Z) <= Tolerance;
 }
 
 inline FVector FVector::GetAbs() const

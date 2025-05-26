@@ -11,7 +11,7 @@ struct FKConvexElem : public FKShapeElem
     DECLARE_STRUCT(FKConvexElem, FKShapeElem)
 
     /** Array of indices that make up the convex hull. */
-    UPROPERTY(EditAnywhere, TArray<FVector>,  VertexData, = {})
+    UPROPERTY(EditAnywhere, TArray<FVector>, VertexData, = {})
 
     UPROPERTY(EditAnywhere, TArray<int32>, IndexData, = {})
 
@@ -19,7 +19,7 @@ struct FKConvexElem : public FKShapeElem
 private:
     UPROPERTY(EditAnywhere, FTransform, Transform, = FTransform::Identity)
 
-    // Chaos::FConvexPtr ChaosConvex;
+    //Chaos::FConvexPtr ChaosConvex;
 
 public:
     enum class EConvexDataUpdateMethod

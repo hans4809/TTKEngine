@@ -31,8 +31,8 @@ public:
     auto rbegin() const noexcept { return ContainerPrivate.rbegin(); }
     auto rend() const noexcept { return ContainerPrivate.rend(); }
 
-    T& operator[](SizeType Index);
-    const T& operator[](SizeType Index) const;
+    auto operator[](SizeType Index) -> decltype(ContainerPrivate[Index]) ;
+    auto operator[](SizeType Index) const -> decltype(ContainerPrivate[Index]);
 	void operator+(const TArray& OtherArray);
 
 public:
@@ -263,13 +263,13 @@ public:
 
 
 template <typename T, typename Allocator>
-T& TArray<T, Allocator>::operator[](SizeType Index)
+auto TArray<T, Allocator>::operator[](SizeType Index) -> decltype(ContainerPrivate[Index])
 {
     return ContainerPrivate[Index];
 }
 
 template <typename T, typename Allocator>
-const T& TArray<T, Allocator>::operator[](SizeType Index) const
+auto TArray<T, Allocator>::operator[](SizeType Index) const -> decltype(ContainerPrivate[Index])
 {
     return ContainerPrivate[Index];
 }

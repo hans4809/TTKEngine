@@ -44,11 +44,11 @@ float FKSphereElem::GetScaledVolume(const FVector& Scale) const
     return 1.3333f * PI * FMath::Pow(Radius * Scale.GetAbsMin(), 3);
 }
 
-FBoundingBox FKSphereElem::CalcAABB(const FTransform& BoneTM, float Scale) const
+FBoundingBox FKSphereElem::CalcAABB(const FTransform& BoneTM, const float Scale) const
 {
     FTransform ElemTM = GetTransform();
     ElemTM.Location *= Scale;
-    FMatrix MultipliedMat =  ElemTM.ToMatrixWithScale() * BoneTM.ToMatrixWithScale();
+    const FMatrix MultipliedMat =  ElemTM.ToMatrixWithScale() * BoneTM.ToMatrixWithScale();
 
     const FVector BoxCenter = MultipliedMat.GetOrigin();
     const FVector BoxExtents(Radius * Scale);

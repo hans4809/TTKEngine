@@ -1,14 +1,15 @@
 #pragma once
+#include "Define.h"
 #include "Container/Array.h"
 #include "Container/Map.h"
 #include "Math/BoundingBox.h"
 #include "Math/Matrix.h"
 #include "Math/Vector.h"
 
+
 #pragma region Skeletal;
 
 class UMaterial;
-struct FMaterialSubset;
 
 struct FBone
 {
@@ -102,6 +103,13 @@ struct FRefSkeletal
     void Serialize(FArchive& Ar) const;
 
     void Deserialize(FArchive& Ar);
+
+    FName GetBoneName(const int32 BoneIndex) const;
+    int32 GetParentIndex(int32 InBoneIndex);
+    int32 FindBoneIndex(FName BoneName) const;
+    bool BoneIsChildOf(const int32 ChildBoneIndex, const int32 ParentBoneIndex);
+
+    bool IsValidIndex(int32 Index) const;
 };
 
 struct FSkeletalMeshRenderData

@@ -145,8 +145,10 @@ void FSkeletalMeshRenderPass::Execute(const std::shared_ptr<FViewportClient> InV
 
         if (!SkeletalMeshComponent->GetSkeletalMesh()) continue;
         
-        const FRefSkeletal* RefSkeletal = SkeletalMeshComponent->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal();
-        if (RefSkeletal == nullptr) continue;
+        USkeleton* Skeleton = SkeletalMeshComponent->GetSkeletalMesh()->GetSkeleton();
+        if (Skeleton != nullptr) continue;
+
+        FRefSkeletal RefSkeletal = Skeleton->GetRefSkeletal();
 
         FGraphicsDevice GraphicDevice = GEngineLoop.GraphicDevice;
         FSkeletalMeshRenderData RenderData = SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData();
@@ -166,21 +168,21 @@ void FSkeletalMeshRenderPass::Execute(const std::shared_ptr<FViewportClient> InV
             GraphicDevice.DeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
 
         // If There's No Material Subset
-        if (RefSkeletal->MaterialSubsets.Num() == 0)
+        if (RefSkeletal.MaterialSubsets.Num() == 0)
         {
             Graphics.DeviceContext->DrawIndexed(RenderData.Indices.Num(), 0,0);
         }
 
         // SubSet마다 Material Update 및 Draw
-        for (int subMeshIndex = 0; subMeshIndex < RefSkeletal->MaterialSubsets.Num(); ++subMeshIndex)
+        for (int subMeshIndex = 0; subMeshIndex < RefSkeletal.MaterialSubsets.Num(); ++subMeshIndex)
         {
-            const int materialIndex = RefSkeletal->MaterialSubsets[subMeshIndex].MaterialIndex;
+            const int materialIndex = RefSkeletal.MaterialSubsets[subMeshIndex].MaterialIndex;
             
             UpdateMaterialConstants(SkeletalMeshComponent->GetMaterial(materialIndex)->GetMaterialInfo());
 
             // index draw
-            const uint64 startIndex = RefSkeletal->MaterialSubsets[subMeshIndex].IndexStart;
-            const uint64 indexCount = RefSkeletal->MaterialSubsets[subMeshIndex].IndexCount;
+            const uint64 startIndex = RefSkeletal.MaterialSubsets[subMeshIndex].IndexStart;
+            const uint64 indexCount = RefSkeletal.MaterialSubsets[subMeshIndex].IndexCount;
             Graphics.DeviceContext->DrawIndexed(indexCount, startIndex, 0);
         }
     }

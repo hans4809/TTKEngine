@@ -138,6 +138,22 @@ void USkeletalMeshComponent::SetSkeletalMesh(USkeletalMesh* value)
     // CreateBoneComponents();
 }
 
+int32 USkeletalMeshComponent::GetBoneIndex(FName BoneName) const
+{
+    int32 BoneIndex = INDEX_NONE;
+    if ( BoneName != NAME_None && GetSkeletalMesh())
+    {
+        BoneIndex = GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal().FindBoneIndex(BoneName);
+    }
+
+    return BoneIndex;
+}
+
+FTransform USkeletalMeshComponent::GetBoneTransform(const int32 BoneIndex) const
+{
+    return GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal().RawBones[BoneIndex].GlobalTransform;
+}
+
 UAnimSingleNodeInstance* USkeletalMeshComponent::GetSingleNodeInstance() const
 {
     return Cast<UAnimSingleNodeInstance>(AnimInstance);
@@ -175,7 +191,7 @@ void USkeletalMeshComponent::UpdateBoneHierarchy()
     for (int i=0;i<SkeletalMesh->GetRenderData().Vertices.Num();i++)
     {
          SkeletalMesh->GetRenderData().Vertices[i].Position
-        = SkeletalMesh->GetSkeleton()->GetRefSkeletal()->RawVertices[i].Position;
+        = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawVertices[i].Position;
     }
     
     SkeletalMesh->UpdateBoneHierarchy();
@@ -296,12 +312,12 @@ void USkeletalMeshComponent::SetData(const FString& FilePath)
 void USkeletalMesh::ResetToOriginalPose()
 {
     // 본 트랜스폼 복원
-    for (int i = 0; i < Skeleton->GetRefSkeletal()->RawVertices.Num() && i < SkeletalMeshRenderData.Bones.Num(); i++)
+    for (int i = 0; i < Skeleton->GetRefSkeletal().RawVertices.Num() && i < SkeletalMeshRenderData.Bones.Num(); i++)
     {
         // 로컬 트랜스폼 복원
-        SkeletalMeshRenderData.Bones[i].LocalTransform = Skeleton->GetRefSkeletal()->RawBones[i].LocalTransform;
-        SkeletalMeshRenderData.Bones[i].GlobalTransform = Skeleton->GetRefSkeletal()->RawBones[i].GlobalTransform;
-        SkeletalMeshRenderData.Bones[i].SkinningMatrix = Skeleton->GetRefSkeletal()->RawBones[i].SkinningMatrix;
+        SkeletalMeshRenderData.Bones[i].LocalTransform = Skeleton->GetRefSkeletal().RawBones[i].LocalTransform;
+        SkeletalMeshRenderData.Bones[i].GlobalTransform = Skeleton->GetRefSkeletal().RawBones[i].GlobalTransform;
+        SkeletalMeshRenderData.Bones[i].SkinningMatrix = Skeleton->GetRefSkeletal().RawBones[i].SkinningMatrix;
     }
 
     // 스키닝 적용

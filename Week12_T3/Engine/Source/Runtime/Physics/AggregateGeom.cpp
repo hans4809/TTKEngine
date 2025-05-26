@@ -139,6 +139,12 @@ int32 FKAggregateGeom::GetElementIndexByName(const FName InName) const
     return INDEX_NONE;
 }
 
+void FKAggregateGeom::GetAggGeom(const FTransform& Transform, const FColor Color, const UMaterial* MatInst, bool bPerHullColor, bool bDrawSolid,
+    bool bOutputVelocity, int32 ViewIndex) const
+{
+    // Debug Draw 용인듯?
+}
+
 FBoundingBox FKAggregateGeom::CalcAABB(const FTransform& Transform) const
 {
     const FVector Scale3D = Transform.GetScale();

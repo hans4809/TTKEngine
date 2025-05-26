@@ -48,10 +48,10 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
 
     ParsedAnimData.Empty();
     FSkeletalMeshRenderData* NewMeshData = new FSkeletalMeshRenderData();
-    FRefSkeletal* RefSkeletal = new FRefSkeletal();
+    FRefSkeletal RefSkeletal;
     
     NewMeshData->Name = FilePath;
-    RefSkeletal->Name = FilePath;
+    RefSkeletal.Name = FilePath;
     
     ExtractFBXMeshData(Scene, NewMeshData, RefSkeletal);
     ExtractFBXAnimData(Scene, FilePath);
@@ -60,14 +60,14 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
     {
         FSkeletalVertex RawVertex;
         RawVertex = Vertex;
-        RefSkeletal->RawVertices.Add(RawVertex);
+        RefSkeletal.RawVertices.Add(RawVertex);
     }
 
     for (const auto Bone : NewMeshData->Bones)
     {
         FBone RawBone;
         RawBone = Bone;
-        RefSkeletal->RawBones.Add(RawBone);
+        RefSkeletal.RawBones.Add(RawBone);
     }
     
     SkeletalMeshData.Add(FilePath, NewMeshData);
@@ -79,7 +79,7 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
     FString binSaveFilePath = "Contents/FBX/" + fullpath.filename().string() + ".bin";
     FArchive ar;
     ar << FilePath;
-    ar << *NewMeshData << *RefSkeletal;
+    ar << *NewMeshData << RefSkeletal;
     ar << ParsedAnimData.Num();
     for (const auto& parsed: ParsedAnimData)
     {
@@ -94,14 +94,14 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
 FSkeletalMeshRenderData* FFBXLoader::ParseBin(const FString FilePath)
 {
     FSkeletalMeshRenderData* NewMeshData = new FSkeletalMeshRenderData();
-    FRefSkeletal* RefSkeletal = new FRefSkeletal();
+    FRefSkeletal RefSkeletal;
     
     std::filesystem::path fullpath(FilePath);
     FArchive ar;
     FString originalFilePath;
     FWindowsBinHelper::LoadFromBin(FilePath, ar);
     ar >> originalFilePath;
-    ar >> *NewMeshData >> *RefSkeletal;
+    ar >> *NewMeshData >> RefSkeletal;
     
     int ParsedAnimCount;
     FName AnimKey;
@@ -120,22 +120,22 @@ FSkeletalMeshRenderData* FFBXLoader::ParseBin(const FString FilePath)
     return NewMeshData;
 }
 
-void FFBXLoader::ExtractFBXMeshData(const FbxScene* Scene, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal)
+void FFBXLoader::ExtractFBXMeshData(const FbxScene* Scene, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
 {
     FbxNode* RootNode = Scene->GetRootNode();
     if (RootNode == nullptr)
         return;
 
-    ExtractBoneFromNode(RootNode, MeshData, RefSkeletal);
-    ExtractMeshFromNode(RootNode, MeshData, RefSkeletal);
+    ExtractBoneFromNode(RootNode, MeshData, OutRefSkeletal);
+    ExtractMeshFromNode(RootNode, MeshData, OutRefSkeletal);
 }
 
-void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal)
+void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
 {
     // Clear existing bone tree data
-    RefSkeletal->BoneTree.Empty();
-    RefSkeletal->RootBoneIndices.Empty();
-    RefSkeletal->BoneNameToIndexMap.Empty();
+    OutRefSkeletal.BoneTree.Empty();
+    OutRefSkeletal.RootBoneIndices.Empty();
+    OutRefSkeletal.BoneNameToIndexMap.Empty();
 
     // Before - collect all bone nodes 
     TArray<FbxNode*> BoneNodes;
@@ -164,7 +164,7 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
         FString BoneName = BoneNode->GetName();
         
         // Check if this bone already exists
-        int* ExistingBoneIndex = RefSkeletal->BoneNameToIndexMap.Find(BoneName);
+        int* ExistingBoneIndex = OutRefSkeletal.BoneNameToIndexMap.Find(BoneName);
         if (ExistingBoneIndex)
             continue;
             
@@ -189,13 +189,13 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
         
         // Add bone to array and create mapping
         int BoneIndex = MeshData->Bones.Add(NewBone);
-        RefSkeletal->BoneNameToIndexMap.Add(BoneName, BoneIndex);
+        OutRefSkeletal.BoneNameToIndexMap.Add(BoneName, BoneIndex);
         
         // Create corresponding bone tree node
         FBoneNode NewNode;
         NewNode.BoneName = BoneName;
         NewNode.BoneIndex = BoneIndex;
-        RefSkeletal->BoneTree.Add(NewNode);
+        OutRefSkeletal.BoneTree.Add(NewNode);
     }
     
     // Second pass - establish parent-child relationships
@@ -209,25 +209,25 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
         FString BoneName = BoneNode->GetName();
         FbxNode* ParentNode = BoneNode->GetParent();
         
-        if (!RefSkeletal->BoneNameToIndexMap.Contains(BoneName))
+        if (!OutRefSkeletal.BoneNameToIndexMap.Contains(BoneName))
             continue;
             
-        int BoneIndex = RefSkeletal->BoneNameToIndexMap[BoneName];
+        int BoneIndex = OutRefSkeletal.BoneNameToIndexMap[BoneName];
         
         if (ParentNode)
         {
             FString ParentName = ParentNode->GetName();
             
             // If parent is also a bone, establish the relationship
-            if (RefSkeletal->BoneNameToIndexMap.Contains(ParentName))
+            if (OutRefSkeletal.BoneNameToIndexMap.Contains(ParentName))
             {
-                int ParentIndex = RefSkeletal->BoneNameToIndexMap[ParentName];
+                int ParentIndex = OutRefSkeletal.BoneNameToIndexMap[ParentName];
                 
                 // Update parent index in the bone
                 MeshData->Bones[BoneIndex].ParentIndex = ParentIndex;
                 
                 // Add this bone as a child of the parent in the tree structure
-                RefSkeletal->BoneTree[ParentIndex].ChildIndices.Add(BoneIndex);
+                OutRefSkeletal.BoneTree[ParentIndex].ChildIndices.Add(BoneIndex);
             }
         }
     }
@@ -237,13 +237,13 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
     {
         if (MeshData->Bones[i].ParentIndex == -1)
         {
-            RefSkeletal->RootBoneIndices.Add(i);
+            OutRefSkeletal.RootBoneIndices.Add(i);
         }
     }
 }
 
 /* Extract할 때 FBX의 Mapping Mode와 Reference Mode에 따라 모두 다르게 파싱을 진행해야 함!! */
-void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal)
+void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
 {
     FbxMesh* Mesh = Node->GetMesh();
     if (Mesh)
@@ -264,21 +264,21 @@ void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
             if (Skin)
             {
                 // BaseVertexIndex는 Vertex 추출 직후 오프셋을 위해 넘겨 줍니다.
-                ProcessSkinning(Skin, MeshData, RefSkeletal, BaseVertexIndex);
+                ProcessSkinning(Skin, MeshData, OutRefSkeletal, BaseVertexIndex);
                 // 보통 메시당 하나의 Skin만 쓰므로 break 해도 무방합니다.
                 break;
             }
         }
 
         // 버텍스 데이터 추출
-        ExtractVertices(Mesh, MeshData, RefSkeletal);
+        ExtractVertices(Mesh, MeshData, OutRefSkeletal);
         
         // 인덱스 데이터 추출.
         // 250510) ExtractVertices에서 같이 추출하도록 수정.
         // ExtractIndices(Mesh, MeshData, BaseVertexIndex);
         
         // 머테리얼 데이터 추출
-        ExtractMaterials(Node, Mesh, MeshData, RefSkeletal, BaseIndexOffset);
+        ExtractMaterials(Node, Mesh, MeshData, OutRefSkeletal, BaseIndexOffset);
         
         // 바운딩 박스 업데이트
         UpdateBoundingBox(*MeshData);
@@ -287,19 +287,15 @@ void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
     // 자식 노드들에 대해 재귀적으로 수행
     int childCount = Node->GetChildCount();
     for (int i = 0; i < childCount; i++) {
-        ExtractMeshFromNode(Node->GetChild(i), MeshData, RefSkeletal);
+        ExtractMeshFromNode(Node->GetChild(i), MeshData, OutRefSkeletal);
     }
 }
 
-void FFBXLoader::ExtractVertices(
-    FbxMesh* Mesh,
-    FSkeletalMeshRenderData* MeshData,
-    FRefSkeletal* RefSkeletal
-)
+void FFBXLoader::ExtractVertices(FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
 {
     IndexMap.Empty();
     SkinWeightMap.Empty();
-    ExtractSkinningData(Mesh, RefSkeletal);
+    ExtractSkinningData(Mesh, OutRefSkeletal);
 
 
     int polyCnt = Mesh->GetPolygonCount();
@@ -479,10 +475,7 @@ void FFBXLoader::ExtractTangent(
     Vertex.Tangent.W = Tan[3];
 }
 
-void FFBXLoader::ExtractSkinningData(
-    FbxMesh* Mesh,
-    FRefSkeletal* RefSkeletal
-)
+void FFBXLoader::ExtractSkinningData(FbxMesh* Mesh, FRefSkeletal& OutRefSkeletal)
 {
     if (!Mesh) return;
     
@@ -499,7 +492,7 @@ void FFBXLoader::ExtractSkinningData(
                 continue;
 
             FString boneName = linkedBone->GetName();
-            int boneIndex = RefSkeletal->BoneNameToIndexMap[boneName];
+            int boneIndex = OutRefSkeletal.BoneNameToIndexMap[boneName];
 
             int* indices = cluster->GetControlPointIndices();
             double* weights = cluster->GetControlPointWeights();
@@ -553,7 +546,7 @@ void FFBXLoader::StoreVertex(FSkeletalVertex& vertex, FSkeletalMeshRenderData* M
     MeshData->Indices.Add(index);
 }
 
-void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData* MeshData, FRefSkeletal* RefSkeletal, int BaseVertexIndex)
+void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal, int BaseVertexIndex)
 {
     int ClusterCount = Skin->GetClusterCount();
 
@@ -566,7 +559,7 @@ void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData* MeshDat
             continue;
             
         FString BoneName = BoneNode->GetName();
-        int* ExistingBoneIndex = RefSkeletal->BoneNameToIndexMap.Find(BoneName);
+        int* ExistingBoneIndex = OutRefSkeletal.BoneNameToIndexMap.Find(BoneName);
         if (!ExistingBoneIndex)
             continue;
         FBone& bone = MeshData->Bones[*ExistingBoneIndex];
@@ -595,10 +588,10 @@ void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData* MeshDat
         FbxCluster* Cluster = Skin->GetCluster(ClusterIndex);
         FbxNode* BoneNode = Cluster->GetLink();
         
-        if (!BoneNode || !RefSkeletal->BoneNameToIndexMap.Contains(BoneNode->GetName()))
+        if (!BoneNode || !OutRefSkeletal.BoneNameToIndexMap.Contains(BoneNode->GetName()))
             continue;
         
-        int BoneIndex = RefSkeletal->BoneNameToIndexMap[BoneNode->GetName()];
+        int BoneIndex = OutRefSkeletal.BoneNameToIndexMap[BoneNode->GetName()];
         
         // Get control point indices and weights
         int VertexCount = Cluster->GetControlPointIndicesCount();
@@ -675,12 +668,7 @@ void FFBXLoader::ExtractIndices(
 }
 
 
-void FFBXLoader::ExtractMaterials(
-    FbxNode* Node,
-    FbxMesh* Mesh,
-    FSkeletalMeshRenderData* MeshData,
-    FRefSkeletal* RefSkeletal,
-    int BaseIndexOffset)
+void FFBXLoader::ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal, int BaseIndexOffset)
 {
     auto* MatElem = Mesh->GetElementMaterial();
     int  matCount = Node->GetMaterialCount();
@@ -750,14 +738,14 @@ void FFBXLoader::ExtractMaterials(
         FbxSurfaceMaterial* srcMtl = Node->GetMaterial(matIdx);
         FString            mtlName = srcMtl ? FString(srcMtl->GetName()) : TEXT("Mat") + FString::FromInt(matIdx);
         auto                newMtl = FManagerOBJ::CreateMaterial(ConvertFbxToObjMaterialInfo(srcMtl));
-        int                 finalIdx = RefSkeletal->Materials.Add(newMtl);
+        int                 finalIdx = OutRefSkeletal.Materials.Add(newMtl);
 
         FMaterialSubset subset;
         subset.MaterialName  = mtlName;
         subset.MaterialIndex = finalIdx;
         subset.IndexStart    = currentOffset;
         subset.IndexCount    = triCount * 3;
-        RefSkeletal->MaterialSubsets.Add(subset);
+        OutRefSkeletal.MaterialSubsets.Add(subset);
 
         currentOffset += triCount * 3;
     }
@@ -766,7 +754,7 @@ void FFBXLoader::ExtractMaterials(
     if (matCount == 0)
     {
         UMaterial* DefaultMaterial = FManagerOBJ::GetDefaultMaterial();
-        int MaterialIndex = RefSkeletal->Materials.Add(DefaultMaterial);
+        int MaterialIndex = OutRefSkeletal.Materials.Add(DefaultMaterial);
         
         FMaterialSubset Subset;
         Subset.MaterialName = DefaultMaterial->GetName();
@@ -774,7 +762,7 @@ void FFBXLoader::ExtractMaterials(
         Subset.IndexStart = BaseIndexOffset;
         Subset.IndexCount = MeshData->Indices.Num() - BaseIndexOffset;
         
-        RefSkeletal->MaterialSubsets.Add(Subset);
+        OutRefSkeletal.MaterialSubsets.Add(Subset);
     }
 }
 
@@ -1205,7 +1193,7 @@ FSkeletalMeshRenderData FFBXLoader::GetCopiedSkeletalRenderData(const FString& F
     return {};
 }
 
-FRefSkeletal* FFBXLoader::GetRefSkeletal(FString FilePath)
+FRefSkeletal FFBXLoader::GetRefSkeletal(FString FilePath)
 {
     // TODO: 폴더에서 가져올 수 있으면 가져오기
     if (RefSkeletalData.Contains(FilePath))
@@ -1213,7 +1201,7 @@ FRefSkeletal* FFBXLoader::GetRefSkeletal(FString FilePath)
         return RefSkeletalData[FilePath];
     }
     
-    return nullptr;
+    return FRefSkeletal();
 }
 
 

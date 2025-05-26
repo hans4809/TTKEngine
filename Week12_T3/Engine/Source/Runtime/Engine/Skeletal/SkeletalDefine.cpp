@@ -56,6 +56,64 @@ void FRefSkeletal::Deserialize(FArchive& Ar)
     }
 }
 
+FName FRefSkeletal::GetBoneName(const int32 BoneIndex) const
+{
+    return RawBones[BoneIndex].BoneName;
+}
+
+int32 FRefSkeletal::GetParentIndex(const int32 InBoneIndex)
+{
+    // 유효한 인덱스면 RawBones에 저장된 ParentIndex 반환, 아니면 INDEX_NONE 반환
+    if (RawBones.IsValidIndex(InBoneIndex))
+    {
+        return RawBones[InBoneIndex].ParentIndex;
+    }
+    return INDEX_NONE;
+}
+
+int32 FRefSkeletal::FindBoneIndex(const FName BoneName) const
+{
+    int BoneIndex = INDEX_NONE;
+    if( BoneName != NAME_None )
+    {
+        const int32* IndexPtr = BoneNameToIndexMap.Find(BoneName.ToString());
+        if( IndexPtr )
+        {
+            BoneIndex = *IndexPtr;
+        }
+    }
+    return BoneIndex;
+}
+
+bool FRefSkeletal::BoneIsChildOf(const int32 ChildBoneIndex, const int32 ParentBoneIndex)
+{
+    if (ParentBoneIndex != INDEX_NONE)
+    {
+        // Bones are in strictly increasing order.
+        // So child must have an index greater than its parent.
+        if (ChildBoneIndex > ParentBoneIndex)
+        {
+            int32 BoneIndex = GetParentIndex(ChildBoneIndex);
+            do
+            {
+                if (BoneIndex == ParentBoneIndex)
+                {
+                    return true;
+                }
+                BoneIndex = GetParentIndex(BoneIndex);
+
+            } while (BoneIndex != INDEX_NONE);
+        }
+    }
+
+    return false;
+}
+
+bool FRefSkeletal::IsValidIndex(int32 Index) const
+{
+    return RawBones.IsValidIndex(Index);
+}
+
 void FSkeletalVertex::SkinningVertex(const TArray<FBone>& bones)
 {
     Position = FVector4(SkinVertexPosition(bones), 1.0f);

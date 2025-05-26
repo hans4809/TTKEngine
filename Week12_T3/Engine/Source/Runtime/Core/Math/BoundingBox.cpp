@@ -147,3 +147,13 @@ FVector FBoundingBox::GetCenter() const
 {
     return FVector((Min + Max) * 0.5f);
 }
+
+FVector FBoundingBox::GetSize() const
+{
+    return (Max - Min);
+}
+
+FBoundingBox FBoundingBox::ExpandBy(const FVector V) const
+{
+    return FBoundingBox(Min - V, Max + V);
+}
