@@ -139,6 +139,8 @@ public:
     void AddCollisionFrom(const FKAggregateGeom& FromAggGeom);
     bool AddCollisionElemFrom(const FKAggregateGeom& FromAggGeom, const EAggCollisionShape::Type ShapeType, const int32 ElemIndex);
 
+    /** Mark internal cooked data dirty so next CreatePhysicsMeshes will re-cook */
+    void InvalidatePhysicsData();
     /** 
      * 조리된(cooked) 데이터에서 물리 메쉬(ConvexMeshes, TriMesh & TriMeshNegX)를 생성합니다.
      */

@@ -4,6 +4,8 @@
 #include "Math/BoundingBox.h"
 #include "Math/Transform.h"
 
+#include <PxPhysicsAPI.h>
+
 struct FKBoxElem;
 
 struct FKConvexElem : public FKShapeElem
@@ -30,6 +32,7 @@ public:
         /** Always convex recompute index and vertex data from the set chaos convex object */
         AlwaysUpdateConvexData
     };
+    physx::PxConvexMesh* CookedPxConvexMesh = nullptr;
 
     FKConvexElem();
     FKConvexElem(const FKConvexElem& Other);
@@ -98,6 +101,8 @@ public:
      */
     float GetShortestDistanceToPoint(const FVector& WorldPosition, const FTransform& BodyToWorldTM) const;
 	
+    void ResetCookedPhysXData(); 
+    
     static EAggCollisionShape::Type StaticShapeType;
 
 private:

@@ -31,7 +31,7 @@ struct FKSphylElem : public FKShapeElem
     friend bool operator==(const FKSphylElem& LHS, const FKSphylElem& RHS);;
 
     /** 현재 데이터를 기반으로 FTransform을 생성하는 유틸리티 함수 */
-    FTransform GetTransform() const;;
+    FTransform GetTransform() const;
 
     void SetTransform(const FTransform& InTransform);
 

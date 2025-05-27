@@ -406,8 +406,9 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
                         FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
                         MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+                        MeshComp->ShapeType = EPhysBodyShapeType::Box;
+                        MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<UBoxShapeComponent>(EComponentOrigin::Editor);
-
                         SpawnedActor = TempActor;
                         break;
                     }
@@ -418,6 +419,8 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
                         FManagerOBJ::CreateStaticMesh("Assets/Primitives/Sphere.obj");
                         MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Sphere.obj"));
+                        MeshComp->ShapeType = EPhysBodyShapeType::Sphere;
+                        MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<USphereShapeComponent>(EComponentOrigin::Editor);
 
                         SpawnedActor = TempActor;
@@ -430,6 +433,8 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
                         FManagerOBJ::CreateStaticMesh("Assets/Primitives/Capsule.obj");
                         MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Capsule.obj"));
+                        MeshComp->ShapeType = EPhysBodyShapeType::Sphyl;
+                        MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<UCapsuleShapeComponent>(EComponentOrigin::Editor);
 
                         SpawnedActor = TempActor;
@@ -442,6 +447,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
                         FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
                         MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
+                        MeshComp->OnCreatePhysicsState();
                         MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
                         MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
                         TempActor->SetActorRotation(FRotator(0.0f, 0.0f, 90.0f));
@@ -537,6 +543,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
                         FManagerOBJ::CreateStaticMesh("Assets/Dodge/Dodge.obj");
                         MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Dodge.obj"));
+                        MeshComp->OnCreatePhysicsState();
                         SpawnedActor = TempActor;
                         break;
                     }
