@@ -1,5 +1,6 @@
 #include "PrimitiveComponent.h"
 
+#include "UObject/Property.h"
 #include "GameFramework/Actor.h"
 #include "UObject/ObjectFactory.h"
 
@@ -7,9 +8,10 @@
 #include "UserInterface/Console.h"
 
 #include <PxRigidActor.h>
+#include <PxScene.h>
+
 #include "PhysicsEngine/PhysXSDKManager.h"
 #include "PhysicsEngine/PhysicsMaterial.h"
-
 #include "Engine/World.h"
 
 UPrimitiveComponent::UPrimitiveComponent()
@@ -42,6 +44,10 @@ void UPrimitiveComponent::OnRegister()
 
 }
 
+void UPrimitiveComponent::PostEditChangeProperty(const FProperty* PropertyThatChanged)
+{
+    RecreatePhysicsState();
+}
 int UPrimitiveComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
     //if (!AABB.Intersect(rayOrigin, rayDirection, pfNearHitDistance)) return 0;
@@ -159,6 +165,17 @@ bool UPrimitiveComponent::MoveComponent(const FVector& Delta)
     return true;
 }
 
+void UPrimitiveComponent::RecreatePhysicsState()
+{
+    DestroyPhysicsState();
+    OnCreatePhysicsState();
+}
+
+void UPrimitiveComponent::DestroyPhysicsState()
+{
+ 
+}
+
 void UPrimitiveComponent::OnCreatePhysicsState()
 {
 }
@@ -178,4 +195,12 @@ void UPrimitiveComponent::SaveComponentInfo(FActorComponentInfo& OutInfo)
     Info->ComponentVelocity = ComponentVelocity;
     Info->VBIBTopologyMappingName = VBIBTopologyMappingName;
 
+}
+
+UPhysicalMaterial* UPrimitiveComponent::GetPhysicalMaterial() const
+{
+    if (OverridePhysMaterial)
+    {
+        return OverridePhysMaterial;
+    }
 }

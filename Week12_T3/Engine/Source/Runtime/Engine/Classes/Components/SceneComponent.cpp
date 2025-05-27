@@ -226,6 +226,11 @@ FVector USceneComponent::GetWorldScale() const
     return GetWorldMatrix().GetScaleVector();
 }
 
+FTransform USceneComponent::GetWorldTransform() const
+{
+    return FTransform(GetWorldRotation().ToQuaternion(),GetWorldLocation(), GetWorldScale());
+}
+
 void USceneComponent::AddWorldLocation(const FVector& InAddValue)
 {
     SetWorldLocation(GetWorldLocation() + InAddValue);

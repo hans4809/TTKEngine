@@ -1,9 +1,10 @@
 #pragma once
 #include "Engine/Source/Runtime/Engine/Classes/Components/SceneComponent.h"
 #include "Serialization/Archive.h"
+#include "PhysicsEngine/BodyInstance.h"
 
 struct HitResult;
-class FBodyInstance;
+class UPhysicalMaterial;
 struct FPrimitiveComponentInfo : FSceneComponentInfo
 {
     DECLARE_ACTORCOMPONENT_INFO(FPrimitiveComponentInfo);
@@ -50,7 +51,7 @@ public:
         const FVector& rayOrigin, const FVector& rayDirection,
         const FVector& v0, const FVector& v1, const FVector& v2, float& hitDistance
     );
-    
+    virtual void PostEditChangeProperty(const FProperty* PropertyThatChanged) override;
     virtual void PostDuplicate() override;
 
     // Physics - Collision
@@ -63,21 +64,21 @@ public:
 
     bool MoveComponent(const FVector& Delta) override;
     UPROPERTY(EditAnywhere, FVector, ComponentVelocity, = FVector::ZeroVector)
-  
+    virtual void RecreatePhysicsState();
+    virtual void DestroyPhysicsState();
     virtual void OnCreatePhysicsState();
-    FBodyInstance* GetBodyInstance() { return BodyInstance; }
 public:
 
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;
-
+    UPhysicalMaterial* GetPhysicalMaterial() const;
 public:
     FName GetVBIBTopologyMappingName() const { return VBIBTopologyMappingName; }
 protected:
     UPROPERTY(EditAnywhere, FName, VBIBTopologyMappingName, = TEXT("None"))
-    FBodyInstance* BodyInstance = nullptr;
-
+    FBodyInstance BodyInstance;
 private:
     bool bGenerateOverlapEvents = true;
+    UPhysicalMaterial* OverridePhysMaterial = nullptr;
 };
 

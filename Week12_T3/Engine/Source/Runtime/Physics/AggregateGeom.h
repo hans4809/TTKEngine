@@ -5,6 +5,8 @@
 #include "Physics/ShapeElems/SphylElem.h"
 #include "Physics/ShapeElems/ConvexElem.h"
 
+class UMaterial;
+
 struct FKAggregateGeom
 {
     DECLARE_STRUCT(FKAggregateGeom)

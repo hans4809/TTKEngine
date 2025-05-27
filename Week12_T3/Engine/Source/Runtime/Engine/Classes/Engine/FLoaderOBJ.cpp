@@ -3,8 +3,11 @@
 #include "LaunchEngineLoop.h"
 #include "Asset/AssetManager.h"
 #include "UObject/ObjectFactory.h"
+
 #include "Components/Material/Material.h"
 #include "Components/Mesh/StaticMesh.h"
+
+#include "Physics/BodySetup/BodySetup.h"
 
 bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
 {
@@ -24,17 +27,18 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
     size_t dotPos = fileName.find_last_of('.');
     if (dotPos != std::string::npos) {
         OutObjInfo.DisplayName = fileName.substr(0, dotPos);
-    } else {
+    }
+    else {
         OutObjInfo.DisplayName = fileName;
     }
-    
+
     std::string Line;
 
     while (std::getline(OBJ, Line))
     {
         if (Line.empty() || Line[0] == '#')
             continue;
-        
+
         std::istringstream LineStream(Line);
         std::string Token;
         LineStream >> Token;
@@ -56,7 +60,7 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
                 FMaterialSubset& LastSubset = OutObjInfo.MaterialSubsets[OutObjInfo.MaterialSubsets.Num() - 1];
                 LastSubset.IndexCount = OutObjInfo.VertexIndices.Num() - LastSubset.IndexStart;
             }
-            
+
             FMaterialSubset MaterialSubset;
             MaterialSubset.MaterialName = MatName;
             MaterialSubset.IndexStart = OutObjInfo.VertexIndices.Num();
@@ -75,7 +79,7 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
         {
             float x, y, z;
             LineStream >> x >> y >> z;
-            OutObjInfo.Vertices.Add(FVector(x,y,z));
+            OutObjInfo.Vertices.Add(FVector(x, y, z));
             continue;
         }
 
@@ -83,7 +87,7 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
         {
             float nx, ny, nz;
             LineStream >> nx >> ny >> nz;
-            OutObjInfo.Normals.Add(FVector(nx,ny,nz));
+            OutObjInfo.Normals.Add(FVector(nx, ny, nz));
             continue;
         }
 
@@ -100,7 +104,7 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
             TArray<uint32> faceVertexIndices;  // 이번 페이스의 정점 인덱스
             TArray<uint32> faceNormalIndices;  // 이번 페이스의 법선 인덱스
             TArray<uint32> faceTextureIndices; // 이번 페이스의 텍스처 인덱스
-            
+
             while (LineStream >> Token)
             {
                 std::istringstream tokenStream(Token);
@@ -188,7 +192,7 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
         FMaterialSubset& LastSubset = OutObjInfo.MaterialSubsets[OutObjInfo.MaterialSubsets.Num() - 1];
         LastSubset.IndexCount = OutObjInfo.VertexIndices.Num() - LastSubset.IndexStart;
     }
-    
+
     return true;
 }
 
@@ -196,7 +200,7 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
 {
     // Subset
     OutFStaticMesh.MaterialSubsets = OutObjInfo.MaterialSubsets;
-    
+
     std::ifstream MtlFile(OutObjInfo.PathName + OutObjInfo.MatName.ToWideString());
     if (!MtlFile.is_open())
     {
@@ -205,12 +209,12 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
 
     std::string Line;
     int32 MaterialIndex = -1;
-    
+
     while (std::getline(MtlFile, Line))
     {
         if (Line.empty() || Line[0] == '#')
             continue;
-        
+
         std::istringstream LineStream(Line);
         std::string Token;
         LineStream >> Token;
@@ -286,7 +290,7 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
         if (Token == "map_Kd")
         {
             LineStream >> Line;
-            
+
             OutFStaticMesh.Materials[MaterialIndex].DiffuseTextureName = std::filesystem::path(Line).stem().string();
 
             FString TexturePath = OutObjInfo.PathName + OutFStaticMesh.Materials[MaterialIndex].DiffuseTextureName.ToWideString();
@@ -310,7 +314,7 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
             }
 
             OutFStaticMesh.Materials[MaterialIndex].NormalTextureName = std::filesystem::path(Line).filename().string();
-            
+
             FString TexturePath = OutObjInfo.PathName + OutFStaticMesh.Materials[MaterialIndex].NormalTextureName.ToWideString();
             OutFStaticMesh.Materials[MaterialIndex].NormalTexturePath = TexturePath;
             OutFStaticMesh.Materials[MaterialIndex].bHasTexture = true;
@@ -318,7 +322,7 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
             CreateTextureFromFile(OutFStaticMesh.Materials[MaterialIndex].NormalTexturePath);
         }
     }
-    
+
     return true;
 }
 
@@ -338,14 +342,14 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         uint32 nIdx = RawData.NormalIndices[i];
 
         // 키 생성 (v/vt/vn 조합)
-        std::string key = std::to_string(vIdx) + "/" + 
-                         std::to_string(tIdx) + "/" + 
-                         std::to_string(nIdx);
+        std::string key = std::to_string(vIdx) + "/" +
+            std::to_string(tIdx) + "/" +
+            std::to_string(nIdx);
 
         uint32 index;
         if (vertexMap.Find(key) == nullptr)
         {
-            FVertexSimple vertex {};
+            FVertexSimple vertex{};
             vertex.x = RawData.Vertices[vIdx].X;
             vertex.y = RawData.Vertices[vIdx].Y;
             vertex.z = RawData.Vertices[vIdx].Z;
@@ -369,13 +373,13 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
             for (int32 j = 0; j < OutStaticMesh.MaterialSubsets.Num(); j++)
             {
                 const FMaterialSubset& subset = OutStaticMesh.MaterialSubsets[j];
-                if ( i >= subset.IndexStart && i < subset.IndexStart + subset.IndexCount)
+                if (i >= subset.IndexStart && i < subset.IndexStart + subset.IndexCount)
                 {
                     vertex.MaterialIndex = subset.MaterialIndex;
                     break;
                 }
             }
-            
+
             index = OutStaticMesh.Vertices.Num();
             OutStaticMesh.Vertices.Add(vertex);
             vertexMap[key] = index;
@@ -386,7 +390,7 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         }
 
         OutStaticMesh.Indices.Add(index);
-        
+
     }
 
     for (int32 i = 0; i < OutStaticMesh.Indices.Num(); i += 3)
@@ -400,12 +404,12 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         FVertexSimple& v2 = OutStaticMesh.Vertices[i2];
 
         // 삼각형 변 계산
-        const FVector edge1 = {v1.x - v0.x, v1.y - v0.y, v1.z - v0.z};
-        const FVector edge2 = {v2.x - v0.x, v2.y - v0.y, v2.z - v0.z};
+        const FVector edge1 = { v1.x - v0.x, v1.y - v0.y, v1.z - v0.z };
+        const FVector edge2 = { v2.x - v0.x, v2.y - v0.y, v2.z - v0.z };
 
         // UV 차이 계산
-        const FVector2D deltaUV1 = FVector2D {v1.u - v0.u, v1.v - v0.v};
-        const FVector2D deltaUV2 = FVector2D {v2.u - v0.u, v2.v - v0.v};
+        const FVector2D deltaUV1 = FVector2D{ v1.u - v0.u, v1.v - v0.v };
+        const FVector2D deltaUV2 = FVector2D{ v2.u - v0.u, v2.v - v0.v };
         float deltaUV = deltaUV1.X * deltaUV2.Y - deltaUV2.X * deltaUV1.Y;
         // 접선 계산
         const float f = 1.0f / (deltaUV == 0 ? 1 : deltaUV);
@@ -426,9 +430,9 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         FVector tangent(vertex.Tangentnx, vertex.Tangentny, vertex.Tangentnz);
         if (tangent.X > 0.00001f || tangent.Y > 0.00001f || tangent.Z > 0.00001f)
         {
-            tangent = tangent.Normalize();                
-        } 
-        else 
+            tangent = tangent.Normalize();
+        }
+        else
         {
             tangent = FVector(1.0f, 0.0f, 0.0f);
         }
@@ -436,17 +440,17 @@ bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRe
         vertex.Tangentny = tangent.Y;
         vertex.Tangentnz = tangent.Z;
     }
-    
+
     // Calculate StaticMesh BoundingBox
     ComputeBoundingBox(OutStaticMesh.Vertices, OutStaticMesh.BoundingBoxMin, OutStaticMesh.BoundingBoxMax);
-    
+
     return true;
 }
 
 bool FLoaderOBJ::CreateTextureFromFile(const FString& FilePath)
 {
     std::filesystem::path filePath(FilePath);
-    
+
     FString AssetName = FString(filePath.stem().string());
     UTexture* NewTexture = UAssetManager::Get().Get<UTexture>(AssetName);
 
@@ -461,7 +465,7 @@ void FLoaderOBJ::ComputeBoundingBox(const TArray<FVertexSimple>& InVertices, FVe
 {
     FVector MinVector = { FLT_MAX, FLT_MAX, FLT_MAX };
     FVector MaxVector = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-        
+
     for (int32 i = 0; i < InVertices.Num(); i++)
     {
         MinVector.X = std::min(MinVector.X, InVertices[i].x);
@@ -480,8 +484,8 @@ void FLoaderOBJ::ComputeBoundingBox(const TArray<FVertexSimple>& InVertices, FVe
 OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& PathFileName)
 {
     OBJ::FStaticMeshRenderData* NewStaticMesh = new OBJ::FStaticMeshRenderData();
-    
-    if ( const auto It = ObjStaticMeshMap.Find(PathFileName))
+
+    if (const auto It = ObjStaticMeshMap.Find(PathFileName))
     {
         return *It;
     }
@@ -500,7 +504,7 @@ OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& P
     const std::filesystem::file_time_type ObjLastWriteTime = std::filesystem::last_write_time(*PathFileName);
 
     std::filesystem::file_time_type LastWriteTime = MtlLastWriteTime <= ObjLastWriteTime ? ObjLastWriteTime : MtlLastWriteTime;
-    
+
     const FWString BinaryPath = (PathFileName + ".bin").ToWideString();
     if (std::ifstream(BinaryPath).good())
     {
@@ -516,7 +520,7 @@ OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& P
             }
         }
     }
-    
+
     // Parse OBJ
     FObjInfo NewObjInfo;
     bool Result = FLoaderOBJ::ParseOBJ(PathFileName, NewObjInfo);
@@ -545,7 +549,7 @@ OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& P
             CreateMaterial(NewStaticMesh->Materials[materialIndex]);
         }
     }
-    
+
     // Convert FStaticMeshRenderData
     Result = FLoaderOBJ::ConvertToStaticMesh(NewObjInfo, *NewStaticMesh);
     if (!Result)
@@ -621,7 +625,7 @@ bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStati
         Serializer::ReadFString(File, Material.NormalTextureName);
         Serializer::ReadFString(File, Material.NormalTexturePath);
 
-        
+
         if (!Material.DiffuseTexturePath.IsEmpty())
         {
             Textures.AddUnique(Material.DiffuseTexturePath);
@@ -663,7 +667,7 @@ bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStati
     // Bounding Box
     File.read(reinterpret_cast<char*>(&OutStaticMesh.BoundingBoxMin), sizeof(FVector));
     File.read(reinterpret_cast<char*>(&OutStaticMesh.BoundingBoxMax), sizeof(FVector));
-    
+
     File.close();
 
     // Texture Load
@@ -677,7 +681,7 @@ bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStati
             // }
         }
     }
-    
+
     return true;
 }
 
@@ -720,11 +724,71 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
     if (staticMeshRenderData == nullptr) return nullptr;
 
     UStaticMesh* staticMesh = GetStaticMesh(staticMeshRenderData->ObjectName);
-    if (staticMesh != nullptr) {
+    if (staticMesh != nullptr)
+    {
         return staticMesh;
     }
 
+
+
     staticMesh = FObjectFactory::ConstructObject<UStaticMesh>(nullptr);
+
+
+    UBodySetup* newBodySetup = FObjectFactory::ConstructObject<UBodySetup>(staticMesh);
+
+    staticMesh->SetBodySetup(newBodySetup);
+    const FVector Min = staticMeshRenderData->BoundingBoxMin;
+    const FVector Max = staticMeshRenderData->BoundingBoxMax;
+    const FVector Center = (Min + Max) * 0.5f; // 메시 로컬 공간에서의 AABB 중심
+    const FVector Extents = (Max - Min) * 0.5f; // AABB의 half-extents
+
+    // (A) AABB 기반 박스 추가
+    {
+        FKBoxElem BoxElem;
+        BoxElem.Center = Center; // 또는 FVector::ZeroVector 만약 BoxElem.Transform으로 위치 관리
+        BoxElem.Rotation = FQuat::Identity;
+        BoxElem.X = Extents.X * 2.0f; // 전체 크기
+        BoxElem.Y = Extents.Y * 2.0f;
+        BoxElem.Z = Extents.Z * 2.0f;
+        newBodySetup->AggGeom.BoxElems.Add(BoxElem);
+    }
+
+    // (B) AABB 기반 스피어 추가
+    {
+        FKSphereElem SphereElem;
+        SphereElem.Center = Center;
+        SphereElem.Radius = Extents.X;
+        newBodySetup->AggGeom.SphereElems.Add(SphereElem);
+    }
+
+    // (C) AABB 기반 캡슐 추가 (예시: Z축이 긴 캡슐)
+    {
+        FKSphylElem SphylElem;
+        SphylElem.Center = Center;
+        SphylElem.Radius = FMath::Max(Extents.X, Extents.Y);
+        SphylElem.Length = Extents.Z;
+        SphylElem.Rotation = FQuat(FVector::XAxisVector, FMath::DegreesToRadians(-90.0f));
+        newBodySetup->AggGeom.SphylElems.Add(SphylElem);
+    }
+
+    {
+        FKConvexElem ConvexElem;
+
+        for (const FVertexSimple& vert : staticMeshRenderData->Vertices)
+        {
+            ConvexElem.VertexData.Add(FVector(vert.x, vert.y, vert.z));
+        }
+
+        ConvexElem.SetTransform(FTransform::Identity);
+        ConvexElem.UpdateElemBox();
+        newBodySetup->AggGeom.ConvexElems.Add(ConvexElem);
+    }
+
+    // (4) PhysicsCooking: PhysX SDK를 위해 물리 메쉬 생성
+    newBodySetup->InvalidatePhysicsData();   // 내부 데이터 초기화 플래그
+    newBodySetup->CreatePhysicsMeshes();     // Cook(PhysX Collision Data) 호출
+
+
     staticMesh->SetData(staticMeshRenderData);
 
     staticMeshMap.Add(staticMeshRenderData->ObjectName, staticMesh);
@@ -831,7 +895,7 @@ bool FManagerOBJ::SaveStaticMeshToBinary(const FWString& FilePath, const OBJ::FS
     // Bounding Box
     File.write(reinterpret_cast<const char*>(&StaticMesh.BoundingBoxMin), sizeof(FVector));
     File.write(reinterpret_cast<const char*>(&StaticMesh.BoundingBoxMax), sizeof(FVector));
-    
+
     File.close();
     return true;
 }
@@ -846,7 +910,7 @@ TArray<FString> FManagerOBJ::ExtractMTLLibraryNamesFromOBJ(const FString& ObjFil
 #else
     std::ifstream File(*ObjFilePath);
 #endif
-    
+
     if (!File.is_open())
     {
         return MTLNames;
@@ -875,7 +939,7 @@ TArray<FString> FManagerOBJ::ExtractMTLLibraryNamesFromOBJ(const FString& ObjFil
         {
             break;
         }
-        
+
         // "mtllib"으로 시작하는지 확인한다.
         if (Line.compare(start, 6, "mtllib") == 0)
         {
@@ -950,14 +1014,14 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
         int v0 = obj.VertexIndices[i * 3 + 0];
         int v1 = obj.VertexIndices[i * 3 + 1];
         int v2 = obj.VertexIndices[i * 3 + 2];
-        
+
         FVector p0 = obj.Vertices[v0];
         FVector p1 = obj.Vertices[v1];
         FVector p2 = obj.Vertices[v2];
-        
+
         FVector normal = (p1 - p0).Cross(p2 - p0).Normalize();
         float d = -normal.Dot(p0);
-        
+
         Quadric q;
         q.data[0] = normal.X * normal.X;
         q.data[1] = normal.X * normal.Y;
@@ -969,7 +1033,7 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
         q.data[7] = normal.Z * normal.Z;
         q.data[8] = normal.Z * d;
         q.data[9] = d * d;
-        
+
         quadrics[v0].Add(q);
         quadrics[v1].Add(q);
         quadrics[v2].Add(q);
@@ -983,29 +1047,29 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
         uint32 v[3] = { obj.VertexIndices[i * 3 + 0],
         obj.VertexIndices[i * 3 + 1],
         obj.VertexIndices[i * 3 + 2] };
-        uint32 n[3]= { obj.NormalIndices[i * 3 + 0],
+        uint32 n[3] = { obj.NormalIndices[i * 3 + 0],
         obj.NormalIndices[i * 3 + 1],
         obj.NormalIndices[i * 3 + 2] };
-        uint32 t[3] = {obj.TextureIndices[i * 3 + 0],
+        uint32 t[3] = { obj.TextureIndices[i * 3 + 0],
         obj.TextureIndices[i * 3 + 1],
         obj.TextureIndices[i * 3 + 2] };
         // 정렬하여 (min, max) 쌍으로 저장
         for (int j = 0; j < 3; j++)
         {
-            uint32 a = v[j], b = v[(j+1)%3];
-            uint32 c = n[j], d = n[(j+1)%3];
-            uint32 e = t[j], f = t[(j+1)%3];
+            uint32 a = v[j], b = v[(j + 1) % 3];
+            uint32 c = n[j], d = n[(j + 1) % 3];
+            uint32 e = t[j], f = t[(j + 1) % 3];
             if (a > b)
             {
                 std::swap(a, b);
                 std::swap(c, d);
                 std::swap(e, f);
             }
-            IndexSet minEdge(a,c,e), maxEdge(b,e,f);
-            edgeSet.insert({minEdge, maxEdge});
+            IndexSet minEdge(a, c, e), maxEdge(b, e, f);
+            edgeSet.insert({ minEdge, maxEdge });
         }
     }
-    
+
     // 3. 후보 엣지들을 우선순위 큐에 추가 (병합 가능한지 검사)
     std::priority_queue<EdgeCollapse> collapseQueue;
     for (const auto& edge : edgeSet)
@@ -1014,7 +1078,7 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
 
         FVector midpoint = (obj.Vertices[minEdge.verIndex] + obj.Vertices[maxEdge.verIndex]) * 0.5f;
         float cost = ComputeCollapseCost(quadrics[minEdge.verIndex], quadrics[maxEdge.verIndex], midpoint);
-        collapseQueue.push({minEdge, maxEdge, cost, midpoint});
+        collapseQueue.push({ minEdge, maxEdge, cost, midpoint });
     }
 
     // 4. 목표 정점 개수까지 단순화 수행
@@ -1022,10 +1086,10 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
     {
         EdgeCollapse bestCollapse = collapseQueue.top();
         collapseQueue.pop();
-        uint32 v1 = bestCollapse.i1.verIndex,v2 = bestCollapse.i2.verIndex;
+        uint32 v1 = bestCollapse.i1.verIndex, v2 = bestCollapse.i2.verIndex;
         uint32 n1 = bestCollapse.i1.norIndex, n2 = bestCollapse.i2.norIndex;
         uint32 t1 = bestCollapse.i1.texIndex, t2 = bestCollapse.i2.texIndex;
-        
+
         // 병합 전 원래 v1과 v2의 위치와 UV 기록
         FVector oldPos_v1 = obj.Vertices[v1];
         FVector oldPos_v2 = obj.Vertices[v2];
@@ -1033,7 +1097,7 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
         FVector normal_v2 = obj.Normals[n2];
         FVector2D uv_v1 = obj.UVs[t1];
         FVector2D uv_v2 = obj.UVs[t2];
-        
+
         // obj.Vertices[v1] = (oldPos_v1 + oldPos_v2) * .5f;
         // obj.Normals[n1] = (normal_v1 + normal_v2) * 0.5f;
         // obj.Normals[n1] = obj.Normals[n1].Normalize();
@@ -1045,12 +1109,12 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
         // obj.UVs[t1] =  FVector2D::Lerp(uv_v1, uv_v2, t);
         // obj.UVs[t1] =  uv_v1;
 
-        
+
         // 정점 삭제: v2 정점을 제거 (삭제 후 인덱스 재매핑 필요)
         obj.Vertices.RemoveAt(v2);
         // obj.Normals.RemoveAt(n2);
         // obj.UVs.RemoveAt(t2);
-        
+
         // 인덱스 재매핑: 삭제된 정점 v2에 해당하는 인덱스는 v1로, v2보다 큰 인덱스는 1씩 감소
         for (auto& index : obj.VertexIndices)
         {
@@ -1076,24 +1140,24 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
             uint32 v[3] = { obj.VertexIndices[i * 3 + 0],
             obj.VertexIndices[i * 3 + 1],
             obj.VertexIndices[i * 3 + 2] };
-            uint32 n[3]= { obj.NormalIndices[i * 3 + 0],
+            uint32 n[3] = { obj.NormalIndices[i * 3 + 0],
             obj.NormalIndices[i * 3 + 1],
             obj.NormalIndices[i * 3 + 2] };
-            uint32 t[3] = {obj.TextureIndices[i * 3 + 0],
+            uint32 t[3] = { obj.TextureIndices[i * 3 + 0],
             obj.TextureIndices[i * 3 + 1],
             obj.TextureIndices[i * 3 + 2] };
             if ((v[0] == v[1] || v[1] == v[2] || v[2] == v[0]))
             {
-                obj.VertexIndices.RemoveAt((i*3+2));
-                obj.VertexIndices.RemoveAt(i*3+1);
-                obj.VertexIndices.RemoveAt(i*3);
-                obj.NormalIndices.RemoveAt((i*3+2));
-                obj.NormalIndices.RemoveAt(i*3+1);
-                obj.NormalIndices.RemoveAt(i*3);
-                obj.TextureIndices.RemoveAt((i*3+2));
-                obj.TextureIndices.RemoveAt(i*3+1);
-                obj.TextureIndices.RemoveAt(i*3);
- 
+                obj.VertexIndices.RemoveAt((i * 3 + 2));
+                obj.VertexIndices.RemoveAt(i * 3 + 1);
+                obj.VertexIndices.RemoveAt(i * 3);
+                obj.NormalIndices.RemoveAt((i * 3 + 2));
+                obj.NormalIndices.RemoveAt(i * 3 + 1);
+                obj.NormalIndices.RemoveAt(i * 3);
+                obj.TextureIndices.RemoveAt((i * 3 + 2));
+                obj.TextureIndices.RemoveAt(i * 3 + 1);
+                obj.TextureIndices.RemoveAt(i * 3);
+
                 numFaces--;
                 i--;
                 continue;
@@ -1101,19 +1165,19 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
             // 정렬하여 (min, max) 쌍으로 저장
             for (int j = 0; j < 3; j++)
             {
-                uint32 a = v[j], b = v[(j+1)%3];
-                uint32 c = n[j], d = n[(j+1)%3];
-                uint32 e = t[j], f = t[(j+1)%3];
+                uint32 a = v[j], b = v[(j + 1) % 3];
+                uint32 c = n[j], d = n[(j + 1) % 3];
+                uint32 e = t[j], f = t[(j + 1) % 3];
                 if (a > b)
                 {
                     std::swap(a, b);
                     std::swap(c, d);
                     std::swap(e, f);
                 }
-                edgeSet.insert({{a,c,e}, {b,d,f}});
+                edgeSet.insert({ {a,c,e}, {b,d,f} });
             }
         }
-        
+
         numVertices = obj.Vertices.Num();
         numFaces = obj.VertexIndices.Num() / 3;
         quadrics.resize(numVertices);
@@ -1122,14 +1186,14 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
             int v0 = obj.VertexIndices[i * 3 + 0];
             int v1 = obj.VertexIndices[i * 3 + 1];
             int v2 = obj.VertexIndices[i * 3 + 2];
-            
+
             FVector p0 = obj.Vertices[v0];
             FVector p1 = obj.Vertices[v1];
             FVector p2 = obj.Vertices[v2];
-            
+
             FVector normal = (p1 - p0).Cross(p2 - p0).Normalize();
             float d = -normal.Dot(p0);
-            
+
             Quadric q;
             q.data[0] = normal.X * normal.X;
             q.data[1] = normal.X * normal.Y;
@@ -1141,7 +1205,7 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
             q.data[7] = normal.Z * normal.Z;
             q.data[8] = normal.Z * d;
             q.data[9] = d * d;
-            
+
             quadrics[v0].Add(q);
             quadrics[v1].Add(q);
             quadrics[v2].Add(q);
@@ -1151,7 +1215,7 @@ void QEMSimplifier::Simplify(FObjInfo& obj, int targetVertexCount)
             IndexSet minEdge = edge.first, maxEdge = edge.second;
             FVector midpoint = (obj.Vertices[minEdge.verIndex] + obj.Vertices[maxEdge.verIndex]) * 0.5f;
             float cost = ComputeCollapseCost(quadrics[minEdge.verIndex], quadrics[maxEdge.verIndex], midpoint);
-            collapseQueue.push({minEdge, maxEdge, cost, midpoint});
+            collapseQueue.push({ minEdge, maxEdge, cost, midpoint });
         }
     }
 }
@@ -1168,7 +1232,7 @@ float QEMSimplifier::ComputeCollapseCost(const Quadric& q1, const Quadric& q2, c
 
     // newPos^T * Q * newPos 계산
     const float cost =
-        q.data[0] * x * x + 2.0f * q.data[1] * x * y + 2.0f * q.data[2] * x * z + 2.0f * q.data[3] * x +  
+        q.data[0] * x * x + 2.0f * q.data[1] * x * y + 2.0f * q.data[2] * x * z + 2.0f * q.data[3] * x +
         q.data[4] * y * y + 2.0f * q.data[5] * y * z + 2.0f * q.data[6] * y +
         q.data[7] * z * z + 2.0f * q.data[8] * z +
         q.data[9];  // d*d 항
@@ -1177,7 +1241,7 @@ float QEMSimplifier::ComputeCollapseCost(const Quadric& q1, const Quadric& q2, c
 }
 
 float QEMSimplifier::ComputeCollapseCost(const Quadric& q1, const Quadric& q2, const FVector& newPos, const FVector2D& uv1, const FVector2D& uv2,
-                                         const FVector& normal1, const FVector& normal2)
+    const FVector& normal1, const FVector& normal2)
 {
     Quadric q = q1;
     q.Add(q2);

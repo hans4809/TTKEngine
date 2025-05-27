@@ -25,6 +25,7 @@ enum EObjects : uint8
     OBJ_SKYSPHERE,
     OBJ_SKELETAL,
     OBJ_CHARACTER,
+    OBJ_POSTPROCESS,
 
     OBJ_CAR,
     OBJ_FISH,

@@ -30,6 +30,7 @@ enum EObjectFlags
 
 #define RF_AllFlags				(EObjectFlags)0xffffffff	///< All flags, used mainly for error checking
 
+class FProperty;
 // for sol2 typing
 namespace SolTypeBinding
 {
@@ -121,7 +122,8 @@ public:
     static FFunctionRegistry* FunctionRegistry();
 
     virtual UObject* Duplicate(UObject* InOuter);
-
+    
+    virtual void PostEditChangeProperty(const FProperty* PropertyThatChanged) {};
     // Src가 런타임에 직접 생성·소유한 자식 UObject들(예: 컴포넌트, 인라인 서브오브젝트)을 별도로 복제
     virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator) {} // 하위 클래스에서 override
     // 복제가 전부 끝난 뒤 “초기화가 필요한 상태”를 정리하고, 사용자 정의 후처리(override) 콜백을 호출

@@ -14,7 +14,7 @@ struct FBoundingBox
     float padding1;
     bool IntersectRay(const FVector& rayOrigin, const FVector& rayDir, float& outDistance) const;
     bool IntersectAABB(FBoundingBox Other) const;
-
+    FBoundingBox(const TArray<FVector>& Points);
     void Serialize(FArchive& Ar) const;
     
     void Deserialize(FArchive& Ar);

@@ -1,5 +1,14 @@
 #pragma once
 #include "Components/PrimitiveComponents/MeshComponents/MeshComponent.h"
+#include "PhysicsEngine/BodyInstance.h"
+
+enum class EPhysBodyShapeType
+{
+    Box,
+    Sphere,
+    Sphyl,
+    Convex
+};
 
 class UStaticMesh;
 
@@ -50,13 +59,18 @@ public:
     UStaticMesh* GetStaticMesh() const { return staticMesh; }
     void SetStaticMesh(UStaticMesh* value);
 
+    virtual void DestroyPhysicsState() override;
     virtual void OnCreatePhysicsState() override;
 
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;
     virtual void LoadAndConstruct(const FActorComponentInfo& Info) override;
-
+    
+    UPROPERTY(EditAnywhere, EPhysBodyType, BodyType, = EPhysBodyType::Dynamic)
+    UPROPERTY(EditAnywhere, EPhysBodyShapeType, ShapeType, = EPhysBodyShapeType::Box)
+   
     int SelectedSubMeshIndex = 0;
+
 protected:
     UPROPERTY(EditAnywhere | DuplicateTransient, UStaticMesh*, staticMesh, = nullptr;)
 private:

@@ -1147,7 +1147,14 @@ struct TEnumProperty : public FProperty
     {
         ImGui::BeginDisabled(HasAnyFlags(Flags, EPropertyFlags::VisibleAnywhere));
         {
-            FProperty::DisplayInImGui(Object);
+            void* Data = GetPropertyData(Object);
+            if (DisplayAndCheckEditRawDataInImGui(Object, Name, Data)) 
+            { 
+                if (Object) 
+                {
+                    Object->PostEditChangeProperty(this);
+                }
+            }
         }
         ImGui::EndDisabled();
     }
@@ -1182,10 +1189,54 @@ struct TEnumProperty : public FProperty
             ImGui::EndCombo();
         }
     }
-
+  
+    bool DisplayAndCheckEditRawDataInImGui(UObject* Object, const char* PropertyLabel, void* DataPtr) const;
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
     void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
+
+template <typename InEnumType>
+bool TEnumProperty<InEnumType>::DisplayAndCheckEditRawDataInImGui(UObject* Object, const char* PropertyLabel, void* DataPtr) const
+{
+    // FProperty::DisplayRawDataInImGui(PropertyLabel, DataPtr); // 기본 클래스 호출은 이제 필요 없음
+
+    EnumType* Data = static_cast<EnumType*>(DataPtr);
+    constexpr auto EnumEntries = magic_enum::enum_entries<EnumType>(); // magic_enum 사용
+
+    const std::string_view CurrentNameView = magic_enum::enum_name(*Data);
+    const std::string CurrentName = std::string(CurrentNameView);
+
+    ImGui::Text("%s", PropertyLabel);
+    ImGui::SameLine();
+
+    bool valueChanged = false; // 값 변경 여부 플래그
+
+    if (ImGui::BeginCombo(std::format("##{}", PropertyLabel).c_str(), CurrentName.c_str()))
+    {
+        for (const auto& [EnumValue, NameView] : EnumEntries) // C++17 구조적 바인딩
+        {
+            const std::string EnumDisplayName = std::string(NameView);
+            const bool bIsSelected = (*Data == EnumValue);
+
+            if (ImGui::Selectable(EnumDisplayName.c_str(), bIsSelected))
+            {
+                if (*Data != EnumValue) // 실제 값이 변경되었을 때만
+                {
+                    *Data = EnumValue;
+                    valueChanged = true; // 값 변경됨 표시
+                }
+            }
+
+            if (bIsSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    return valueChanged; // 값 변경 여부 반환
+}
 
 template <typename InEnumType>
 void TEnumProperty<InEnumType>::Serialize(FArchive2& Ar, void* DataPtr) const

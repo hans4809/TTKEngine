@@ -111,6 +111,8 @@ public:
     FRotator GetWorldRotation() const;
     FVector GetWorldScale() const;
 
+    FTransform GetWorldTransform() const;
+
     void AddWorldLocation(const FVector& InAddValue);
     void AddWorldRotation(const FRotator& InAddValue);
     void AddWorldScale(const FVector& InAddValue);

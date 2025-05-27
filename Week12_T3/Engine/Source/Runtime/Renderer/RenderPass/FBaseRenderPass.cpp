@@ -23,6 +23,7 @@ void FBaseRenderPass::UpdateScreenConstant(std::shared_ptr<FViewportClient> InVi
     float Height = Graphics.GetCurrentWindowData()->ScreenHeight;
     ScreenConstants.ViewportSize = FVector2D { curEditorViewportClient->GetViewport()->GetFSlateRect().Width / Width, curEditorViewportClient->GetViewport()->GetFSlateRect().Height / Height };
     ScreenConstants.ViewportOffset = FVector2D { curEditorViewportClient->GetViewport()->GetFSlateRect().LeftTopX / Width, curEditorViewportClient->GetViewport()->GetFSlateRect().LeftTopY / Height };
+    ScreenConstants.ScreenSize = FVector2D { Width, Height };
 
     renderResourceManager->UpdateConstantBuffer(TEXT("FViewportInfo"), &ScreenConstants);
 }
