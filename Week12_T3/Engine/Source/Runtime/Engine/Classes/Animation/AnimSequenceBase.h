@@ -55,7 +55,7 @@ public:
     TArray<FAnimNotifyEvent> Notifies;
     TArray<FAnimNotifyTrack> AnimNotifyTracks;
 protected:
-    UAnimDataModel* DataModel;
+    UPROPERTY(EditAnywhere | DuplicateTransient, UAnimDataModel*, DataModel, = nullptr)
 };
 
 inline void UAnimSequenceBase::RemoveNotifyTrack(int32 TrackIndexToRemove)

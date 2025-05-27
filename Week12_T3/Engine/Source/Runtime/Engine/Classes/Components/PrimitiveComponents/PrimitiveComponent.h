@@ -62,7 +62,7 @@ public:
     virtual void NotifyEndOverlap(const UPrimitiveComponent* OtherComponent) const;
 
     bool MoveComponent(const FVector& Delta) override;
-    FVector ComponentVelocity;
+    UPROPERTY(EditAnywhere, FVector, ComponentVelocity, = FVector::ZeroVector)
   
     virtual void OnCreatePhysicsState();
     FBodyInstance* GetBodyInstance() { return BodyInstance; }
@@ -70,11 +70,11 @@ public:
 
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;
-    virtual void LoadAndConstruct(const FActorComponentInfo& Info);
+
 public:
     FName GetVBIBTopologyMappingName() const { return VBIBTopologyMappingName; }
 protected:
-    FName VBIBTopologyMappingName;
+    UPROPERTY(EditAnywhere, FName, VBIBTopologyMappingName, = TEXT("None"))
     FBodyInstance* BodyInstance = nullptr;
 
 private:

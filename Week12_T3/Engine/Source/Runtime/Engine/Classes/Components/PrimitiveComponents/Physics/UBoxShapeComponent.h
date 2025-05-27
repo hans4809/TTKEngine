@@ -6,6 +6,7 @@ class UCapsuleShapeComponent;
 
 struct FBoxShapeInfo : public FShapeInfo
 {
+    DECLARE_STRUCT(FBoxShapeInfo, FShapeInfo)
     FBoxShapeInfo()
         : FShapeInfo(EShapeType::Box, FVector::ZeroVector, FMatrix::Identity)
         , Extent(FVector::ZeroVector)
@@ -16,8 +17,8 @@ struct FBoxShapeInfo : public FShapeInfo
         : FShapeInfo(EShapeType::Box, InCenter, InWorldMatrix), Extent(InExtent) {
     }
 
-    FVector Extent;
-    FMatrix RotationMatrix;
+    UPROPERTY(EditAnywhere, FVector, Extent, = FVector::ZeroVector)
+    UPROPERTY(EditAnywhere, FMatrix, RotationMatrix, = FMatrix::Identity)
 };
 
 class UBoxShapeComponent : public UShapeComponent
@@ -52,6 +53,7 @@ protected:
 
 private:
     FVector PrevExtent;
-    FVector BoxExtent;
+
+    UPROPERTY(EditAnywhere, FVector, BoxExtent, = FVector::OneVector * 0.5f)
 };
 

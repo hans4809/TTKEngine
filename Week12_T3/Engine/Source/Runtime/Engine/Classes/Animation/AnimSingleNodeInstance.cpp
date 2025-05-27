@@ -115,6 +115,19 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
     FAnimExtractContext Context(CurrentTime, true, false);
     CurrentSequence->GetAnimationPose(Pose, Context);
 
+    int32 boneNum = FMath::Min(SkeletalMeshComp->BoneLocalTransforms.Num(), Pose.Pose.BoneTransforms.Num());
+
+    for (int32 i = 0; i < boneNum; ++i)
+    {
+        const FTransform& BoneTransform = CurrentPose.Pose.BoneTransforms[i];
+        const FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
+            BoneTransform.GetLocation(),
+            BoneTransform.GetRotation(),
+            BoneTransform.GetScale()
+        );
+        SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
+    }
+    
     for (int32 i = 0; i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
     {
         const FTransform& BoneTransform = Pose.Pose.BoneTransforms[i];

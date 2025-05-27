@@ -70,7 +70,7 @@ bool AActor::Destroy()
         if (UWorld* World = GetWorld())
         {
             World->DestroyActor(this);
-            bActorIsBeingDestroyed = 1;
+            bActorIsBeingDestroyed = true;
         }
         GUObjectArray.MarkRemoveObject(this);
     }
@@ -337,8 +337,11 @@ void AActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjec
     for (UActorComponent* SrcComp : SrcActor->OwnedComponents)
     {
         if (SrcComp->HasAnyFlags(RF_DuplicateTransient))
+        {
+            AddDuplicatedComponent(SrcComp);
             continue;
-
+        }
+        
         // 같은 Duplicator 인스턴스를 재사용
         UObject* Copied = Duplicator.DuplicateObject(SrcComp);
         UActorComponent* NewComp = static_cast<UActorComponent*>(Copied);

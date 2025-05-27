@@ -19,7 +19,7 @@ public:
     virtual void GetUsedMaterials(TArray<UMaterial*>& Out) const;
 #pragma endregion
 protected:
-    TArray<UMaterial*> OverrideMaterials;
+    UPROPERTY(EditAnywhere, TArray<UMaterial*>, OverrideMaterials, = {})
 public:
     TArray<UMaterial*>& GetOverrideMaterials() { return OverrideMaterials; }
     virtual void PostDuplicate() override;

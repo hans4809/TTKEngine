@@ -29,6 +29,6 @@ public:
     virtual void SetControlRotation(const FRotator& NewRotation);
 
 protected:
-    UInputComponent* InputComponent;
-    APawn* Pawn;
+    UInputComponent* InputComponent = nullptr;
+    APawn* Pawn = nullptr;
 };

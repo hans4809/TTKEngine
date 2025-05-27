@@ -109,7 +109,7 @@ protected:
     uint8 bWantsInitializeComponent : 1 = 0;
 
 private:
-    AActor* Owner = nullptr;
+    UPROPERTY(AActor*, Owner, = nullptr)
 
     /** InitializeComponent가 호출 되었는지 여부 */
     uint8 bHasBeenInitialized : 1 = 0;

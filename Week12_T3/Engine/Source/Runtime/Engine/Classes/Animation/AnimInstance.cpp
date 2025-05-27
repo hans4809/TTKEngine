@@ -67,7 +67,9 @@ void UAnimInstance::UpdateAnimation(UAnimSequence* AnimSequence, float DeltaTime
     FAnimExtractContext Context(CurrentTime, true, false);
     AnimSequence->GetAnimationPose(CurrentPose, Context);
 
-    for (int32 i = 0; i < SkeletalMeshComp->BoneLocalTransforms.Num(); ++i)
+    int32 boneNum = FMath::Min(SkeletalMeshComp->BoneLocalTransforms.Num(), CurrentPose.Pose.BoneTransforms.Num());
+
+    for (int32 i = 0; i < boneNum; ++i)
     {
         const FTransform& BoneTransform = CurrentPose.Pose.BoneTransforms[i];
         const FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
@@ -112,17 +114,19 @@ void UAnimInstance::BlendAnimations(UAnimSequence* FromSequence, UAnimSequence* 
     USkeletalMeshComponent* SkeletalMeshComp = GetOwningComponent();
     USkeletalMesh* SkeletalMesh = SkeletalMeshComp->GetSkeletalMesh();
 
-    for (int32 i = 0; i < SkeletalMeshComp->BoneLocalTransforms.Num(); ++i)
+    int32 boneNum = FMath::Min(SkeletalMeshComp->BoneLocalTransforms.Num(), CurrentPose.Pose.BoneTransforms.Num());
+
+    for (int32 i = 0; i < boneNum; ++i)
     {
         const FTransform& BoneTransform = CurrentPose.Pose.BoneTransforms[i];
-        FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
+        const FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
             BoneTransform.GetLocation(),
             BoneTransform.GetRotation(),
             BoneTransform.GetScale()
         );
-         SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
+        SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
     }
-
+    
     if (BlendAlpha >= 1.0f)
     {
         bIsBlending = false;

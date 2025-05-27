@@ -33,7 +33,8 @@ public:
     UDirectionalLightComponent();
     virtual ~UDirectionalLightComponent() override;
 private:
-    FVector Direction = FVector(0.0f, 0.0f, -1.0f);
+    UPROPERTY(EditAnywhere, FVector, Direction, = FVector(0.0f, 0.0f, -1.0f);)
+
 public:
     FVector GetDirection() { return Direction; }
     void SetDirection(FVector _newDir) { Direction = _newDir; }

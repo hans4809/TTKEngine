@@ -58,7 +58,7 @@ public:
 
     int SelectedSubMeshIndex = 0;
 protected:
-    UStaticMesh* staticMesh = nullptr;
+    UPROPERTY(EditAnywhere | DuplicateTransient, UStaticMesh*, staticMesh, = nullptr;)
 private:
     float Timer = 0.0f;
 };

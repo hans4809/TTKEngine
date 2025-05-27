@@ -19,14 +19,21 @@ FEditorIconRenderPass::~FEditorIconRenderPass()
 
 void FEditorIconRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
-    for (UBillboardComponent* BillboardComponent : TObjectRange<UBillboardComponent>())
+    for (AActor* Actor : World->GetLevel()->GetActors())
     {
-        if (BillboardComponent->GetWorld() != World || ((BillboardComponent->GetWorld()->WorldType != EWorldType::Editor && BillboardComponent->GetWorld()->WorldType != EWorldType::EditorPreview) && BillboardComponent->bOnlyForEditor == true))
+        for (UActorComponent* Component : Actor->GetComponents())
         {
-            continue;
-        }
+            if (UBillboardComponent* BillboardComponent = Cast<UBillboardComponent>(Component))
+            {
+                if (BillboardComponent->GetWorld() != World || ((BillboardComponent->GetWorld()->WorldType != EWorldType::Editor && BillboardComponent
+                    ->GetWorld()->WorldType != EWorldType::EditorPreview) && BillboardComponent->bOnlyForEditor == true))
+                {
+                    continue;
+                }
         
-        BillboardComponents.Add(BillboardComponent);
+                BillboardComponents.Add(BillboardComponent);
+            }
+        }
     }
 }
 

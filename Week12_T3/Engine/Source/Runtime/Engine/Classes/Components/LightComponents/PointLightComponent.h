@@ -37,8 +37,8 @@ public:
     UPointLightComponent();
     virtual ~UPointLightComponent() override = default;
 protected:
-    float Radius = 1.0f;
-    float AttenuationFalloff = 0.01f;
+    UPROPERTY(EditAnywhere, float, Radius, = 1.0f)
+    UPROPERTY(EditAnywhere, float, AttenuationFalloff, =  0.01f)
 
 public:
     float GetRadius() const { return Radius; }

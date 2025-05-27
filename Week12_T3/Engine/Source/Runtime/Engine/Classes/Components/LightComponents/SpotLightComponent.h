@@ -40,11 +40,12 @@ public:
     virtual ~USpotLightComponent() override;
 protected:
     //angle은 내부적으로 radian
-    float InnerConeAngle = 0.0f;
-    float OuterConeAngle = 0.768f;
+    UPROPERTY(EditAnywhere, float, InnerConeAngle, = 0.0f)
+    UPROPERTY(EditAnywhere, float, OuterConeAngle, = 0.768f)
+    //angle은 내부적으로 radian
 
 private:
-    FVector Direction = FVector(0.0f, 0.0f, -1.0f);
+    UPROPERTY(EditAnywhere, FVector, Direction, = FVector(0.0f, 0.0f, -1.0f))
 public:
     FVector GetDirection() { return Direction; }
     void SetDirection(FVector _newDir) { Direction = _newDir; }

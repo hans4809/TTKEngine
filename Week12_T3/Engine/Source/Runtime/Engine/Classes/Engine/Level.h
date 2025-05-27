@@ -12,7 +12,6 @@ class ULevel : public UObject
 public:
     ULevel();
     ~ULevel();
-    void InitLevel();
     virtual void PostDuplicate() override;
     
 private:

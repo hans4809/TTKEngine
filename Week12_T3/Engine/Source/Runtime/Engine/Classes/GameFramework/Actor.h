@@ -224,7 +224,7 @@ protected:
 
 private:
     /** 이 Actor를 소유하고 있는 다른 Actor의 정보 */
-    AActor* Owner = nullptr;
+    UPROPERTY(VisibleAnywhere, AActor*, Owner, = nullptr)
 
     /** 에디터 모드에서도 Tick이 작동하게 할 것인지 여부 */
     bool bTickInEditor = false;

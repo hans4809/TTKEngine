@@ -49,17 +49,12 @@ void ULevel::PostLoad()
     }
 }
 
-void ULevel::InitLevel()
+void ULevel::PostDuplicate()
 {
+    UObject::PostDuplicate();
     for (AActor* Actor : Actors)
     {
         PendingBeginPlayActors.Add(Actor);
     }
-}
-
-
-void ULevel::PostDuplicate()
-{
-    UObject::PostDuplicate();
 }
 

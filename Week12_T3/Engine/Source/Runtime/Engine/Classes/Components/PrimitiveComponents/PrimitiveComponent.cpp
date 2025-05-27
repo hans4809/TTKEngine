@@ -179,11 +179,3 @@ void UPrimitiveComponent::SaveComponentInfo(FActorComponentInfo& OutInfo)
     Info->VBIBTopologyMappingName = VBIBTopologyMappingName;
 
 }
-
-void UPrimitiveComponent::LoadAndConstruct(const FActorComponentInfo& Info)
-{
-    Super::LoadAndConstruct(Info);
-    const FPrimitiveComponentInfo* PrimitiveInfo = static_cast<const FPrimitiveComponentInfo*>(&Info);
-    ComponentVelocity = PrimitiveInfo->ComponentVelocity;
-    VBIBTopologyMappingName = PrimitiveInfo->VBIBTopologyMappingName;
-}

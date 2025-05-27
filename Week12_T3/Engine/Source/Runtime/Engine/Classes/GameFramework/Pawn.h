@@ -42,7 +42,7 @@ public:
     AController* GetController() const { return Controller; }
 
 protected:
-    UInputComponent* InputComponent;
+    UInputComponent* InputComponent = nullptr;
     FVector PendingMovement;
     AController* Controller = nullptr;
     float MoveSpeed;

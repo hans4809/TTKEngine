@@ -272,17 +272,20 @@ void UWorld::Release()
 
     if (WorldType == EWorldType::Editor)
     {
-        SaveScene("Assets/Scenes/AutoSave.Scene");
+        //SaveScene("Assets/Scenes/AutoSave.Scene");
     }
+    
     TArray<AActor*> Actors = Level->GetActors();
     for (AActor* Actor : Actors)
     {
         Actor->Destroy();
     }
+    
     if (LocalGizmo)
     {
         LocalGizmo->Destroy();
     }
+    
     ShutdownPhysicsScene();
     GUObjectArray.MarkRemoveObject(Level);
     // TODO Level -> Release로 바꾸기
@@ -467,31 +470,37 @@ void UWorld::BeginPlay()
 {
     // FGameManager::Get().BeginPlay();
 
-    if (PlayerController == nullptr)
-    {
-        PlayerController = SpawnActor<APlayerController>();
+    // TODO : 나중에 제대로 구현
+    // if (PlayerController == nullptr)
+    // {
+    //     PlayerController = SpawnActor<APlayerController>();
+    //
+    //     bool bCharacterExist = false;
+    //     for (AActor* Actor : Level->GetActors())
+    //     {
+    //         if (ACharacter* Character = Cast<ACharacter>(Actor))
+    //         {
+    //             bCharacterExist = true;
+    //             PlayerController->Possess(Character);
+    //             break;
+    //         }
+    //     }
+    //
+    //     if (bCharacterExist == false)
+    //     {
+    //         ACharacter* Character = SpawnActor<ACharacter>();
+    //         PlayerController->Possess(Character);
+    //         Character->SetActorScale(FVector(0.2f, 0.2f, 0.2f));
+    //     }
+    //
+    //     APlayerCameraManager* PlayerCameraManager = SpawnActor<APlayerCameraManager>();
+    //     PlayerController->SetPlayerCameraManager(PlayerCameraManager);
+    // }
+}
 
-        bool bCharacterExist = false;
-        for (AActor* Actor : Level->GetActors())
-        {
-            if (ACharacter* Character = Cast<ACharacter>(Actor))
-            {
-                bCharacterExist = true;
-                PlayerController->Possess(Character);
-                break;
-            }
-        }
-
-        if (bCharacterExist == false)
-        {
-            ACharacter* Character = SpawnActor<ACharacter>();
-            PlayerController->Possess(Character);
-            Character->SetActorScale(FVector(0.2f, 0.2f, 0.2f));
-        }
-
-        APlayerCameraManager* PlayerCameraManager = SpawnActor<APlayerCameraManager>();
-        PlayerController->SetPlayerCameraManager(PlayerCameraManager);
-    }
+void UWorld::DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator)
+{
+    UObject::DuplicateSubObjects(Source, InOuter, Duplicator);
 }
 
 // AActor* SpawnActorByName(const FString& ActorName, UObject* InOuter, bool bCallBeginPlay)

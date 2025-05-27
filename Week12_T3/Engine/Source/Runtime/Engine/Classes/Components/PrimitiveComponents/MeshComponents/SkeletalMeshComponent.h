@@ -65,7 +65,7 @@ public:
     int SelectedSubMeshIndex = -1;
 
     UPROPERTY(EditAnywhere, bool, bConsiderAllBodiesForBounds, = true)
-
+    
     TArray<FMatrix> BoneLocalTransforms;
     TArray<FMatrix> BoneWorldTransforms;
     TArray<FMatrix> BoneSkinningMatrices;
@@ -120,17 +120,18 @@ public:
 
 private:
 
-    EAnimationMode AnimationMode;
+    UPROPERTY(EditAnywhere, EAnimationMode, AnimationMode, = EAnimationMode::AnimationSingleNode)
+    //EAnimationMode AnimationMode;
     bool bPlayAnimation;
 private:
     TArray<UStaticMeshComponent*> BoneComponents;
-    bool bCPUSkinned = true;
+    bool bCPUSkinned = false;
 
     void SkinningVertex();
 
 protected:
-    USkeletalMesh* SkeletalMesh = nullptr;
-    UAnimInstance* AnimInstance = nullptr;
+    UPROPERTY(EditAnywhere | DuplicateTransient, USkeletalMesh*, SkeletalMesh, = nullptr)
+    UPROPERTY(EditAnywhere, UAnimInstance*, AnimInstance, = nullptr)
     
     float animTime = 0.f;
 };

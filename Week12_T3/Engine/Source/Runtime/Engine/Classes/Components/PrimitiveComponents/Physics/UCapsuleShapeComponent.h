@@ -5,6 +5,8 @@
 
 struct FCapsuleShapeInfo : public FShapeInfo
 {
+    DECLARE_STRUCT(FCapsuleShapeInfo, FShapeInfo)
+    
     FCapsuleShapeInfo()
         : FShapeInfo(EShapeType::Capsule, FVector::ZeroVector, FMatrix::Identity)
         , Up(FVector::UpVector)
@@ -19,10 +21,10 @@ struct FCapsuleShapeInfo : public FShapeInfo
     {
     }
 
-    FVector Up;
-    FMatrix RotationMatrix;
-    float Radius;
-    float HalfHeight;
+    UPROPERTY(EditAnywhere, FVector, Up, = FVector::UpVector)
+    UPROPERTY(EditAnywhere, FMatrix, RotationMatrix, = FMatrix::Identity)
+    UPROPERTY(EditAnywhere, float, Radius, = 0.0f)
+    UPROPERTY(EditAnywhere, float, HalfHeight, = 0.0f)
 };
 
 class UCapsuleShapeComponent : public UShapeComponent
@@ -59,7 +61,7 @@ private:
     float PrevHalfHeight;
     float PrevRadius;
 
-    float CapsuleHalfHeight;
-    float CapsuleRadius;
+    UPROPERTY(EditAnywhere, float, CapsuleHalfHeight, = 0.5f)
+    UPROPERTY(EditAnywhere, float, CapsuleRadius, = 0.5f)
 };
 

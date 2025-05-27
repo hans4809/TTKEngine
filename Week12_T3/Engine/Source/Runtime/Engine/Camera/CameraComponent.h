@@ -16,16 +16,17 @@ public:
     virtual void PostDuplicate() override;
 
 private:
-    float mouseSpeed = 0.25f;
+    UPROPERTY(EditAnywhere, float, mouseSpeed, = 0.25f)
     POINT lastMousePos;
     bool bRightMouseDown = false;
 
     FVector zAxis; // DirectX는 LH이므로 -z가 아니라 +z 사용
     FVector xAxis;
     FVector yAxis;
-    float FOV;
-    float nearClip = 0.1f;
-    float farClip = 1000.f;
+
+    UPROPERTY(EditAnywhere, float, FOV, = 60.f)
+    UPROPERTY(EditAnywhere, float, nearClip, = 0.1f)
+    UPROPERTY(EditAnywhere, float, farClip, = 1000.f)
 public:
     void SetFOV(float _fov) { FOV = _fov; }
     float& GetFOV() { return FOV; }

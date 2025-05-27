@@ -6,7 +6,7 @@ class UGizmoBaseComponent : public UStaticMeshComponent
     DECLARE_CLASS(UGizmoBaseComponent, UStaticMeshComponent)
 
 public:
-    enum EGizmoType : uint8
+    enum class EGizmoType : uint8
     {
         ArrowX,
         ArrowY,
@@ -31,5 +31,5 @@ public:
     EGizmoType GetGizmoType() const { return GizmoType; }
     void SetGizmoType(const EGizmoType InGizmoType) { GizmoType = InGizmoType; }
 
-    float GizmoScale = 0.1f;
+    UPROPERTY(EditAnywhere, float, GizmoScale, = 0.1f;)
 };

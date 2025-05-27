@@ -177,20 +177,14 @@ void UEditorEngine::StartPIE() const
         viewportClient->SetWorld(PIEWorldContext->GetWorld());
     }
 
+    // TODO : 나중에 제대로 구현
     // Logo Fade In/Out
-    APlayerCameraManager* PlayerCameraManager = PIEWorldContext->GetWorld()->GetPlayerController()->GetPlayerCameraManager();
-    UCameraFadeInOut* CameraModifier = FObjectFactory::ConstructObject<UCameraFadeInOut>(PlayerCameraManager);
-    CameraModifier->StartFadeIn(0.002f);
-    PlayerCameraManager->AddCameraModifier(CameraModifier);
+    // APlayerCameraManager* PlayerCameraManager = PIEWorldContext->GetWorld()->GetPlayerController()->GetPlayerCameraManager();
+    // UCameraFadeInOut* CameraModifier = FObjectFactory::ConstructObject<UCameraFadeInOut>(PlayerCameraManager);
+    // CameraModifier->StartFadeIn(0.002f);
+    // PlayerCameraManager->AddCameraModifier(CameraModifier);
 
     FGameManager::Get().NPCs.Empty();
-    for (int i=0;i < 4;i++)
-    {
-        ASkeletalMeshActor* NPC = Cast<ASkeletalMeshActor>(PIEWorldContext->GetWorld()->SpawnActor<ASkeletalMeshActor>());
-        NPC->SetActorLocation(FVector(0, -80 + 20 * i, 0));
-        NPC->SetActorScale(FVector(0.2,0.2,0.2));
-        FGameManager::Get().NPCs.Add(NPC);
-    }
 
     FGameManager::Get().StartGame();
     UE_LOG(LogLevel::Display, "Start PIE");

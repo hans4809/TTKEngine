@@ -112,6 +112,7 @@ public:
     // 임시
     bool IsPIEWorld() const;
     void BeginPlay();
+    void DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator) override;
 };
 
 inline void UWorld::SaveScene(const FString& FileName)

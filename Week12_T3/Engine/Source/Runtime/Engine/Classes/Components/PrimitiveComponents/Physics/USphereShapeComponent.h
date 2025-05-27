@@ -8,6 +8,7 @@ class UCapsuleShapeComponent;
 
 struct FSphereShapeInfo : public FShapeInfo
 {
+    DECLARE_STRUCT(FSphereShapeInfo, FShapeInfo)
     FSphereShapeInfo()
         : FShapeInfo(EShapeType::Sphere
             , FVector::ZeroVector
@@ -21,7 +22,7 @@ struct FSphereShapeInfo : public FShapeInfo
     {
     }
 
-    float Radius;
+    UPROPERTY(EditAnywhere, float, Radius, =  0.0f)
 };
 
 class USphereShapeComponent : public UShapeComponent
@@ -56,6 +57,7 @@ protected:
 
 private:
     float PrevRadius;
-    float Radius;
+
+    UPROPERTY(EditAnywhere, float, Radius, = 0.5f)
 };
 

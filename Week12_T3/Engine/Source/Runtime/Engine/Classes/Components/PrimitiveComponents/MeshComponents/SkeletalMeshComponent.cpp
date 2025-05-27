@@ -207,12 +207,12 @@ void USkeletalMeshComponent::UpdateBoneHierarchy()
 
 void USkeletalMeshComponent::ResetToOriginPos()
 {
-    uint32 BoneNum = FMath::Max(SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawVertices.Num(), SkeletalMesh->GetRenderData().Bones.Num());
+    uint32 BoneNum = FMath::Min(SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones.Num(), SkeletalMesh->GetRenderData().Bones.Num());
     BoneLocalTransforms.SetNum(BoneNum);
     BoneWorldTransforms.SetNum(BoneNum);
     BoneSkinningMatrices.SetNum(BoneNum);
     
-    for (int i = 0; i < SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawVertices.Num() && i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
+    for (int i = 0; i < SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones.Num() && i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
     {
         // 로컬 트랜스폼 복원
         BoneLocalTransforms[i] = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones[i].LocalTransform;
@@ -300,7 +300,10 @@ void USkeletalMeshComponent::SkinningVertex()
 //     SetStaticMesh(Mesh);
 // }
 
-void USkeletalMeshComponent::PostDuplicate() {}
+void USkeletalMeshComponent::PostDuplicate()
+{
+    ResetToOriginPos();
+}
 
 void USkeletalMeshComponent::BeginPlay()
 {

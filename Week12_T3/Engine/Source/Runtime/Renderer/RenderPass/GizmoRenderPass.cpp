@@ -21,7 +21,8 @@ void FGizmoRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
     for (UGizmoBaseComponent* GizmoBaseComponent : TObjectRange<UGizmoBaseComponent>())
     {
-        if ((GizmoBaseComponent->GetWorld()->WorldType != EWorldType::Editor && GizmoBaseComponent->GetWorld()->WorldType != EWorldType::EditorPreview) || GizmoBaseComponent->GetWorld() != World)
+        if ((GizmoBaseComponent->GetWorld()->WorldType != EWorldType::Editor && GizmoBaseComponent->GetWorld()->WorldType !=
+            EWorldType::EditorPreview) || GizmoBaseComponent->GetWorld() != World)
         {
             continue;
         }
@@ -79,19 +80,19 @@ void FGizmoRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewport
         if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
         {
             EControlMode ControlMode = EditorEngine->GetLevelEditor()->GetActiveViewportClientData().GetControlMode();
-            if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowX ||
-                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowY ||
-                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowZ)
+            if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowX ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowY ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowZ)
                 && ControlMode != CM_TRANSLATION)
                 continue;
-            else if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleX ||
-                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleY ||
-                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleZ)
+            else if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ScaleX ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ScaleY ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ScaleZ)
                 && ControlMode != CM_SCALE)
                 continue;
-            else if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleX ||
-                GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleY ||
-                GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleZ)
+            else if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::CircleX ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::CircleY ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::EGizmoType::CircleZ)
                 && ControlMode != CM_ROTATION)
                 continue;
         }
