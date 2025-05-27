@@ -153,7 +153,7 @@ void UStaticMeshComponent::LoadAndConstruct(const FActorComponentInfo& Info)
     Super::LoadAndConstruct(Info);
 
     const FStaticMeshComponentInfo& StaticMeshInfo = static_cast<const FStaticMeshComponentInfo&>(Info);
-    UStaticMesh* Mesh = FManagerOBJ::CreateStaticMesh(FString::ToFString(StaticMeshInfo.StaticMeshPath));
+    UStaticMesh* Mesh = FManagerOBJ::CreateStaticMesh(StaticMeshInfo.StaticMeshPath);
     SetStaticMesh(Mesh);
 
 }

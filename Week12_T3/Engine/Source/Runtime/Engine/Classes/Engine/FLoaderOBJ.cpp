@@ -20,7 +20,7 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
     OutObjInfo.PathName = ObjFilePath.ToWideString().substr(0, ObjFilePath.ToWideString().find_last_of(L"\\/") + 1);
     OutObjInfo.ObjectName = ObjFilePath.ToWideString().substr(ObjFilePath.ToWideString().find_last_of(L"\\/") + 1);
     // ObjectName은 wstring 타입이므로, 이를 string으로 변환 (간단한 ASCII 변환의 경우)
-    std::wstring wideName = OutObjInfo.ObjectName;
+    std::wstring wideName = OutObjInfo.ObjectName.ToWideString();
     std::string fileName(wideName.begin(), wideName.end());
 
     // 마지막 '.'을 찾아 확장자를 제거
@@ -201,7 +201,7 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
     // Subset
     OutFStaticMesh.MaterialSubsets = OutObjInfo.MaterialSubsets;
 
-    std::ifstream MtlFile(OutObjInfo.PathName + OutObjInfo.MatName.ToWideString());
+    std::ifstream MtlFile(OutObjInfo.PathName.ToWideString() + OutObjInfo.MatName.ToWideString());
     if (!MtlFile.is_open())
     {
         return false;
@@ -563,9 +563,9 @@ OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& P
     return NewStaticMesh;
 }
 
-bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStaticMeshRenderData& OutStaticMesh)
+bool FManagerOBJ::LoadStaticMeshFromBinary(const FString& FilePath, OBJ::FStaticMeshRenderData& OutStaticMesh)
 {
-    std::ifstream File(FilePath, std::ios::binary);
+    std::ifstream File(FilePath.ToWideString(), std::ios::binary);
     if (!File.is_open())
     {
         assert("CAN'T OPEN STATIC MESH BINARY FILE");
@@ -575,10 +575,10 @@ bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStati
     TArray<FString> Textures;
 
     // Object Name
-    Serializer::ReadFWString(File, OutStaticMesh.ObjectName);
+    Serializer::ReadFString(File, OutStaticMesh.ObjectName);
 
     // Path Name
-    Serializer::ReadFWString(File, OutStaticMesh.PathName);
+    Serializer::ReadFString(File, OutStaticMesh.PathName);
 
     // Display Name
     Serializer::ReadFString(File, OutStaticMesh.DisplayName);
@@ -796,7 +796,7 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
     return staticMesh;
 }
 
-UStaticMesh* FManagerOBJ::GetStaticMesh(const FWString& name)
+UStaticMesh* FManagerOBJ::GetStaticMesh(const FString& name)
 {
     if (staticMeshMap.Contains(name))
     {
@@ -821,9 +821,9 @@ void FManagerOBJ::CombineMaterialIndex(OBJ::FStaticMeshRenderData& OutFStaticMes
     }
 }
 
-bool FManagerOBJ::SaveStaticMeshToBinary(const FWString& FilePath, const OBJ::FStaticMeshRenderData& StaticMesh)
+bool FManagerOBJ::SaveStaticMeshToBinary(const FString& FilePath, const OBJ::FStaticMeshRenderData& StaticMesh)
 {
-    std::ofstream File(FilePath, std::ios::binary);
+    std::ofstream File(FilePath.ToWideString(), std::ios::binary);
     if (!File.is_open())
     {
         assert("CAN'T SAVE STATIC MESH BINARY FILE");
@@ -831,10 +831,10 @@ bool FManagerOBJ::SaveStaticMeshToBinary(const FWString& FilePath, const OBJ::FS
     }
 
     // Object Name
-    Serializer::WriteFWString(File, StaticMesh.ObjectName);
+    Serializer::WriteFString(File, StaticMesh.ObjectName);
 
     // Path Name
-    Serializer::WriteFWString(File, StaticMesh.PathName);
+    Serializer::WriteFString(File, StaticMesh.PathName);
 
     // Display Name
     Serializer::WriteFString(File, StaticMesh.DisplayName);

@@ -33,7 +33,7 @@ struct FManagerOBJ
 public:
    
     static OBJ::FStaticMeshRenderData* LoadObjStaticMeshAsset(const FString& PathFileName);
-    static bool LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStaticMeshRenderData& OutStaticMesh);
+    static bool LoadStaticMeshFromBinary(const FString& FilePath, OBJ::FStaticMeshRenderData& OutStaticMesh);
 
     static UMaterial* CreateMaterial(const FObjMaterialInfo& materialInfo);
     static void RegisterMaterial(const FString& name, UMaterial* Material);
@@ -42,18 +42,18 @@ public:
     static UMaterial* GetDefaultMaterial();
     static int GetMaterialNum() { return materialMap.Num(); }
     static UStaticMesh* CreateStaticMesh(const FString& filePath);
-    static const TMap<FWString, UStaticMesh*>& GetStaticMeshes() { return staticMeshMap; }
-    static UStaticMesh* GetStaticMesh(const FWString& name);
+    static const TMap<FString, UStaticMesh*>& GetStaticMeshes() { return staticMeshMap; }
+    static UStaticMesh* GetStaticMesh(const FString& name);
     static int GetStaticMeshNum() { return staticMeshMap.Num(); }
 
 private:
     static void CombineMaterialIndex(OBJ::FStaticMeshRenderData& OutFStaticMesh);
-    static bool SaveStaticMeshToBinary(const FWString& wstring, const OBJ::FStaticMeshRenderData& static_mesh_render_data);
+    static bool SaveStaticMeshToBinary(const FString& wstring, const OBJ::FStaticMeshRenderData& static_mesh_render_data);
     static TArray<FString> ExtractMTLLibraryNamesFromOBJ(const FString& ObjFilePath);
     static FString ConvertMTLRelativePathToCurrent(const FString& ObjFilePath, const FString& MTLFileName);
     
     inline static TMap<FString, OBJ::FStaticMeshRenderData*> ObjStaticMeshMap;
-    inline static TMap<FWString, UStaticMesh*> staticMeshMap;
+    inline static TMap<FString, UStaticMesh*> staticMeshMap;
     inline static TMap<FString, UMaterial*> materialMap;
 };
 

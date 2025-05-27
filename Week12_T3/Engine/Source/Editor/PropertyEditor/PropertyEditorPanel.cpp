@@ -856,7 +856,7 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
         ImGui::SameLine();
 
         FString PreviewName = StaticMeshComponent->GetStaticMesh()->GetRenderData()->DisplayName;
-        const TMap<FWString, UStaticMesh*> Meshes = FManagerOBJ::GetStaticMeshes();
+        const TMap<FString, UStaticMesh*> Meshes = FManagerOBJ::GetStaticMeshes();
         if (ImGui::BeginCombo("##StaticMesh", GetData(PreviewName), ImGuiComboFlags_None))
         {
             for (const auto Mesh : Meshes)
