@@ -15,6 +15,7 @@
 
 #include "LaunchEngineLoop.h"
 #include "ShowFlags.h"
+#include "Actors/APostProcessVolume.h"
 #include "Engine/FBXLoader.h"
 #include "Actors/SkeletalMeshActor.h"
 #include "Camera/CameraComponent.h"
@@ -345,6 +346,8 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { "Effects", "Particle",       OBJ_PARTICLE },
             { "Effects", "Text",           OBJ_TEXT },
             { "Effects", "Fog",            OBJ_FOG },
+
+            { "Volume", "PostProcess", OBJ_POSTPROCESS}
         };
 
         const char* CurrentCategory = nullptr;
@@ -544,6 +547,13 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         SpawnedActor = TempActor;
                         break;
                     }
+
+                    case OBJ_POSTPROCESS:
+                    {
+                        APostProcessVolume* TempActor = World->SpawnActor<APostProcessVolume>();
+                        TempActor->SetActorLabel(TEXT("PostProcessVolume"));
+                        SpawnedActor = TempActor;
+                    }
                     default:
                         break;
                 }
@@ -598,7 +608,7 @@ void ControlEditorPanel::CreateFlagButton() const
 
     ImGui::SameLine();
 
-    const char* ViewModeNames[] = { "Goroud_Lit", "Lambert_Lit", "Phong_Lit", "Unlit", "Wireframe", "Depth", "Normal"};
+    const char* ViewModeNames[] = { "Goroud_Lit", "Lambert_Lit", "Phong_Lit", "Unlit", "Wireframe", "Depth", "Normal", "DOF"};
     FString SelectLightControl = ViewModeNames[static_cast<uint32>(ActiveViewport->GetViewMode())];
     const ImVec2 LightTextSize = ImGui::CalcTextSize(GetData(SelectLightControl));
 
