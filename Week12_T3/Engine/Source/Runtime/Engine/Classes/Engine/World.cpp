@@ -44,6 +44,7 @@
 #include <PxScene.h>
 #include <PxRigidActor.h>
 #include <PxPhysics.h>
+#include <PxPhysicsAPI.h> 
 
 void UWorld::InitWorld()
 {
@@ -184,7 +185,7 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 
         FGameManager::Get().EditorTick(deltaSeconds);
     }
-    if (CurrentPhysicsScene)//&& (tickType == LEVELTICK_All || tickType == LEVELTICK_ViewportsOnly))
+    if (CurrentPhysicsScene && (tickType == ELevelTick::LEVELTICK_All))
     {
         CurrentPhysicsScene->Simulate(deltaSeconds); //내부에서 FetchResult 호출
         SyncPhysicsActors();
@@ -217,6 +218,8 @@ bool UWorld::InitializePhysicsScene()
 {
     if (CurrentPhysicsScene)
     {
+        FPhysXSDKManager::GetInstance().Pvd->disconnect();
+        FPhysXSDKManager::GetInstance().ConnectPVD();
         UE_LOG(LogLevel::Display, " UWorld::InitializePhysicsScene - Physics scene already initialized.");
         return true;
     }
@@ -261,8 +264,15 @@ void UWorld::ShutdownPhysicsScene()
         CurrentPhysicsScene = nullptr;
     }
 }
-FPhysScene* UWorld::GetPhysicsScene() const
+FPhysScene* UWorld::GetPhysicsScene()
 {
+    if (CurrentPhysicsScene)
+    {
+        return CurrentPhysicsScene;
+    }
+    else
+        InitializePhysicsScene();
+
     return CurrentPhysicsScene;
 }
 

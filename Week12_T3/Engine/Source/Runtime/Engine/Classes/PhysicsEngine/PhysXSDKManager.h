@@ -32,6 +32,7 @@ public:
     }
     UPhysicalMaterial* GetDefaultMaterial();
     bool Initalize();
+    void ConnectPVD();
     void Shutdown();
     physx::PxCooking* GetCooking() const { return PxCookingInstance; }
     physx::PxPhysics* GetPhysicsSDK();

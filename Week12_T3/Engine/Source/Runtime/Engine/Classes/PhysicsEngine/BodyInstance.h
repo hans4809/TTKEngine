@@ -37,10 +37,10 @@ public:
    
     void ReleasePhysicsState();
     void AddObject(FPhysScene* PhysScene);
-    physx::PxShape* AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
-    physx::PxShape* AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
-    physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& LocalPose = FTransform::Identity);
-    physx::PxShape* AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& LocalPose);
+    physx::PxShape* AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
+    physx::PxShape* AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
+    physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
+    physx::PxShape* AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& Transform);
     // 물리 속성 설정 및 조회
     void SetBodyType(EPhysBodyType NewType);
     EPhysBodyType GetBodyType() const { return CurrentBodyType; }
