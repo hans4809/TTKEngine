@@ -76,36 +76,6 @@ void AGEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
-UObject* AGEnemy::Duplicate(UObject* InOuter)
-{
-    AGEnemy* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewActor->DuplicateSubObjects(this, InOuter);
-    return NewActor;
-}
-
-void AGEnemy::DuplicateSubObjects(const UObject* Source, UObject* InOuter) // TODO: Duplicate 고치기
-{
-    int heartIndex = 0;
-    Super::DuplicateSubObjects(Source, InOuter);
-    for (auto& Comp : GetComponents())
-    {
-        if (UStaticMeshComponent* SMComp = Cast<UStaticMeshComponent>(Comp))
-        {
-            MeshComp = SMComp;
-        }
-        if (UBillboardComponent* HBComp = Cast<UBillboardComponent>(Comp))
-        {
-            HeartUI[heartIndex] = HBComp;
-            HeartUI[heartIndex]->SetRelativeLocation(FVector(-1 + heartIndex, 0, 0));
-            heartIndex++;
-        }
-        if (UCapsuleShapeComponent* CapComp = Cast<UCapsuleShapeComponent>(Comp))
-        {
-            Capsule = CapComp;
-        }
-    }
-}
-
 void AGEnemy::PostDuplicate()
 {
     Super::PostDuplicate();

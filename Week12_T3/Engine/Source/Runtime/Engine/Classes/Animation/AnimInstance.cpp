@@ -2,29 +2,12 @@
 #include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
 #include "UObject/Casts.h"
 #include "Animation/AnimSequence.h"
-#include "Animation/AnimNotify/AnimNotify.h"
 #include "AnimData/AnimDataModel.h"
 #include "Math/JungleMath.h"
 #include "Components/Mesh/SkeletalMesh.h"
 #include "Animation/Skeleton.h"
 #include "Animation/AnimationRuntime.h"
 #include "Container/Array.h"
-
-UObject* UAnimInstance::Duplicate(UObject* InOuter)
-{
-    UAnimInstance* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    NewComp->SetSkeleton(Cast<USkeletalMeshComponent>(InOuter)->GetSkeletalMesh()->GetSkeleton());
-    return NewComp;
-}
-
-void UAnimInstance::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-    this->CurrentSequence = Cast<UAnimSequence>(this->CurrentSequence->Duplicate(this->CurrentSequence->GetOuter()));
-    this->PreviousSequence = Cast<UAnimSequence>(this->PreviousSequence->Duplicate(this->PreviousSequence->GetOuter()));
-}
 
 AActor* UAnimInstance::GetOwningActor() const
 {
@@ -45,6 +28,7 @@ void UAnimInstance::TriggerAnimNotifies(float DeltaSeconds) const
             // 시간 조건에 맞으면 Notify 실행
             if (!Notify.OnNotify.IsBound())
                 continue;
+            
             if (Notify.Duration == 0.f)
             {
                 if (Notify.TriggerTime <= CurrentTime && Notify.bIsTriggered == false)
@@ -78,24 +62,24 @@ void UAnimInstance::UpdateAnimation(UAnimSequence* AnimSequence, float DeltaTime
     DataModel->GetBoneTrackNames(BoneNames);
 
     USkeletalMeshComponent* SkeletalMeshComp = GetOwningComponent();
-    USkeletalMesh* SkeletalMesh = SkeletalMeshComp->GetSkeletalMesh();
 
     CurrentPose.Pose.BoneTransforms.Empty();
     FAnimExtractContext Context(CurrentTime, true, false);
     AnimSequence->GetAnimationPose(CurrentPose, Context);
 
-    for (int32 i = 0; i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
+    int32 boneNum = FMath::Min(SkeletalMeshComp->BoneLocalTransforms.Num(), CurrentPose.Pose.BoneTransforms.Num());
+
+    for (int32 i = 0; i < boneNum; ++i)
     {
         const FTransform& BoneTransform = CurrentPose.Pose.BoneTransforms[i];
-        FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
+        const FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
             BoneTransform.GetLocation(),
             BoneTransform.GetRotation(),
             BoneTransform.GetScale()
         );
-        SkeletalMesh->GetRenderData().Bones[i].LocalTransform = TransformMatrix;
+       SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
     }
-
-
+    
     CurrentTime += DeltaTime;
     if (CurrentTime > DataModel->GetPlayLength())
     {
@@ -130,17 +114,19 @@ void UAnimInstance::BlendAnimations(UAnimSequence* FromSequence, UAnimSequence* 
     USkeletalMeshComponent* SkeletalMeshComp = GetOwningComponent();
     USkeletalMesh* SkeletalMesh = SkeletalMeshComp->GetSkeletalMesh();
 
-    for (int32 i = 0; i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
+    int32 boneNum = FMath::Min(SkeletalMeshComp->BoneLocalTransforms.Num(), CurrentPose.Pose.BoneTransforms.Num());
+
+    for (int32 i = 0; i < boneNum; ++i)
     {
         const FTransform& BoneTransform = CurrentPose.Pose.BoneTransforms[i];
-        FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
+        const FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
             BoneTransform.GetLocation(),
             BoneTransform.GetRotation(),
             BoneTransform.GetScale()
         );
-        SkeletalMesh->GetRenderData().Bones[i].LocalTransform = TransformMatrix;
+        SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
     }
-
+    
     if (BlendAlpha >= 1.0f)
     {
         bIsBlending = false;

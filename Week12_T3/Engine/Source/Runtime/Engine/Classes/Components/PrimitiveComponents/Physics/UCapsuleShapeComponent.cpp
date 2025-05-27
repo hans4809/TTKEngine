@@ -14,14 +14,6 @@ UCapsuleShapeComponent::~UCapsuleShapeComponent()
 {
 }
 
-UObject* UCapsuleShapeComponent::Duplicate(UObject* InOuter)
-{
-    UCapsuleShapeComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
 void UCapsuleShapeComponent::InitializeComponent()
 {
     Super::InitializeComponent();

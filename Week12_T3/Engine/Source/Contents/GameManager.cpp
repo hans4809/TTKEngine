@@ -221,13 +221,13 @@ void FGameManager::EditorTick(float DeltaTime)
 {    
     if (CurrentGameState == EGameState::PrepareRestart)
     {
-        GEngine->GetWorld()->LoadScene("Assets/Scenes/Game.scene");
-        if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
-        {
-            EditorEngine->GetLevelEditor()->GetEditorStateManager().SetState(EEditorState::PreparingPlay);
-        }
-        GameTimer = 0.0f;
-        Score = 0;
-        CurrentGameState = EGameState::Playing;
+        // GEngine->GetWorld()->LoadScene("Assets/Scenes/Game.scene");
+        // if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
+        // {
+        //     EditorEngine->GetLevelEditor()->GetEditorStateManager().SetState(EEditorState::PreparingPlay);
+        // }
+        // GameTimer = 0.0f;
+        // Score = 0;
+        // CurrentGameState = EGameState::Playing;
     }
 }

@@ -111,7 +111,7 @@ public:
     bool SetActorScale(const FVector& NewScale) const;
 
     UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    void DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator) override;
     void PostDuplicate() override;
 
 public:
@@ -219,21 +219,15 @@ public:
 #pragma endregion Event Delegate
 
 protected:
-    UPROPERTY(
-        VisibleAnywhere,
-        USceneComponent*,
-        RootComponent,
-        = nullptr
-    )
+    UPROPERTY(VisibleAnywhere, USceneComponent*, RootComponent, = nullptr)
     //USceneComponent* RootComponent = nullptr;
 
 private:
     /** 이 Actor를 소유하고 있는 다른 Actor의 정보 */
-    AActor* Owner = nullptr;
+    UPROPERTY(VisibleAnywhere, AActor*, Owner, = nullptr)
 
     /** 에디터 모드에서도 Tick이 작동하게 할 것인지 여부 */
     bool bTickInEditor = false;
-    
     
     /** 본인이 소유하고 있는 컴포넌트들의 정보 */
     TArray<UActorComponent*> OwnedComponents;

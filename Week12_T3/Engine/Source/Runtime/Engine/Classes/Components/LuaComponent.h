@@ -46,9 +46,7 @@ public:
 
     ULuaComponent();
     virtual ~ULuaComponent() override;
-
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    
     virtual void PostDuplicate() override;
     // 이 컴포넌트가 사용할 Lua 스크립트 파일 경로
     FString LuaScriptPath;

@@ -3,9 +3,6 @@
 #include "GameFramework/Actor.h"
 #include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
 #include "Animation/AnimSequence.h"
-#include "Animation/AnimNotify/AnimNotify.h"
-#include "Components/GameFramework/ProjectileMovementComponent.h"
-#include "GameFramework/Character.h"
 
 UTestAnimInstance::UTestAnimInstance()
 {
@@ -152,23 +149,6 @@ UTestAnimInstance::UTestAnimInstance()
 
     CurrentSequence->GetAnimationPose(CurrentPose, FAnimExtractContext(0.0f, true, false));
 }
-
-UObject* UTestAnimInstance::Duplicate(UObject* InOuter)
-{
-    UTestAnimInstance* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    NewComp->SetSkeleton(Cast<USkeletalMeshComponent>(InOuter)->GetSkeletalMesh()->GetSkeleton());
-    return NewComp;
-}
-
-void UTestAnimInstance::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UAnimInstance::DuplicateSubObjects(Source, InOuter);
-    UObject* obj = Cast<UTestAnimInstance>(Source)->AnimStateMachine->Duplicate(this);
-    AnimStateMachine = Cast<UAnimationStateMachine<ETestState>>(obj);
-}
-
 
 void UTestAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {

@@ -124,19 +124,6 @@ FVector UProjectileMovementComponent::CalculateVelocity(FVector OldVelocity, flo
     return LimitVelocity(NewVelocity);
 }
 
-UObject* UProjectileMovementComponent::Duplicate(UObject* InOuter)
-{
-    UProjectileMovementComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void UProjectileMovementComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void UProjectileMovementComponent::PostDuplicate()
 {
     Super::PostDuplicate();

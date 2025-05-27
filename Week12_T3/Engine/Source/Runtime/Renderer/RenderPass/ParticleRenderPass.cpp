@@ -99,23 +99,39 @@ void FParticleRenderPass::CreateQuadTextureVertexBuffer()
 
 void FParticleRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
-    for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    for (AActor* Actor : World->GetLevel()->GetActors())
     {
-        if (SceneComponent->GetWorld() != World)
+        for (UActorComponent* Component : Actor->GetComponents())
         {
-            continue;
-        }
-                
-        if (UParticleSystemComponent* ParticleSystemComponent = Cast<UParticleSystemComponent>(SceneComponent))
-        {
-            ParticleSystemComponents.Add(ParticleSystemComponent);
-        }
+            if (UParticleSystemComponent* ParticleSystemComponent = Cast<UParticleSystemComponent>(Component))
+            {
+                ParticleSystemComponents.Add(ParticleSystemComponent);
+            }
             
-        if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
-        {
-            LightComponents.Add(LightComponent);
+            if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(Component))
+            {
+                LightComponents.Add(LightComponent);
+            }
         }
     }
+    
+    // for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    // {
+    //     if (SceneComponent->GetWorld() != World)
+    //     {
+    //         continue;
+    //     }
+    //             
+    //     if (UParticleSystemComponent* ParticleSystemComponent = Cast<UParticleSystemComponent>(SceneComponent))
+    //     {
+    //         ParticleSystemComponents.Add(ParticleSystemComponent);
+    //     }
+    //         
+    //     if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
+    //     {
+    //         LightComponents.Add(LightComponent);
+    //     }
+    // }
 }
 
 FVector2D GetParticleSize(const FBaseParticle& Particle, const FDynamicSpriteEmitterReplayDataBase& Source)

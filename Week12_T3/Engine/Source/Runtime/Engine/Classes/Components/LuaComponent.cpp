@@ -12,19 +12,6 @@ ULuaComponent::~ULuaComponent()
 {
 }
 
-UObject* ULuaComponent::Duplicate(UObject* InOuter)
-{
-    ULuaComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void ULuaComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void ULuaComponent::PostDuplicate()
 {
     Super::PostDuplicate();
@@ -34,8 +21,6 @@ void ULuaComponent::InitializeComponent()
 {
     Super::InitializeComponent();
 }
-
-
 
 void ULuaComponent::TickComponent(float DeltaTime)
 {

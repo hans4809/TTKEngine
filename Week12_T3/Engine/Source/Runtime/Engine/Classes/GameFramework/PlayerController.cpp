@@ -51,14 +51,6 @@ void APlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
     AController::EndPlay(EndPlayReason);
 }
 
-UObject* APlayerController::Duplicate(UObject* InOuter)
-{
-    APlayerController* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    ClonedActor->DuplicateSubObjects(this, InOuter);
-    ClonedActor->PostDuplicate();
-    return ClonedActor;
-}
-
 void APlayerController::UpdateCameraManager(float DeltaTime)
 {
     if (PlayerCameraManager)

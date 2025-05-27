@@ -18,14 +18,6 @@ UAnimSingleNodeInstance::UAnimSingleNodeInstance()
     CurrentSequence = FObjectFactory::ConstructObject<UAnimSequence>(this);
 }
 
-UObject* UAnimSingleNodeInstance::Duplicate(UObject* InOuter)
-{
-    UAnimSingleNodeInstance* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
 void UAnimSingleNodeInstance::SetAnimationAsset(UAnimSequence* NewAsset, bool bIsLooping, float InPlayRate)
 {
     if (NewAsset != CurrentSequence)
@@ -71,7 +63,7 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 
         if (!bLooping)
         {
-            if (!bReverse&&CurrentTime == EndTime)
+            if (!bReverse && CurrentTime == EndTime)
             {
                 CurrentTime = StartTime;
             }
@@ -123,6 +115,19 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
     FAnimExtractContext Context(CurrentTime, true, false);
     CurrentSequence->GetAnimationPose(Pose, Context);
 
+    int32 boneNum = FMath::Min(SkeletalMeshComp->BoneLocalTransforms.Num(), Pose.Pose.BoneTransforms.Num());
+
+    for (int32 i = 0; i < boneNum; ++i)
+    {
+        const FTransform& BoneTransform = CurrentPose.Pose.BoneTransforms[i];
+        const FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
+            BoneTransform.GetLocation(),
+            BoneTransform.GetRotation(),
+            BoneTransform.GetScale()
+        );
+        SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
+    }
+    
     for (int32 i = 0; i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
     {
         const FTransform& BoneTransform = Pose.Pose.BoneTransforms[i];
@@ -131,6 +136,6 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
             BoneTransform.GetRotation(),
             BoneTransform.GetScale()
         );
-        SkeletalMesh->GetRenderData().Bones[i].LocalTransform = TransformMatrix;
+        SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
     }
 }

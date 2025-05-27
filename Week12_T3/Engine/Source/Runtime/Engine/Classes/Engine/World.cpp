@@ -59,7 +59,6 @@ void UWorld::InitWorld()
         UE_LOG(LogLevel::Error, "FATAL ERROR: UWorld::InitWorld - Failed to initialize physics scene!");
 
     }
-    PreLoadResources();
 
     /*if (WorldType == EWorldType::Editor)
     {
@@ -79,12 +78,6 @@ void UWorld::LoadLevel(const FString& LevelName)
     // 이름으로 레벨 로드한다
     // 실패 하면 현재 레벨 유지
 }
-
-void UWorld::PreLoadResources()
-{
-    FManagerOBJ::CreateStaticMesh(TEXT("Assets/CastleObj.obj"));
-}
-#include "Components/PrimitiveComponents/MeshComponents/StaticMeshComponents/CubeComp.h"
 
 void UWorld::CreateBaseObject(EWorldType::Type WorldType)
 {
@@ -279,17 +272,20 @@ void UWorld::Release()
 
     if (WorldType == EWorldType::Editor)
     {
-        SaveScene("Assets/Scenes/AutoSave.Scene");
+        //SaveScene("Assets/Scenes/AutoSave.Scene");
     }
+    
     TArray<AActor*> Actors = Level->GetActors();
     for (AActor* Actor : Actors)
     {
         Actor->Destroy();
     }
+    
     if (LocalGizmo)
     {
         LocalGizmo->Destroy();
     }
+    
     ShutdownPhysicsScene();
     GUObjectArray.MarkRemoveObject(Level);
     // TODO Level -> Release로 바꾸기
@@ -316,21 +312,6 @@ void UWorld::ClearScene()
     Level->GetActors().Empty();
     Level->PendingBeginPlayActors.Empty();
     ReleaseBaseObject();
-}
-
-UObject* UWorld::Duplicate(UObject* InOuter)
-{
-    UWorld* CloneWorld = Cast<ThisClass>(Super::Duplicate(InOuter));
-    CloneWorld->DuplicateSubObjects(this, InOuter);
-    CloneWorld->PostDuplicate();
-    return CloneWorld;
-}
-
-void UWorld::DuplicateSubObjects(const UObject* SourceObj, UObject* InOuter)
-{
-    UObject::DuplicateSubObjects(SourceObj, InOuter);
-    Level = Cast<ULevel>(Level->Duplicate(this));
-    LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>(this);
 }
 
 void UWorld::PostDuplicate()
@@ -489,31 +470,37 @@ void UWorld::BeginPlay()
 {
     // FGameManager::Get().BeginPlay();
 
-    if (PlayerController == nullptr)
-    {
-        PlayerController = SpawnActor<APlayerController>();
+    // TODO : 나중에 제대로 구현
+    // if (PlayerController == nullptr)
+    // {
+    //     PlayerController = SpawnActor<APlayerController>();
+    //
+    //     bool bCharacterExist = false;
+    //     for (AActor* Actor : Level->GetActors())
+    //     {
+    //         if (ACharacter* Character = Cast<ACharacter>(Actor))
+    //         {
+    //             bCharacterExist = true;
+    //             PlayerController->Possess(Character);
+    //             break;
+    //         }
+    //     }
+    //
+    //     if (bCharacterExist == false)
+    //     {
+    //         ACharacter* Character = SpawnActor<ACharacter>();
+    //         PlayerController->Possess(Character);
+    //         Character->SetActorScale(FVector(0.2f, 0.2f, 0.2f));
+    //     }
+    //
+    //     APlayerCameraManager* PlayerCameraManager = SpawnActor<APlayerCameraManager>();
+    //     PlayerController->SetPlayerCameraManager(PlayerCameraManager);
+    // }
+}
 
-        bool bCharacterExist = false;
-        for (AActor* Actor : Level->GetActors())
-        {
-            if (ACharacter* Character = Cast<ACharacter>(Actor))
-            {
-                bCharacterExist = true;
-                PlayerController->Possess(Character);
-                break;
-            }
-        }
-
-        if (bCharacterExist == false)
-        {
-            ACharacter* Character = SpawnActor<ACharacter>();
-            PlayerController->Possess(Character);
-            Character->SetActorScale(FVector(0.2f, 0.2f, 0.2f));
-        }
-
-        APlayerCameraManager* PlayerCameraManager = SpawnActor<APlayerCameraManager>();
-        PlayerController->SetPlayerCameraManager(PlayerCameraManager);
-    }
+void UWorld::DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator)
+{
+    UObject::DuplicateSubObjects(Source, InOuter, Duplicator);
 }
 
 // AActor* SpawnActorByName(const FString& ActorName, UObject* InOuter, bool bCallBeginPlay)

@@ -7,6 +7,7 @@
 #include "LaunchEngineLoop.h"
 #include "Viewport.h"
 #include "Components/PrimitiveComponents/HeightFogComponent.h"
+#include "GameFramework/Actor.h"
 #include "Renderer/Renderer.h"
 #include "SlateCore/Layout/SlateRect.h"
 #include "UnrealEd/EditorViewportClient.h"
@@ -38,14 +39,18 @@ void FFogRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
     bRender = false;
     FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
-    for (const auto iter : TObjectRange<UHeightFogComponent>())
+
+    for (AActor* Actor : World->GetLevel()->GetActors())
     {
-        if (iter->GetWorld() == World)
+        for (UActorComponent* Component : Actor->GetComponents())
         {
-            FogComp = iter;
-            Graphics.SwapPingPongBuffers();
-            bRender = true;
-            return;
+            if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component))
+            {
+                FogComp = FogComponent;
+                Graphics.SwapPingPongBuffers();
+                bRender = true;
+                return;
+            }
         }
     }
 }

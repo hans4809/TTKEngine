@@ -1143,9 +1143,7 @@ USkeletalMesh* FFBXLoader::CreateSkeletalMesh(const FString& FilePath)
     USkeletalMesh* SkeletalMesh = GetSkeletalMesh(FilePath);
     if (SkeletalMesh != nullptr)
     {
-        USkeletalMesh* NewSkeletalMesh = SkeletalMesh->Duplicate(nullptr);
-        NewSkeletalMesh->SetData(FilePath);
-        return NewSkeletalMesh;
+        return SkeletalMesh;
     }
 
 

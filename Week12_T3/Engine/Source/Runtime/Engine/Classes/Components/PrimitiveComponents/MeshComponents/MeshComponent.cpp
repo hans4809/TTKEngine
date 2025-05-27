@@ -56,18 +56,4 @@ void UMeshComponent::GetUsedMaterials(TArray<UMaterial*>& Out) const
         }
     }
 }
-UObject* UMeshComponent::Duplicate(UObject* InOuter)
-{
-    UMeshComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void UMeshComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UPrimitiveComponent::DuplicateSubObjects(Source, InOuter);
-    // OverrideMaterials는 복사 생성자에서 복제됨
-}
-
 void UMeshComponent::PostDuplicate() {}

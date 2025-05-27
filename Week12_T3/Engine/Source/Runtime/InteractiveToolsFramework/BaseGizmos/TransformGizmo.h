@@ -1,7 +1,6 @@
 #pragma once
 #include "GameFramework/Actor.h"
 
-
 class UStaticMeshComponent;
 class UTransformGizmo : public AActor
 {

@@ -79,6 +79,9 @@ auto UEditorPlayer::PickGizmo(const EControlMode ControlMode, UWorld* World, con
 {
     bool bIsGizmoPicked = false;
 
+    if (World->WorldType == EWorldType::PIE)
+        return false;
+
     if (!World->GetSelectedActors().IsEmpty())
     {
         int MaxIntersect = 0;
@@ -348,21 +351,21 @@ void UEditorPlayer::ControlRotation(const ECoordiMode CoordiMode, UWorld* World,
     }
 
     FQuat RotationDelta;
-    if (Gizmo->GetGizmoType() == UGizmoBaseComponent::CircleX)
+    if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::CircleX)
     {
         float RotationAmount = (CameraUp.Z >= 0 ? -1.0F : 1.0F) * FDeltaY * 0.01F;
         RotationAmount = RotationAmount + (CameraRight.X >= 0 ? 1.0F : -1.0F) * FDeltaX * 0.01F;
 
         RotationDelta = FQuat(FVector(1.0F, 0.0F, 0.0F), RotationAmount);
     }
-    else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::CircleY)
+    else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::CircleY)
     {
         float RotationAmount = (CameraRight.X >= 0 ? 1.0F : -1.0F) * FDeltaX * 0.01F;
         RotationAmount = RotationAmount + (CameraUp.Z >= 0 ? 1.0F : -1.0F) * FDeltaY * 0.01F;
 
         RotationDelta = FQuat(FVector(0.0F, 1.0F, 0.0F), RotationAmount);
     }
-    else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::CircleZ)
+    else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::CircleZ)
     {
         const float RotationAmount = (CameraForward.X <= 0 ? -1.0F : 1.0F) * FDeltaX * 0.01F;
         RotationDelta = FQuat(FVector(0.0F, 0.0F, 1.0F), RotationAmount);
@@ -408,17 +411,17 @@ void UEditorPlayer::ControlTranslation(const ECoordiMode CoordiMode, UWorld* Wor
 
     if (CoordiMode == CDM_LOCAL)
     {
-        if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ArrowX)
+        if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowX)
         {
             const float MoveAmount = WorldMoveDirection.Dot(pObj->GetWorldForwardVector());
             pObj->AddWorldLocation(pObj->GetWorldForwardVector() * MoveAmount);
         }
-        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ArrowY)
+        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowY)
         {
             const float MoveAmount = WorldMoveDirection.Dot(pObj->GetWorldRightVector());
             pObj->AddWorldLocation(pObj->GetWorldRightVector() * MoveAmount);
         }
-        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ArrowZ)
+        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowZ)
         {
             const float MoveAmount = WorldMoveDirection.Dot(pObj->GetWorldUpVector());
             pObj->AddWorldLocation(pObj->GetWorldUpVector() * MoveAmount);
@@ -430,19 +433,19 @@ void UEditorPlayer::ControlTranslation(const ECoordiMode CoordiMode, UWorld* Wor
         Distance /= 100.0F;
 
         // 월드 좌표계에서 카메라 방향을 고려한 이동
-        if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ArrowX)
+        if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowX)
         {
             // 카메라의 오른쪽 방향을 X축 이동에 사용
             const FVector MoveDir = CamearRight * FDeltaX * 0.05F;
             pObj->AddWorldLocation(FVector(MoveDir.X, 0.0F, 0.0F) * Distance);
         }
-        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ArrowY)
+        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowY)
         {
             // 카메라의 오른쪽 방향을 Y축 이동에 사용
             const FVector MoveDir = CamearRight * FDeltaX * 0.05F;
             pObj->AddWorldLocation(FVector(0.0F, MoveDir.Y, 0.0F) * Distance);
         }
-        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ArrowZ)
+        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ArrowZ)
         {
             // 카메라의 위쪽 방향을 Z축 이동에 사용
             const FVector MoveDir = CameraUp * -FDeltaY * 0.05F;
@@ -468,19 +471,19 @@ void UEditorPlayer::ControlScale(USceneComponent* pObj, const UGizmoBaseComponen
                                      : ActiveViewport->ViewTransformOrthographic.GetUpVector();
 
         // 월드 좌표계에서 카메라 방향을 고려한 이동
-        if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ScaleX)
+        if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ScaleX)
         {
             // 카메라의 오른쪽 방향을 X축 이동에 사용
             const FVector MoveDir = CamearRight * FDeltaX * 0.05F;
             pObj->AddRelativeScale(FVector(MoveDir.X, 0.0F, 0.0F));
         }
-        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ScaleY)
+        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ScaleY)
         {
             // 카메라의 오른쪽 방향을 Y축 이동에 사용
             const FVector MoveDir = CamearRight * FDeltaX * 0.05F;
             pObj->AddRelativeScale(FVector(0.0F, MoveDir.Y, 0.0F));
         }
-        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::ScaleZ)
+        else if (Gizmo->GetGizmoType() == UGizmoBaseComponent::EGizmoType::ScaleZ)
         {
             // 카메라의 위쪽 방향을 Z축 이동에 사용
             const FVector MoveDir = CameraUp * -FDeltaY * 0.05F;

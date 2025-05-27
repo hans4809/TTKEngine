@@ -1,12 +1,12 @@
 #pragma once
 #include "AnimInstance.h"
+
 class UAnimSingleNodeInstance : public UAnimInstance
 {
     DECLARE_CLASS(UAnimSingleNodeInstance, UAnimInstance)
 public:
     UAnimSingleNodeInstance();
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
 public:
     virtual void SetAnimationAsset(UAnimSequence* NewAsset, bool bIsLooping = true, float InPlayRate = 1.f);
 

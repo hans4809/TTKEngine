@@ -35,19 +35,6 @@ bool APointLightActor::Destroy()
     return Super::Destroy();
 }
 
-UObject* APointLightActor::Duplicate(UObject* InOuter)
-{
-    APointLightActor* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewActor->DuplicateSubObjects(this, InOuter);
-    NewActor->PostDuplicate();
-    return NewActor;
-}
-
-void APointLightActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void APointLightActor::PostDuplicate()
 {
     Super::PostDuplicate();

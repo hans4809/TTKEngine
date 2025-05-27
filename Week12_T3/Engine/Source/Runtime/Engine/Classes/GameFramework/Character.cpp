@@ -36,30 +36,6 @@ ACharacter::ACharacter()
     FGameManager::Get().GameOverEvent.AddLambda([this]{ Cast<UTestAnimInstance>(BodyMesh->GetAnimInstance())->SetState(ETestState::Defeated); });
 }
 
-
-UObject* ACharacter::Duplicate(UObject* InOuter)
-{
-    ACharacter* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    ClonedActor->DuplicateSubObjects(this, InOuter);
-    ClonedActor->PostDuplicate();
-    return ClonedActor;
-}
-
-void ACharacter::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    APawn::DuplicateSubObjects(Source, InOuter);
-    
-    ACharacter* Character = Cast<ACharacter>(Source);
-    BodyMesh = Cast<USkeletalMeshComponent>(Character->BodyMesh->Duplicate(this));
-    RootComponent = BodyMesh;
-    CollisionCapsule = Cast<UCapsuleShapeComponent>(Character->CollisionCapsule->Duplicate(this));
-    MovementComponent = Cast<UProjectileMovementComponent>(Character->MovementComponent->Duplicate(this));
-
-    AddDuplicatedComponent(BodyMesh);
-    AddDuplicatedComponent(CollisionCapsule);
-    AddDuplicatedComponent(MovementComponent);
-}
-
 void ACharacter::Tick(float DeltaTime) // TODO: Character 상속받는 MyCharacter 만들어서 거기에다가 제작
 {
     APawn::Tick(DeltaTime);

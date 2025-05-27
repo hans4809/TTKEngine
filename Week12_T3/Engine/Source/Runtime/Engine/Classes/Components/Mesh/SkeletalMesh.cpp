@@ -190,19 +190,6 @@ void USkeletalMesh::ApplyRotationToBone(int BoneIndex, float DeltaAngleInDegrees
         rotationMatrix * SkeletalMeshRenderData.Bones[BoneIndex].LocalTransform;
 }
 
-USkeletalMesh* USkeletalMesh::Duplicate(UObject* InOuter)
-{
-    USkeletalMesh* NewObject = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewObject->DuplicateSubObjects(this, InOuter);       // 깊은 복사 수행
-    return NewObject;
-}
-
-void USkeletalMesh::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    USkeletalMesh* Mesh = Cast<USkeletalMesh>(Source);
-    SkeletalMeshRenderData = FSkeletalMeshRenderData(Mesh->SkeletalMeshRenderData);
-}
-
 void USkeletalMesh::UpdateSkinnedVertices()
 {
     if (SkeletalMeshRenderData.Vertices.Num() <= 0)

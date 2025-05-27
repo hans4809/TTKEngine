@@ -15,9 +15,7 @@ public:
     virtual void Tick(float DeltaTime) override;
     virtual void Destroyed() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-    UObject* Duplicate(UObject* InOuter) override;
-
+    
     virtual void UpdateCameraManager(float DeltaTime);
 
     ACharacter* GetCharacter() const;

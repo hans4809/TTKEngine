@@ -44,26 +44,47 @@ FSkeletalMeshRenderPass::FSkeletalMeshRenderPass(const FName& InShaderName) : FB
 
 void FSkeletalMeshRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
-    for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    for (AActor* Actor : World->GetLevel()->GetActors())
     {
-        if (SceneComponent->GetWorld() != World)
+        for (UActorComponent* Component : Actor->GetComponents())
         {
-            continue;
-        }
-                
-        if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SceneComponent))
-        {
-            if (!Cast<UGizmoBaseComponent>(SkeletalMeshComponent))
+            if (USkeletalMeshComponent* StaticMeshComponent = Cast<USkeletalMeshComponent>(Component))
             {
-                SkeletalMeshComponents.Add(SkeletalMeshComponent);
+                if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
+                {
+                    SkeletalMeshComponents.Add(StaticMeshComponent);
+                    continue;
+                }
+            }
+
+            if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(Component))
+            {
+                LightComponents.Add(LightComponent);
+                continue;
             }
         }
-            
-        if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
-        {
-            LightComponents.Add(LightComponent);
-        }
     }
+    
+    // for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    // {
+    //     if (SceneComponent->GetWorld() != World)
+    //     {
+    //         continue;
+    //     }
+    //             
+    //     if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SceneComponent))
+    //     {
+    //         if (!Cast<UGizmoBaseComponent>(SkeletalMeshComponent))
+    //         {
+    //             SkeletalMeshComponents.Add(SkeletalMeshComponent);
+    //         }
+    //     }
+    //         
+    //     if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
+    //     {
+    //         LightComponents.Add(LightComponent);
+    //     }
+    // }
 }
 
 void FSkeletalMeshRenderPass::Prepare(const std::shared_ptr<FViewportClient> InViewportClient)
@@ -367,9 +388,10 @@ void FSkeletalMeshRenderPass::UpdateBoneConstant(USkeletalMeshComponent* Skeleta
     FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
 
     FBoneConstant BoneConstant;
-    for (int i=0;i<SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Bones.Num();i++)
+    
+    for (int i = 0; i < SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Bones.Num(); ++i)
     {
-        BoneConstant.BoneSkinningMatrices[i] = SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Bones[i].SkinningMatrix;
+        BoneConstant.BoneSkinningMatrices[i] = SkeletalMeshComponent->BoneSkinningMatrices[i];
     }
 
     renderResourceManager->UpdateConstantBuffer(renderResourceManager->GetConstantBuffer(TEXT("FBoneConstant")), &BoneConstant);

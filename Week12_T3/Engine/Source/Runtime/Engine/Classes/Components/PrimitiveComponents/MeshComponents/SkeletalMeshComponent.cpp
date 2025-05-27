@@ -4,20 +4,15 @@
 #include "Engine/FBXLoader.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/Skeleton.h"
-#include "Animation/AnimData/AnimDataModel.h"
 #include "Engine/World.h"
-#include "Launch/EditorEngine.h"
-#include "UObject/ObjectFactory.h"
 #include "UnrealEd/PrimitiveBatch.h"
 #include "Classes/Engine/FLoaderOBJ.h"
 #include "GameFramework/Actor.h"
-#include "Math/JungleMath.h"
 #include "Math/Transform.h"
 #include "Renderer/Renderer.h"
 #include "StaticMeshComponents/StaticMeshComponent.h"
 #include "UObject/Casts.h"
 #include "Animation/AnimSingleNodeInstance.h"
-#include "Animation/CustomAnimInstance/TestAnimInstance.h"
 
 uint32 USkeletalMeshComponent::GetNumMaterials() const
 {
@@ -114,8 +109,10 @@ int USkeletalMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& ra
         FVector v2 = *reinterpret_cast<FVector*>(pbPositions + idx2 * stride);
 
         float fHitDistance;
-        if (IntersectRayTriangle(rayOrigin, rayDirection, v0, v1, v2, fHitDistance)) {
-            if (fHitDistance < fNearHitDistance) {
+        if (IntersectRayTriangle(rayOrigin, rayDirection, v0, v1, v2, fHitDistance))
+        {
+            if (fHitDistance < fNearHitDistance)
+            {
                 pfNearHitDistance = fNearHitDistance = fHitDistance;
             }
             nIntersections++;
@@ -130,7 +127,10 @@ void USkeletalMeshComponent::SetSkeletalMesh(USkeletalMesh* value)
 { 
     SkeletalMesh = value;
     VBIBTopologyMappingName = SkeletalMesh->GetFName();
-    value->UpdateBoneHierarchy();
+
+    ResetToOriginPos();
+    
+    //value->UpdateBoneHierarchy();
     
     OverrideMaterials.SetNum(value->GetMaterials().Num());
     AABB = SkeletalMesh->GetRenderData().BoundingBox;
@@ -151,7 +151,7 @@ int32 USkeletalMeshComponent::GetBoneIndex(FName BoneName) const
 
 FTransform USkeletalMeshComponent::GetBoneTransform(const int32 BoneIndex) const
 {
-    return GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal().RawBones[BoneIndex].GlobalTransform;
+    return FTransform(BoneWorldTransforms[BoneIndex]);
 }
 
 UAnimSingleNodeInstance* USkeletalMeshComponent::GetSingleNodeInstance() const
@@ -188,14 +188,54 @@ USkeletalMesh* USkeletalMeshComponent::LoadSkeletalMesh(const FString& FilePath)
 
 void USkeletalMeshComponent::UpdateBoneHierarchy()
 {
-    for (int i=0;i<SkeletalMesh->GetRenderData().Vertices.Num();i++)
+    for (int i = 0; i < SkeletalMesh->GetRenderData().Vertices.Num(); ++i)
     {
-         SkeletalMesh->GetRenderData().Vertices[i].Position
-        = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawVertices[i].Position;
+         SkeletalMesh->GetRenderData().Vertices[i].Position = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawVertices[i].Position;
     }
+
+    // 먼저 루트 뼈들의 글로벌 트랜스폼을 설정
+    for (const int32 RootIndex : SkeletalMesh->GetSkeleton()->GetRefSkeletal().RootBoneIndices)
+    {
+        // 루트 뼈는 로컬 트랜스폼이 곧 글로벌 트랜스폼이 됨
+        BoneWorldTransforms[RootIndex] = BoneLocalTransforms[RootIndex];
+        BoneSkinningMatrices[RootIndex] = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones[RootIndex].InverseBindPoseMatrix * BoneWorldTransforms[RootIndex];
+        
+        // 재귀적으로 자식 뼈들의 글로벌 트랜스폼을 업데이트
+        UpdateChildBones(RootIndex);
+    }
+}
+
+void USkeletalMeshComponent::ResetToOriginPos()
+{
+    uint32 BoneNum = FMath::Min(SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones.Num(), SkeletalMesh->GetRenderData().Bones.Num());
+    BoneLocalTransforms.SetNum(BoneNum);
+    BoneWorldTransforms.SetNum(BoneNum);
+    BoneSkinningMatrices.SetNum(BoneNum);
     
-    SkeletalMesh->UpdateBoneHierarchy();
-    SkinningVertex();
+    for (int i = 0; i < SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones.Num() && i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
+    {
+        // 로컬 트랜스폼 복원
+        BoneLocalTransforms[i] = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones[i].LocalTransform;
+        BoneWorldTransforms[i] = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones[i].GlobalTransform;
+        BoneSkinningMatrices[i] = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones[i].SkinningMatrix;
+    }
+}
+
+void USkeletalMeshComponent::UpdateChildBones(int ParentIndex)
+{
+    // BoneTree 구조를 사용하여 현재 부모 뼈의 모든 자식을 찾음
+    const FBoneNode& ParentNode = SkeletalMesh->GetSkeleton()->GetRefSkeletal().BoneTree[ParentIndex];
+    
+    // 모든 자식 뼈를 순회
+    for (const int32 ChildIndex : ParentNode.ChildIndices)
+    {
+        // 자식의 글로벌 트랜스폼은 부모의 글로벌 트랜스폼과 자식의 로컬 트랜스폼을 결합한 것
+        BoneWorldTransforms[ChildIndex] = BoneLocalTransforms[ChildIndex] * BoneWorldTransforms[ParentIndex];
+        BoneSkinningMatrices[ChildIndex] = SkeletalMesh->GetSkeleton()->GetRefSkeletal().RawBones[ChildIndex].InverseBindPoseMatrix * BoneWorldTransforms[ChildIndex];
+        
+        // 재귀적으로 이 자식의 자식들도 업데이트
+        UpdateChildBones(ChildIndex);
+    }
 }
 
 void USkeletalMeshComponent::PlayAnimation(UAnimSequence* NewAnimToPlay, bool bLooping)
@@ -260,23 +300,10 @@ void USkeletalMeshComponent::SkinningVertex()
 //     SetStaticMesh(Mesh);
 // }
 
-UObject* USkeletalMeshComponent::Duplicate(UObject* InOuter)
+void USkeletalMeshComponent::PostDuplicate()
 {
-    USkeletalMeshComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
+    ResetToOriginPos();
 }
-
-void USkeletalMeshComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UMeshComponent::DuplicateSubObjects(Source, InOuter);
-    // TODO: SkeletalMesh 복사
-    SkeletalMesh = Cast<USkeletalMesh>(Cast<USkeletalMeshComponent>(Source)->SkeletalMesh->Duplicate(this));
-    AnimInstance = Cast<UAnimInstance>(Cast<USkeletalMeshComponent>(Source)->AnimInstance->Duplicate(this));
-}
-
-void USkeletalMeshComponent::PostDuplicate() {}
 
 void USkeletalMeshComponent::BeginPlay()
 {
@@ -286,9 +313,12 @@ void USkeletalMeshComponent::BeginPlay()
 
 void USkeletalMeshComponent::TickComponent(float DeltaTime)
 {
-    if (AnimInstance) AnimInstance->NativeUpdateAnimation(DeltaTime);
+    if (AnimInstance)
+    {
+        AnimInstance->NativeUpdateAnimation(DeltaTime);
+    }
 
-    SkeletalMesh->UpdateBoneHierarchy();
+    UpdateBoneHierarchy();
     if (GEngineLoop.Renderer.GetSkinningMode() == ESkinningType::CPU)
     {
         SkeletalMesh->UpdateSkinnedVertices();

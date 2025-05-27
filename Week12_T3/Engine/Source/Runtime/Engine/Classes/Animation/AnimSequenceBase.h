@@ -13,8 +13,6 @@ class UAnimSequenceBase : public UAnimationAsset
 public:
     UAnimSequenceBase();
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
     float RateScale;
 
@@ -57,7 +55,7 @@ public:
     TArray<FAnimNotifyEvent> Notifies;
     TArray<FAnimNotifyTrack> AnimNotifyTracks;
 protected:
-    UAnimDataModel* DataModel;
+    UPROPERTY(EditAnywhere | DuplicateTransient, UAnimDataModel*, DataModel, = nullptr)
 };
 
 inline void UAnimSequenceBase::RemoveNotifyTrack(int32 TrackIndexToRemove)

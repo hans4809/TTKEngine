@@ -52,8 +52,6 @@ public:
         const FVector& v0, const FVector& v1, const FVector& v2, float& hitDistance
     );
     virtual void PostEditChangeProperty(const FProperty* PropertyThatChanged) override;
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
 
     // Physics - Collision
@@ -65,7 +63,7 @@ public:
     virtual void NotifyEndOverlap(const UPrimitiveComponent* OtherComponent) const;
 
     bool MoveComponent(const FVector& Delta) override;
-    FVector ComponentVelocity;
+    UPROPERTY(EditAnywhere, FVector, ComponentVelocity, = FVector::ZeroVector)
     virtual void RecreatePhysicsState();
     virtual void DestroyPhysicsState();
     virtual void OnCreatePhysicsState();
@@ -73,12 +71,11 @@ public:
 
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;
-    virtual void LoadAndConstruct(const FActorComponentInfo& Info);
     UPhysicalMaterial* GetPhysicalMaterial() const;
 public:
     FName GetVBIBTopologyMappingName() const { return VBIBTopologyMappingName; }
 protected:
-    FName VBIBTopologyMappingName;
+    UPROPERTY(EditAnywhere, FName, VBIBTopologyMappingName, = TEXT("None"))
     FBodyInstance BodyInstance;
 private:
     bool bGenerateOverlapEvents = true;

@@ -49,36 +49,12 @@ void ULevel::PostLoad()
     }
 }
 
-
-UObject* ULevel::Duplicate(UObject* InOuter)
-{
-    ULevel* CloneLevel = Cast<ThisClass>(Super::Duplicate(InOuter));
-    CloneLevel->DuplicateSubObjects(this, InOuter);
-    CloneLevel->PostDuplicate();
-    return CloneLevel;
-}
-
-void ULevel::DuplicateSubObjects(const UObject* SourceObj, UObject* InOuter)
-{
-    UObject::DuplicateSubObjects(SourceObj, InOuter);
-    for (AActor* Actor : Cast<ULevel>(SourceObj)->GetActors())
-    {
-        AActor* dupActor = static_cast<AActor*>(Actor->Duplicate(this));
-        DuplicatedObjects.Add(Actor, dupActor);
-        PendingBeginPlayActors.Add(dupActor);
-        Actors.Add(dupActor);
-    }
-    for (AActor* Actor : Actors)
-    {
-        if (ADodge* NewDodge = Cast<ADodge>(Actor))
-        {
-            NewDodge->TestDelegate = NewDodge->TestDelegate.Duplicate(DuplicatedObjects);
-        }
-    }
-}
-
 void ULevel::PostDuplicate()
 {
     UObject::PostDuplicate();
+    for (AActor* Actor : Actors)
+    {
+        PendingBeginPlayActors.Add(Actor);
+    }
 }
 

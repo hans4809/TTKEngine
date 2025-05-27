@@ -34,15 +34,6 @@ void APlayerCameraManager::AddCameraModifier(UCameraModifier* Modifier)
         CameraModifiers.Add(Modifier);
     }
 }
-
-UObject* APlayerCameraManager::Duplicate(UObject* InOuter)
-{
-    APlayerCameraManager* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    ClonedActor->DuplicateSubObjects(this, InOuter);
-    ClonedActor->PostDuplicate();
-    return ClonedActor;
-}
-
 void APlayerCameraManager::Initialize(APlayerController* PC)
 {
     Owner = PC;

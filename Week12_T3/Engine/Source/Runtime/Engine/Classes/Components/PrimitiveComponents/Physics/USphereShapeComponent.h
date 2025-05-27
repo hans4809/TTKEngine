@@ -8,6 +8,7 @@ class UCapsuleShapeComponent;
 
 struct FSphereShapeInfo : public FShapeInfo
 {
+    DECLARE_STRUCT(FSphereShapeInfo, FShapeInfo)
     FSphereShapeInfo()
         : FShapeInfo(EShapeType::Sphere
             , FVector::ZeroVector
@@ -21,7 +22,7 @@ struct FSphereShapeInfo : public FShapeInfo
     {
     }
 
-    float Radius;
+    UPROPERTY(EditAnywhere, float, Radius, =  0.0f)
 };
 
 class USphereShapeComponent : public UShapeComponent
@@ -35,8 +36,6 @@ public:
     void InitializeComponent() override;
     void TickComponent(float DeltaTime) override;
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
 
     void SetRadius(float InRadius) { Radius = InRadius; }
@@ -58,6 +57,7 @@ protected:
 
 private:
     float PrevRadius;
-    float Radius;
+
+    UPROPERTY(EditAnywhere, float, Radius, = 0.5f)
 };
 

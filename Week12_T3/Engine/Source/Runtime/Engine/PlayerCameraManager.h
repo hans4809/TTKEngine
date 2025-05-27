@@ -21,9 +21,6 @@ public:
 public:
     APlayerCameraManager();
     virtual ~APlayerCameraManager() override {};
-
-    UObject* Duplicate(UObject* InOuter) override;
-
     void Initialize(APlayerController* PC);
     
     AActor* GetViewTarget() const { return ViewTarget.Target; }
@@ -64,7 +61,7 @@ public:
     void StartCameraShake(UCameraShakeBase* Shake);
 private:
     TArray<FActiveCameraShakeInfo> ActiveShakes;
-    APlayerController* Owner;
+    APlayerController* Owner = nullptr;
 
     void UpdateViewTarget();           // ViewTarget.Target → ViewInfo 갱신
     void ApplyCameraShakes(float DeltaTime, FSimpleViewInfo& ViewInfo);         // ActiveShake 계산

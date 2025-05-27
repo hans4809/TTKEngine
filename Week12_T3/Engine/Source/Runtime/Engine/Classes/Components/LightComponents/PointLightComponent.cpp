@@ -12,19 +12,6 @@ UPointLightComponent::UPointLightComponent()
     Intensity = 5.f;
 }
 
-UObject* UPointLightComponent::Duplicate(UObject* InOuter)
-{
-    UPointLightComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-
-    return NewComp;
-}
-
-void UPointLightComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-}
 
 void UPointLightComponent::PostDuplicate()
 {

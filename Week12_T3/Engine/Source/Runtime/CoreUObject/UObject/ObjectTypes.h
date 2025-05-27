@@ -38,7 +38,7 @@ enum EObjects : uint8
     OBJ_END
 };
 
-enum EArrowDirection : uint8
+enum class EArrowDirection : uint8
 {
     AD_X,
     AD_Y,
