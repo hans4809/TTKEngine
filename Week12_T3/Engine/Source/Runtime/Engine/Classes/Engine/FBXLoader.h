@@ -5,6 +5,7 @@
 #include "Components/Mesh/SkeletalMesh.h"
 #include "Components/Mesh/StaticMesh.h"
 #include "Container/Map.h"
+#include "Container/Set.h"
 #include "Skeletal/SkeletalDefine.h"
 
 class UAnimDataModel;
@@ -18,6 +19,7 @@ public:
     static bool ParseSkeletalMeshFromFBX(const FString& FilePath, FSkeletalMeshRenderData& OutMeshData);
     static bool ParseSkeletonFromFBX(const FString& FilePath, FRefSkeletal& OutRefSkeletal);
     static bool ParseAnimationFromFBX(const FString& FilePath, UAnimDataModel*& OutAnimDataModel);
+    static bool ParseMaterialFromFBX(const FString& FilePath, TArray<FObjMaterialInfo>& OutMaterialInfos);
 
 private:
     static bool ParseSkeletalMeshAndSkeletonFromFBX(const FString& FilePath, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal);
@@ -43,6 +45,7 @@ private:
     static void ExtractFBXMeshData(const FbxScene* Scene, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal);
     static void ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal);
     static void ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal);
+    static void ExtractMaterialFromNode(FbxNode* Node, TArray<FObjMaterialInfo>& OutMaterialInfos, TSet<FName>& ProcessedMaterials);
     static void ExtractVertices(FbxMesh* Mesh, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal);
     static void ExtractNormal(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex);
     static void ExtractUV(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex);

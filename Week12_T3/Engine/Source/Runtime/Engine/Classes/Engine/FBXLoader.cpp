@@ -241,6 +241,53 @@ bool FFBXLoader::ParseAnimationFromFBX(const FString& FilePath, UAnimDataModel*&
     return true;
 }
 
+bool FFBXLoader::ParseMaterialFromFBX(const FString& FilePath, TArray<FObjMaterialInfo>& OutMaterialInfos)
+{
+    static bool bInitialized = false;
+    if (bInitialized == false)
+    {
+        InitFBXManager();
+        bInitialized = true;
+    }
+    FbxScene* Scene = FbxScene::Create(FbxManager, "myScene");
+    FbxImporter* Importer = FbxImporter::Create(FbxManager, "myImporter");
+    
+    bool bResult = Importer->Initialize(GetData(FilePath), -1, FbxManager->GetIOSettings());
+    if (!bResult)
+        return {};
+    
+    Importer->Import(Scene);
+    Importer->Destroy();
+
+    FbxAxisSystem UnrealAxisSystem(
+        FbxAxisSystem::eZAxis,
+        FbxAxisSystem::eParityEven, // TODO Check
+        FbxAxisSystem::eLeftHanded
+    );
+    if (Scene->GetGlobalSettings().GetAxisSystem() != UnrealAxisSystem)
+        UnrealAxisSystem.DeepConvertScene(Scene);
+    
+    FbxSystemUnit SceneSystemUnit = Scene->GetGlobalSettings().GetSystemUnit();
+    if( SceneSystemUnit.GetScaleFactor() != 1.0 )
+    {
+        FbxSystemUnit::cm.ConvertScene(Scene);
+    }
+
+    FbxNode* RootNode = Scene->GetRootNode();
+    if (RootNode == nullptr)
+        return false;
+
+    // 3) 재귀 추출 (중복 방지용 Set)
+    TSet<FName> Processed;
+    ExtractMaterialFromNode(Scene->GetRootNode(), OutMaterialInfos, Processed);
+
+    // 4) 메시에서 머티리얼을 하나도 못 뽑았다면 기본 머티리얼 하나 추가
+    if (OutMaterialInfos.Num() == 0)
+    {
+        OutMaterialInfos.Add(FObjMaterialInfo());
+    }
+}
+
 FSkeletalMeshRenderData FFBXLoader::ParseBin(const FString FilePath)
 {
     FSkeletalMeshRenderData NewMeshData;
@@ -439,6 +486,45 @@ void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData& Out
     for (int i = 0; i < childCount; i++)
     {
         ExtractMeshFromNode(Node->GetChild(i), OutMeshData, OutRefSkeletal);
+    }
+}
+
+void FFBXLoader::ExtractMaterialFromNode(FbxNode* Node, TArray<FObjMaterialInfo>& OutMaterialInfos, TSet<FName>& ProcessedMaterials)
+{
+    FbxMesh* Mesh = Node->GetMesh();
+    if (Mesh)
+    {
+        if (!IsTriangulated(Mesh))
+        {
+            FbxGeometryConverter Converter = FbxGeometryConverter(FbxManager);
+            Converter.Triangulate(Mesh, true);
+            Mesh = Node->GetMesh();
+        }
+
+        auto* MatElem = Mesh->GetElementMaterial();
+        int  MatCount = Node->GetMaterialCount();
+        for (int32 i = 0; i < MatCount; ++i)
+        {
+            FbxSurfaceMaterial* SrcMtl = Node->GetMaterial(i);
+            if (!SrcMtl) continue;
+
+            // 중복 검사: FbxSurfaceMaterial::GetName()을 FName으로 변환
+            FName MtlName = FName(FString(SrcMtl->GetName()));
+            if (ProcessedMaterials.Contains(MtlName))
+                continue;
+            ProcessedMaterials.Add(MtlName);
+
+            // 변환
+            FObjMaterialInfo Info = ConvertFbxToObjMaterialInfo(SrcMtl);
+            OutMaterialInfos.Add(MoveTemp(Info));
+        }
+    }
+
+    // 자식 노드들에 대해 재귀적으로 수행
+    int childCount = Node->GetChildCount();
+    for (int i = 0; i < childCount; i++)
+    {
+        ExtractMaterialFromNode(Node->GetChild(i), OutMaterialInfos, ProcessedMaterials);
     }
 }
 
@@ -819,7 +905,6 @@ void FFBXLoader::ExtractIndices(FbxMesh* Mesh, FSkeletalMeshRenderData& OutMeshD
     }
 }
 
-
 void FFBXLoader::ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal, int BaseIndexOffset)
 {
     auto* MatElem = Mesh->GetElementMaterial();
@@ -888,7 +973,7 @@ void FFBXLoader::ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRen
         // Subset 만들기
         // Material 생성 & 등록
         FbxSurfaceMaterial* srcMtl = Node->GetMaterial(matIdx);
-        FString            mtlName = srcMtl ? FString(srcMtl->GetName()) : TEXT("Mat") + FString::FromInt(matIdx);
+        FString             mtlName = srcMtl ? FString(srcMtl->GetName()) : TEXT("Mat") + FString::FromInt(matIdx);
         auto                newMtl = FManagerOBJ::CreateMaterial(ConvertFbxToObjMaterialInfo(srcMtl));
         int                 finalIdx = OutRefSkeletal.Materials.Add(newMtl);
 
@@ -1386,28 +1471,16 @@ FObjMaterialInfo FFBXLoader::ConvertFbxToObjMaterialInfo(FbxSurfaceMaterial* Fbx
     };
 
     // map_Kd
-    ReadFirstTexture(FbxSurfaceMaterial::sDiffuse,
-                     OutInfo.DiffuseTextureName,
-                     OutInfo.DiffuseTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sDiffuse,OutInfo.DiffuseTextureName,OutInfo.DiffuseTexturePath);
     // map_Ka
-    ReadFirstTexture(FbxSurfaceMaterial::sAmbient,
-                     OutInfo.AmbientTextureName,
-                     OutInfo.AmbientTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sAmbient,OutInfo.AmbientTextureName, OutInfo.AmbientTexturePath);
     // map_Ks
-    ReadFirstTexture(FbxSurfaceMaterial::sSpecular,
-                     OutInfo.SpecularTextureName,
-                     OutInfo.SpecularTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sSpecular,OutInfo.SpecularTextureName,OutInfo.SpecularTexturePath);
     // map_Bump 또는 map_Ns
-    ReadFirstTexture(FbxSurfaceMaterial::sBump,
-                     OutInfo.BumpTextureName,
-                     OutInfo.BumpTexturePath);
-    ReadFirstTexture(FbxSurfaceMaterial::sNormalMap,
-                     OutInfo.NormalTextureName,
-                     OutInfo.NormalTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sBump,OutInfo.BumpTextureName,OutInfo.BumpTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sNormalMap,OutInfo.NormalTextureName,OutInfo.NormalTexturePath);
     // map_d (Alpha)
-    ReadFirstTexture(FbxSurfaceMaterial::sTransparentColor,
-                     OutInfo.AlphaTextureName,
-                     OutInfo.AlphaTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sTransparentColor,OutInfo.AlphaTextureName,OutInfo.AlphaTexturePath);
 
     return OutInfo;
 }

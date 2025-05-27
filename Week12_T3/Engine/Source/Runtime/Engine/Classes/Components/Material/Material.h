@@ -1,10 +1,11 @@
 #pragma once
 #include "Define.h"
-#include "Engine/Asset/Asset.h"
+#include "CoreUObject/UObject/Object.h"
+#include "CoreUObject/UObject/ObjectMacros.h"
 
-class UMaterial : public UAsset
+class UMaterial : public UObject
 {
-    DECLARE_CLASS(UMaterial, UAsset)
+    DECLARE_CLASS(UMaterial, UObject)
 
 public:
     UMaterial() {}
@@ -36,11 +37,6 @@ public:
     {
         Ar >> MaterialInfo;
     }
-
-    bool LoadFromFile(const FString& filepath) override;
-    bool SerializeToFile(std::ostream& Out) override;
-    bool DeserializeFromFile(std::istream& In) override;
-    void PostLoad() override;
 
 private:
     UPROPERTY(EditAnywhere, FObjMaterialInfo, MaterialInfo, = {})

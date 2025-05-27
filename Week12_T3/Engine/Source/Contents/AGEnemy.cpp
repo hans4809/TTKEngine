@@ -14,7 +14,7 @@ AGEnemy::AGEnemy()
     
     Capsule = AddComponent<UCapsuleShapeComponent>(EComponentOrigin::Constructor);
 
-    UMaterial* Material = new UMaterial();
+    UMaterial* Material = FObjectFactory::ConstructObject<UMaterial>(nullptr);
     FObjMaterialInfo MaterialInfo;
     Material->SetMaterialInfo(MaterialInfo);
     MeshComp->SetMaterial(0, Material);

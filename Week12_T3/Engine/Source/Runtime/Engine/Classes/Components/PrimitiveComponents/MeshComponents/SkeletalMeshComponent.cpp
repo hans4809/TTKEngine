@@ -28,7 +28,7 @@ UMaterial* USkeletalMeshComponent::GetMaterial(uint32 ElementIndex) const
 {
     if (SkeletalMesh != nullptr)
     {
-        if (OverrideMaterials[ElementIndex] != nullptr)
+        if (OverrideMaterials.IsValidIndex(ElementIndex))
         {
             return OverrideMaterials[ElementIndex];
         }
@@ -135,7 +135,6 @@ void USkeletalMeshComponent::SetSkeletalMesh(USkeletalMesh* value)
     
     //value->UpdateBoneHierarchy();
     
-    OverrideMaterials.SetNum(value->GetMaterials().Num());
     AABB = SkeletalMesh->GetRenderData().BoundingBox;
 
     // CreateBoneComponents();

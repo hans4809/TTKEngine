@@ -197,9 +197,9 @@ void FSkeletalMeshRenderPass::Execute(const std::shared_ptr<FViewportClient> InV
         // SubSet마다 Material Update 및 Draw
         for (int subMeshIndex = 0; subMeshIndex < RefSkeletal.MaterialSubsets.Num(); ++subMeshIndex)
         {
-            const int materialIndex = RefSkeletal.MaterialSubsets[subMeshIndex].MaterialIndex;
+            //const int materialIndex = RefSkeletal.MaterialSubsets[subMeshIndex].MaterialIndex;
             
-            UpdateMaterialConstants(SkeletalMeshComponent->GetMaterial(materialIndex)->GetMaterialInfo());
+            UpdateMaterialConstants(RefSkeletal.Materials[subMeshIndex]->GetMaterialInfo());
 
             // index draw
             const uint64 startIndex = RefSkeletal.MaterialSubsets[subMeshIndex].IndexStart;
