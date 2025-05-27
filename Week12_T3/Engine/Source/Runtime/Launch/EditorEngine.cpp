@@ -21,6 +21,9 @@
 #include "UObject/Casts.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetImporter.h"
+#include "Engine/Asset/Animation/UAnimationFactory.h"
+#include "Engine/Asset/SkeletalMesh/USkeletalMeshFactory.h"
+#include "Engine/Asset/Skeleton/USkeletonFactory.h"
 #include "Engine/Asset/Texture/TextureFactory.h"
 #include "GameFramework/PlayerController.h"
 #include "UnrealEd/SkeletalPreviewUI.h"
@@ -50,6 +53,13 @@ void UEditorEngine::Init()
         
         UTextureFactory* TextureFactory = FObjectFactory::ConstructObject<UTextureFactory>(this);
         AssetManager->RegisterFactory(TextureFactory);
+        USkeletonFactory* SkeletonFactory = FObjectFactory::ConstructObject<USkeletonFactory>(this);
+        AssetManager->RegisterFactory(SkeletonFactory);
+        USkeletalMeshFactory* SkeletalMeshFactory = FObjectFactory::ConstructObject<USkeletalMeshFactory>(this);
+        AssetManager->RegisterFactory(SkeletalMeshFactory);
+        UAnimationFactory* AnimationFactory = FObjectFactory::ConstructObject<UAnimationFactory>(this);
+        AssetManager->RegisterFactory(AnimationFactory);
+
         AssetManager->InitAssetManager();
         AssetManager->Initalize();
     }
@@ -57,8 +67,8 @@ void UEditorEngine::Init()
     if (AssetImporter == nullptr)
     {
         AssetImporter = FObjectFactory::ConstructObject<UAssetImporter>(this);
-        AssetImporter->ImportDirectory(TEXT("Assets/Texture"), nullptr);
-        AssetImporter->ImportDirectory(TEXT("Contents/Textures"), nullptr);
+        AssetImporter->ImportDirectory(UTexture::StaticClass(), TEXT("Assets/Texture"), nullptr);
+        AssetImporter->ImportDirectory(UTexture::StaticClass(), TEXT("Contents/Textures"), nullptr);
         assert(AssetImporter);
     }
 

@@ -1,11 +1,11 @@
 #pragma once
-#include "UObject/Object.h"
-#include "UObject/ObjectMacros.h"
+
+#include "Engine/Asset/Asset.h"
 #include "Skeletal/SkeletalDefine.h"
 
 struct FRefSkeletal;
 
-class USkeleton : public UObject
+class USkeleton : public UAsset
 {
     DECLARE_CLASS(USkeleton, UObject)
 public:
@@ -13,6 +13,11 @@ public:
     
     FRefSkeletal& GetRefSkeletal() { return RefSkeletal; }
     void SetRefSkeletal(const FRefSkeletal& InRefSkeletal) { RefSkeletal = InRefSkeletal; }
+    
+    bool LoadFromFile(const FString& filepath) override;
+    bool SerializeToFile(std::ostream& Out) override;
+    bool DeserializeFromFile(std::istream& In) override;
+
 private:
-    FRefSkeletal RefSkeletal;
+    UPROPERTY(EditAnywhere, FRefSkeletal, RefSkeletal, = {})
 };

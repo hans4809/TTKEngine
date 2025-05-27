@@ -36,6 +36,9 @@ public:
 
     virtual bool SerializeToFile(std::ostream& Out) { return true; }
     virtual bool DeserializeFromFile(std::istream& In) { return true; }
+    virtual void PostLoad() {}
+
+    void SetAssetName(const FString& InName);
 
 protected:
     UPROPERTY(EditAnywhere, FAssetDescriptor, Descriptor, = {})

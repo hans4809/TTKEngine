@@ -14,6 +14,7 @@
 #include "UObject/Casts.h"
 #include "Animation/AnimSingleNodeInstance.h"
 #include "Animation/CustomAnimInstance/TestAnimInstance.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Physics/PhysicsAsset.h"
 
 uint32 USkeletalMeshComponent::GetNumMaterials() const
@@ -180,9 +181,9 @@ void USkeletalMeshComponent::CreateBoneComponents()
     }
 }
 
-USkeletalMesh* USkeletalMeshComponent::LoadSkeletalMesh(const FString& FilePath)
+USkeletalMesh* USkeletalMeshComponent::LoadSkeletalMesh(const FString& FileName)
 {
-    USkeletalMesh* SkeletalMesh = FFBXLoader::CreateSkeletalMesh(FilePath);
+    USkeletalMesh* SkeletalMesh = UAssetManager::Get().Get<USkeletalMesh>(FileName);
     SetSkeletalMesh(SkeletalMesh);
 
     return SkeletalMesh;
@@ -334,11 +335,6 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
             bCPUSkinned = false;
         }   
     }
-}
-
-void USkeletalMeshComponent::SetData(const FString& FilePath)
-{
-    SkeletalMesh = LoadSkeletalMesh(FilePath);
 }
 
 void USkeletalMesh::ResetToOriginalPose()

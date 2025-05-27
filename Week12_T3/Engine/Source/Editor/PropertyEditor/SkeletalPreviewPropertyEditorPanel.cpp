@@ -910,11 +910,10 @@ void SkeletalPreviewPropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComp
             ? "No .fbx files" 
             : fbxFiles[currentIndex].c_str();
 
-        FString PreviewName = SkeletalMeshComp->GetSkeletalMesh()->GetRenderData().Name;
+        FString PreviewName = SkeletalMeshComp->GetSkeletalMesh()->GetDescriptor().AssetName.ToString();
         std::filesystem::path P = PreviewName;
         FString FileName = FString( P.filename().string() ); 
         
-        const TMap<FString, USkeletalMesh*> Meshes = FFBXLoader::GetSkeletalMeshes();
         if (ImGui::BeginCombo("##SkeletalMesh", GetData(FileName), ImGuiComboFlags_None))
         {
             for (int i = 0; i < (int)fbxFiles.size(); ++i)
@@ -923,8 +922,7 @@ void SkeletalPreviewPropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComp
                 if (ImGui::Selectable(fbxFiles[i].c_str(), isSelected))
                 {
                     currentIndex = i;
-                    std::string fullPath = "FBX/" + fbxFiles[i];
-                    SkeletalMeshComp->LoadSkeletalMesh(fullPath);
+                    SkeletalMeshComp->LoadSkeletalMesh(fbxFiles[i]);
                 }
                 if (isSelected)
                     ImGui::SetItemDefaultFocus();

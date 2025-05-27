@@ -4,6 +4,7 @@
 #include "UObject/NameTypes.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"
+#include "UObject/ObjectMacros.h"
 
 enum class EAnimInterpolationType : std::uint8_t
 {
@@ -53,19 +54,22 @@ enum class ETangentWeightMode : std::uint8_t
 
 struct FCurve
 {
-    float Time;// 키프레임의 시간
-    float Value;// 키프레임의 값
-    
-    float ArriveTangent;// 들어오는 탄젠트 (이전 키프레임에서 현재 키프레임으로의 기울기)
-    float LeaveTangent;// 나가는 탄젠트 (현재 키프레임에서 다음 키프레임으로의 기울기)
+    DECLARE_STRUCT(FCurve)
+
+    UPROPERTY(VisibleAnywhere, float, Time, = 0.0f)// 키프레임의 시간
+
+    UPROPERTY(VisibleAnywhere, float, Value, = 0.0f)// 키프레임의 값
+
+    UPROPERTY(VisibleAnywhere, float, ArriveTangent, = 0.0f) // 들어오는 탄젠트 (이전 키프레임에서 현재 키프레임으로의 기울기)
+    UPROPERTY(VisibleAnywhere, float, LeaveTangent, = 0.0f) // 나가는 탄젠트 (현재 키프레임에서 다음 키프레임으로의 기울기)
     
     // 탄젠트의 가중치 (탄젠트의 영향력을 제어)
-    float TangentWeightArrive;
-    float TangentWeightLeave;
-    
-    EAnimInterpolationType InterpMode;    // 이 키프레임에 사용되는 보간 모드
-    ETangentMode TangentMode;
-    ETangentWeightMode TangentWeightMode;
+    UPROPERTY(VisibleAnywhere, float, TangentWeightArrive, = 0.0f)
+    UPROPERTY(VisibleAnywhere, float, TangentWeightLeave, = 0.0f)
+
+    UPROPERTY(VisibleAnywhere, EAnimInterpolationType, InterpMode, = EAnimInterpolationType::None)// 이 키프레임에 사용되는 보간 모드
+    UPROPERTY(VisibleAnywhere, ETangentMode, TangentMode, = ETangentMode::None)
+    UPROPERTY(VisibleAnywhere, ETangentWeightMode, TangentWeightMode, = ETangentWeightMode::None)
 
     float Evaluate(float CurrentTime) const;
 
@@ -88,8 +92,11 @@ struct FCurve
 
 struct FAnimationCurveData
 {
-    FName CurveName;
-    TArray<FCurve> CurveWeights;
+    DECLARE_STRUCT(FAnimationCurveData)
+
+    UPROPERTY(VisibleAnywhere, FName, CurveName, = TEXT("None"))
+
+    UPROPERTY(VisibleAnywhere, TArray<FCurve>, CurveWeights, = {})
 
     void Serialize(FArchive& Ar) const
     {
@@ -104,10 +111,13 @@ struct FAnimationCurveData
 
 struct FAnimNotifyEvent
 {
-    float TriggerTime;
-    float Duration;
-    int32 TrackIndex;
-    FName NotifyName;
+    DECLARE_STRUCT(FAnimNotifyEvent)
+
+    UPROPERTY(VisibleAnywhere, float, TriggerTime, = 0.0f)
+    UPROPERTY(VisibleAnywhere, float, Duration, = 0.0f)
+    UPROPERTY(VisibleAnywhere, int32, TrackIndex, = 0)
+    UPROPERTY(VisibleAnywhere, FName, NotifyName, = TEXT("None"))
+
     // class UAnimNotify* Notify;
     TDelegate<void()> OnNotify;
     bool bIsTriggered = false;
@@ -124,8 +134,10 @@ struct FAnimNotifyEvent
 
 struct FAnimNotifyTrack
 {
-    FName TrackName;
-    TArray<int32> NotifyIndices;
+    DECLARE_STRUCT(FAnimNotifyTrack)
+
+    UPROPERTY(VisibleAnywhere, FName, TrackName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, TArray<int32>, NotifyIndices, = {})
 
     FAnimNotifyTrack() = default;
 
@@ -137,13 +149,13 @@ struct FAnimNotifyTrack
 
 struct FRawAnimSequenceTrack
 {
-    TArray<FVector> PosKeys;        // 위치 키들
-    TArray<FQuat> RotKeys;          // 회전 키들 
-    TArray<FVector> ScaleKeys;      // 스케일 키들
-    
-    TArray<float> KeyTimes;         // 각 키프레임의 시간값
+    DECLARE_STRUCT(FRawAnimSequenceTrack)
 
-    EAnimInterpolationType InterpMode;     // 전체 트랙의 보간 모드
+    UPROPERTY(VisibleAnywhere, TArray<FVector>, PosKeys, = {}) // 위치 키들
+    UPROPERTY(VisibleAnywhere, TArray<FQuat>, RotKeys, = {})  // 회전 키들 
+    UPROPERTY(VisibleAnywhere, TArray<FVector>, ScaleKeys, = {}) // 스케일 키들
+    UPROPERTY(VisibleAnywhere, TArray<float>, KeyTimes, = {}) // 각 키프레임의 시간값
+    UPROPERTY(VisibleAnywhere, EAnimInterpolationType, InterpMode, = EAnimInterpolationType::None)// 전체 트랙의 보간 모드
 
     void Serialize(FArchive& Ar) const;
 
@@ -153,8 +165,9 @@ struct FRawAnimSequenceTrack
 
 struct FBoneAnimationTrack
 {
-    FName Name = "Empty";                       // Bone 이름
-    FRawAnimSequenceTrack InternalTrackData;    // 실제 애니메이션 데이터
+    DECLARE_STRUCT(FBoneAnimationTrack)
+    UPROPERTY(VisibleAnywhere, FName, Name, = TEXT("Empty")) // Bone 이름
+    UPROPERTY(VisibleAnywhere, FRawAnimSequenceTrack, InternalTrackData, = {}) // 실제 애니메이션 데이터
 
     void Serialize(FArchive& Ar) const
     {

@@ -887,15 +887,15 @@ void PropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComponent* Skeletal
     {
         ImGui::Text("Skeletal Mesh Asset");
 
-        FString PreviewName = SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Name;
+        FString PreviewName = SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptor().AssetName.ToString();
         if (ImGui::BeginCombo("##", GetData(PreviewName), ImGuiComboFlags_None))
         {
-            for (const auto& [key, mesh]: FFBXLoader::GetSkeletalMeshes())
+            for (const auto& [key, mesh]: UAssetManager::Get().GetLoadedAssetsByType(USkeletalMesh::StaticClass()))
             {
                 const bool bIsSelected = (key == PreviewName);
-                if (ImGui::Selectable(GetData(key), bIsSelected))
+                if (ImGui::Selectable(GetData(key.ToString()), bIsSelected))
                 {
-                    SkeletalMeshComponent->LoadSkeletalMesh(key);
+                    SkeletalMeshComponent->LoadSkeletalMesh(key.ToString());
                 }
                 if (bIsSelected)
                 {
@@ -905,7 +905,7 @@ void PropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComponent* Skeletal
             ImGui::EndCombo();
         }
 
-        DrawSkeletalMeshPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Name);
+        DrawSkeletalMeshPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptor().AssetName.ToString());
         
         ImGui::TreePop();
     }
@@ -1743,7 +1743,7 @@ void PropertyEditorPanel::RenderDelegate(ULevel* Level) const
     }
 }
 
-void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath) const
+void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& AssetName) const
 {
     if (ImGui::Button("Preview##"))
     {
@@ -1785,10 +1785,11 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
 
         // Mesh 및 Animation 설정
         USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshActor->GetRootComponent());
-        SkeletalMeshComponent->SetSkeletalMesh(FFBXLoader::CreateSkeletalMesh(FilePath));
+        USkeletalMesh* SkeletalMesh = UAssetManager::Get().Get<USkeletalMesh>(AssetName);
+        SkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
 
         UAnimSingleNodeInstance* TestAnimInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(SkeletalMeshComponent);
-        TestAnimInstance->GetCurrentSequence()->SetData(FilePath+"\\mixamo.com");
+        TestAnimInstance->GetCurrentSequence()->SetData(AssetName+"\\mixamo.com");
         SkeletalMeshComponent->SetAnimInstance(TestAnimInstance);
     }
 }
@@ -1843,30 +1844,30 @@ void PropertyEditorPanel::RenderForPhysicsAsset(USkeletalMeshComponent* Skeletal
     if (ImGui::TreeNodeEx("Physics", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::Text("Physics Asset");
-        DrawPhysicsAssetPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetRenderData().Name);
+        DrawPhysicsAssetPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptor().AssetName.ToString());
         ImGui::TreePop();
     }
     ImGui::PopStyleColor();
 }
 
-void PropertyEditorPanel::DrawPhysicsAssetPreviewButton(const FString& FilePath) const
+void PropertyEditorPanel::DrawPhysicsAssetPreviewButton(const FString& FileName) const
 {
     
-        if (ImGui::Button("Preview##Physics Asset"))
-        {
-            PhysicsPreviewUtils::SetupPhysicsAssetPreview(FilePath);
-            
-            //// SkySphere 생성
-            //AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
-            //SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
-            //UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
-            //FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
-            //MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
-            //MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
-            //MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
-            //MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
-            //SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
-        }
+    if (ImGui::Button("Preview##Physics Asset"))
+    {
+        PhysicsPreviewUtils::SetupPhysicsAssetPreview(FileName);
+        
+        //// SkySphere 생성
+        //AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
+        //SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
+        //UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
+        //FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
+        //MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
+        //MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
+        //MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
+        //MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
+        //SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
+    }
 }
 
 void PropertyEditorPanel::OnResize(const HWND hWnd)

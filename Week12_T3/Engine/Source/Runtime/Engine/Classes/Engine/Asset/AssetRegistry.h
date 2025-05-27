@@ -17,6 +17,7 @@ public:
       */
     void ScanDirectory(const FString& InDir = TEXT("Contents"));
     void RegisterDescriptor(const FAssetDescriptor& InDesc);
+    void RegisterNewFile(const std::filesystem::path& InPath);
 
     // 등록된 에셋 검색
     bool GetDescriptor(const FName& InName, FAssetDescriptor& OutDesc) const;

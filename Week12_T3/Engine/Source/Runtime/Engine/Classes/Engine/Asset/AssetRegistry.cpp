@@ -46,6 +46,27 @@ void UAssetRegistry::RegisterDescriptor(const FAssetDescriptor& InDesc)
     DescriptorMap[InDesc.AssetName] = InDesc;
 }
 
+void UAssetRegistry::RegisterNewFile(const std::filesystem::path& InPath)
+{
+    namespace fs = std::filesystem;
+    FAssetDescriptor desc;
+
+    // ② 절대경로 (OS 구분자와 상관없이)
+    desc.AbsolutePath = FString(InPath.generic_wstring());
+
+    // ③ baseDir 대비 상대경로 (항상 '/' 로만 구성)
+    fs::path rel = fs::relative(InPath, std::filesystem::current_path());
+    desc.RelativePath = FString(rel.generic_wstring());
+
+    desc.AssetName      = FName(FString(rel.stem().string()));
+    desc.AssetExtension = rel.extension().string();
+    desc.Size           = fs::file_size(InPath);
+    desc.CreateDate     = fs::last_write_time(InPath);
+    desc.UpdateDate     = desc.CreateDate;
+
+    RegisterDescriptor(desc);
+}
+
 bool UAssetRegistry::GetDescriptor(const FName& InName, FAssetDescriptor& OutDesc) const
 {
     const FAssetDescriptor* it = DescriptorMap.Find(InName);

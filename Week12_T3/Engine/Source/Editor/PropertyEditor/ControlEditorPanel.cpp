@@ -179,13 +179,13 @@ void ControlEditorPanel::CreateMenuButton(const ImVec2 ButtonSize, ImFont* IconF
             if (ImGui::MenuItem("Wavefront (.obj)"))
             {
                 char const* lFilterPatterns[1] = { "*.obj" };
-                const char* FileName = tinyfd_openFileDialog("Open OBJ File", "", 1, lFilterPatterns, "Wavefront(.obj) file", 0);
+                const char* FilePath = tinyfd_openFileDialog("Open OBJ File", "", 1, lFilterPatterns, "Wavefront(.obj) file", 0);
 
-                if (FileName != nullptr)
+                if (FilePath != nullptr)
                 {
-                    std::cout << FileName << std::endl;
+                    std::cout << FilePath << std::endl;
 
-                    if (FManagerOBJ::CreateStaticMesh(FileName) == nullptr)
+                    if (FManagerOBJ::CreateStaticMesh(FilePath) == nullptr)
                     {
                         tinyfd_messageBox("Error", "파일을 불러올 수 없습니다.", "ok", "error", 1);
                     }
@@ -195,13 +195,13 @@ void ControlEditorPanel::CreateMenuButton(const ImVec2 ButtonSize, ImFont* IconF
             if (ImGui::MenuItem("FBX (.fbx)"))
             {
                 char const* lFilterPatterns[1] = { "*.fbx" };
-                const char* FileName = tinyfd_openFileDialog("Open FBX File", "", 1, lFilterPatterns, "FBX(.fbx) file", 0);
+                const char* FilePath = tinyfd_openFileDialog("Open FBX File", "", 1, lFilterPatterns, "FBX(.fbx) file", 0);
 
-                if (FileName != nullptr)
+                if (FilePath != nullptr)
                 {
-                    std::cout << FileName << std::endl;
-
-                    if (FFBXLoader::CreateSkeletalMesh(FileName) == nullptr)
+                    std::cout << FilePath << std::endl;
+                    
+                    if (UAssetManager::Get().Load<USkeletalMesh>(FilePath) == nullptr)
                     {
                         tinyfd_messageBox("Error", "파일을 불러올 수 없습니다.", "ok", "error", 1);
                     }

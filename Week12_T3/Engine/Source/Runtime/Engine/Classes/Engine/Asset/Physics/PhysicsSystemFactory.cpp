@@ -1,6 +1,13 @@
 #include "PhysicsSystemFactory.h"
 #include <Physics/PhysicsAsset.h>
 
+UPhysicsSystemFactory::UPhysicsSystemFactory()
+{
+    SetSupportedExtensions({ ".uphysicsasset" });
+    SetSupportedClass(UPhysicsAsset::StaticClass());
+    SetPriority(50);
+}
+
 UPhysicsSystemFactory::~UPhysicsSystemFactory()
 {
 }

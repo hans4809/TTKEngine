@@ -81,6 +81,8 @@ UObject* Serializer::Duplicate(const UObject* Obj)
 
 bool Serializer::SaveToFile(const UObject* Obj, const std::filesystem::path& FilePath)
 {
+    ClearSerializationCache();
+    
     TArray<uint8> Buf;
     FMemoryWriter2 Ar(Buf);
     Ar.Seek(0);
@@ -95,6 +97,8 @@ bool Serializer::SaveToFile(const UObject* Obj, const std::filesystem::path& Fil
 
 UObject* Serializer::LoadFromFile(const std::filesystem::path& FilePath)
 {
+    ClearSerializationCache();
+    
     std::ifstream In(FilePath, std::ios::binary | std::ios::ate);
     if (!In.is_open()) return nullptr;
 
@@ -108,4 +112,9 @@ UObject* Serializer::LoadFromFile(const std::filesystem::path& FilePath)
     FMemoryReader2 Reader(Buffer);
     
     return Load(Reader);
+}
+
+void Serializer::ClearSerializationCache()
+{
+    ObjectCache.Empty();
 }

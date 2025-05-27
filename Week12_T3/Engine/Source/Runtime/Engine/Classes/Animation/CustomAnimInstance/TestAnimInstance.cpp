@@ -1,25 +1,25 @@
 #include "TestAnimInstance.h"
 #include "Animation/AnimationStateMachine.h"
 #include "GameFramework/Actor.h"
-#include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
 #include "Animation/AnimSequence.h"
+#include "Engine/Asset/AssetManager.h"
 
 UTestAnimInstance::UTestAnimInstance()
 {
-    StandingSequence = FObjectFactory::ConstructObject<UAnimSequence>(this);
-    JumpSequence = FObjectFactory::ConstructObject<UAnimSequence>(this);
-    DanceSequence = FObjectFactory::ConstructObject<UAnimSequence>(this);
-    DeafeatedSequence = FObjectFactory::ConstructObject<UAnimSequence>(this);
+    StandingSequence = UAssetManager::Get().Get<UAnimSequence>(TEXT("Cute_Standing_Pose"));
+    JumpSequence = UAssetManager::Get().Get<UAnimSequence>(TEXT("Joyful_Jump"));
+    DanceSequence = UAssetManager::Get().Get<UAnimSequence>(TEXT("Rumba_Dancing"));
+    DeafeatedSequence = UAssetManager::Get().Get<UAnimSequence>(TEXT("Defeated"));
 
-    FFBXLoader::CreateSkeletalMesh("Contents/FBX/Cute_Standing_Pose.fbx");
-    FFBXLoader::CreateSkeletalMesh("Contents/FBX/Joyful_Jump.fbx");
-    FFBXLoader::CreateSkeletalMesh("Contents/FBX/Rumba_Dancing.fbx");
-    FFBXLoader::CreateSkeletalMesh("Contents/FBX/Defeated.fbx");
+    // FFBXLoader::CreateSkeletalMesh("Contents/FBX/Cute_Standing_Pose.fbx");
+    // FFBXLoader::CreateSkeletalMesh("Contents/FBX/Joyful_Jump.fbx");
+    // FFBXLoader::CreateSkeletalMesh("Contents/FBX/Rumba_Dancing.fbx");
+    // FFBXLoader::CreateSkeletalMesh("Contents/FBX/Defeated.fbx");
 
-    StandingSequence->SetData("Contents/FBX/Cute_Standing_Pose.fbx\\mixamo.com");
-    JumpSequence->SetData("Contents/FBX/Joyful_Jump.fbx\\mixamo.com");
-    DanceSequence->SetData("Contents/FBX/Rumba_Dancing.fbx\\mixamo.com");
-    DeafeatedSequence->SetData("Contents/FBX/Defeated.fbx\\mixamo.com");
+    // StandingSequence->SetData("Contents/FBX/Cute_Standing_Pose.fbx\\mixamo.com");
+    // JumpSequence->SetData("Contents/FBX/Joyful_Jump.fbx\\mixamo.com");
+    // DanceSequence->SetData("Contents/FBX/Rumba_Dancing.fbx\\mixamo.com");
+    // DeafeatedSequence->SetData("Contents/FBX/Defeated.fbx\\mixamo.com");
 
     AnimStateMachine = FObjectFactory::ConstructObject<UAnimationStateMachine<ETestState>>(this);
 

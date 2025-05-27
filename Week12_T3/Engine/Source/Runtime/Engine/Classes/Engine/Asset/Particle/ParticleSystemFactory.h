@@ -5,16 +5,9 @@ class UParticleSystemFactory : public UAssetFactory
 {
     DECLARE_CLASS(UParticleSystemFactory, UAssetFactory)
 public:
-    UParticleSystemFactory()
-    {
-        // .uparticles 파일을 파티클 시스템 에셋으로 인식
-        SetSupportedExtensions({".uparticles"});
-        SetPriority(50);
-    }
-    ~UParticleSystemFactory() override;
+    UParticleSystemFactory();
 
-    // 파일 임포트 가능 여부 검사
-    bool CanImport(const FString& filepath) const override;
+    ~UParticleSystemFactory() override;
 
     // 파일로부터 에셋 생성
     UAsset* ImportFromFile(const FString& InFilePath) override;

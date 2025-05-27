@@ -14,6 +14,7 @@
 #include "UObject/ObjectMacros.h"
 
 class FArchive;
+class UMaterial;
 
 struct FVertexSimple
 {
@@ -28,18 +29,23 @@ struct FVertexSimple
 // Material Subset
 struct FMaterialSubset
 {
-    uint32 IndexStart; // Index Buffer Start pos
-    uint32 IndexCount; // Index Count
-    uint32 MaterialIndex; // Material Index
-    FString MaterialName; // Material Name
+    DECLARE_STRUCT(FMaterialSubset)
+
+    UPROPERTY(uint32, IndexStart)
+    UPROPERTY(uint32, IndexCount)
+    UPROPERTY(uint32, MaterialIndex)
+    UPROPERTY(FString, MaterialName)
+    
     void Serialize(FArchive& ar) const;
     void Deserialize(FArchive& ar);
 };
 
 struct FMaterialSlot
 {
-    class UMaterial* Material;
-    FName MaterialSlotName;
+    DECLARE_STRUCT(FMaterialSlot)
+    
+    UPROPERTY(VisibleAnywhere | DuplicateTransient, UMaterial*, Material, = nullptr)
+    UPROPERTY(VisibleAnywhere, FName, MaterialSlotName, = TEXT("None"))
     //FMeshUVChannelInfo UVChannelData;
 };
 
@@ -74,55 +80,62 @@ struct FObjInfo
 
 struct FObjMaterialInfo
 {
-    FString MTLName;  // newmtl : Material Name.
+    DECLARE_STRUCT(FObjMaterialInfo)
 
-    bool bHasTexture = false;  // Has Texture?
-    bool bTransparent = false; // Has alpha channel?
+    UPROPERTY(EditAnywhere, FString, MTLName, = TEXT("None"))
+
+    UPROPERTY(EditAnywhere, bool, bHasTexture, = false)
+    UPROPERTY(EditAnywhere, bool, bTransparent, = false)
 
     // Diffuse (Kd) : 일반적으로 흰색, 완전 불투명한 색상
-    FVector Diffuse = FVector(1.0f, 1.0f, 1.0f);
+    UPROPERTY(EditAnywhere, FVector, Diffuse, = FVector(1.0f, 1.0f, 1.0f))
     
     // Specular (Ks) : 반사광 기본값, 흰색으로 표기하는 경우가 많음
-    FVector Specular = FVector(1.0f, 1.0f, 1.0f);
+    UPROPERTY(EditAnywhere, FVector, Specular, = FVector(1.0f, 1.0f, 1.0f))
     
     // Ambient (Ka) : 주변광 기본값, 너무 강하지 않은 낮은 값으로
-    FVector Ambient = FVector(0.1f, 0.1f, 0.1f);
-    
+    UPROPERTY(EditAnywhere, FVector, Ambient, = FVector(0.1f, 0.1f, 0.1f))
+
     // Emissive (Ke) : 자체 발광 없음
-    FVector Emissive = FVector(0.0f, 0.0f, 0.0f);
+    UPROPERTY(EditAnywhere, FVector, Emissive, = FVector(0.0f, 0.0f, 0.0f))
     
     // SpecularScalar (Ns) : 스페큘러 파워 (보통 1.0 이상, 필요에 따라 조정)
-    float SpecularScalar = 1.0f;
+    UPROPERTY(EditAnywhere, float, SpecularScalar, = 1.0f)
     
     // DensityScalar (Ni) : 광학적 밀도(굴절률 등), 기본적으로 1.0
-    float DensityScalar = 1.0f;
+    UPROPERTY(EditAnywhere, float, DensityScalar, = 1.0f)
     
     // TransparencyScalar : 투명도, 1.0이면 불투명, 0.0이면 완전 투명
-    float TransparencyScalar = 1.0f;
+    UPROPERTY(EditAnywhere, float, TransparencyScalar, = 1.0f)
 
-    uint32 IlluminanceModel; // illum: illumination Model between 0 and 10. (UINT)
+    UPROPERTY(EditAnywhere, uint32, IlluminanceModel, = 0)
 
     /* Texture */
-    FString DiffuseTextureName;  // map_Kd : Diffuse texture
-    FString DiffuseTexturePath;
+    UPROPERTY(EditAnywhere, FString, DiffuseTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, DiffuseTexturePath, = TEXT("None"))
     
-    FString AmbientTextureName;  // map_Ka : Ambient texture
-    FString AmbientTexturePath;
-    
-    FString SpecularTextureName; // map_Ks : Specular texture
-    FString SpecularTexturePath;
-    
-    FString BumpTextureName;     // map_Bump : Bump texture
-    FString BumpTexturePath;
-    
-    FString AlphaTextureName;    // map_d : Alpha texture
-    FString AlphaTexturePath;
+    // map_Ka : Ambient texture
+    UPROPERTY(EditAnywhere, FString, AmbientTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, AmbientTexturePath, = TEXT("None"))
 
-    FString NormalTextureName;  // map_Ns : Normal Texture
-    FString NormalTexturePath;
+    // map_Ks : Specular texture
+    UPROPERTY(EditAnywhere, FString, SpecularTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, SpecularTexturePath, = TEXT("None"))
 
-    float NormalScale = 1.0f;
+    // map_Bump : Bump texture
+    UPROPERTY(EditAnywhere, FString, BumpTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, BumpTexturePath, = TEXT("None"))
 
+    // map_d : Alpha texture
+    UPROPERTY(EditAnywhere, FString, AlphaTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, AlphaTexturePath, = TEXT("None"))
+
+    // map_Ns : Normal Texture
+    UPROPERTY(EditAnywhere, FString, NormalTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, NormalTexturePath, = TEXT("None"))
+
+    UPROPERTY(EditAnywhere, float, NormalScale, = 1.0f)
+    
     void Serialize(FArchive& Ar) const;
     void Deserialize(FArchive& Ar);
 };

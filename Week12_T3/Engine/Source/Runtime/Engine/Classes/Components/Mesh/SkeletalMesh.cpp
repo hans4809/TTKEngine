@@ -8,9 +8,7 @@
 #include "Animation/Skeleton.h"
 #include "Components/Material/Material.h"
 #include "Engine/FLoaderOBJ.h"
-#include "UObject/Casts.h"
-
-
+#include "Engine/Asset/AssetManager.h"
 
 uint32 USkeletalMesh::GetMaterialIndex(FName MaterialSlotName) const
 {
@@ -30,16 +28,6 @@ void USkeletalMesh::GetUsedMaterials(TArray<UMaterial*>& Out) const
     }
 }
 
-void USkeletalMesh::SetData(const FString& FilePath)
-{
-    const FSkeletalMeshRenderData SkeletalMeshRenderData = FFBXLoader::GetCopiedSkeletalRenderData(FilePath);
-    const FRefSkeletal RefSkeletal = FFBXLoader::GetRefSkeletal(FilePath);
-    USkeleton* Skeleton = FObjectFactory::ConstructObject<USkeleton>(this); // TODO: Map에 저장하고 들고오기 
-    Skeleton->SetRefSkeletal(RefSkeletal);
-
-    SetData(SkeletalMeshRenderData, Skeleton);
-}
-
 void USkeletalMesh::SetData(const FSkeletalMeshRenderData& InRenderData, USkeleton* InSkeleton)
 {
     SkeletalMeshRenderData = InRenderData;
@@ -49,12 +37,12 @@ void USkeletalMesh::SetData(const FSkeletalMeshRenderData& InRenderData, USkelet
     if (verticeNum <= 0) return;
 
     FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
-    GetRenderData().VB = renderResourceManager->CreateDynamicVertexBuffer<FSkeletalVertex>(SkeletalMeshRenderData.Vertices);
+    SkeletalMeshRenderData.VB = renderResourceManager->CreateDynamicVertexBuffer<FSkeletalVertex>(SkeletalMeshRenderData.Vertices);
     
     const uint32 indexNum = SkeletalMeshRenderData.Indices.Num();
     if (indexNum > 0)
     {
-        GetRenderData().IB = renderResourceManager->CreateIndexBuffer(SkeletalMeshRenderData.Indices);
+        SkeletalMeshRenderData.IB = renderResourceManager->CreateIndexBuffer(SkeletalMeshRenderData.Indices);
     }
 
     MaterialSlots.Empty();
@@ -190,6 +178,78 @@ void USkeletalMesh::ApplyRotationToBone(int BoneIndex, float DeltaAngleInDegrees
         rotationMatrix * SkeletalMeshRenderData.Bones[BoneIndex].LocalTransform;
 }
 
+bool USkeletalMesh::LoadFromFile(const FString& FilePath)
+{
+    if (FFBXLoader::ParseSkeletalMeshFromFBX(FilePath, SkeletalMeshRenderData) == false)
+        return false;
+
+    FString AssetName = FString(std::filesystem::path(FilePath).stem().string());
+    Skeleton = UAssetManager::Get().Get<USkeleton>(AssetName);
+    if (Skeleton == nullptr)
+        return false;
+
+    const uint32 verticeNum = SkeletalMeshRenderData.Vertices.Num();
+        if (verticeNum <= 0) return false;
+
+    FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
+    SkeletalMeshRenderData.VB = renderResourceManager->CreateDynamicVertexBuffer<FSkeletalVertex>(SkeletalMeshRenderData.Vertices);
+    
+    const uint32 indexNum = SkeletalMeshRenderData.Indices.Num();
+    if (indexNum > 0)
+    {
+        SkeletalMeshRenderData.IB = renderResourceManager->CreateIndexBuffer(SkeletalMeshRenderData.Indices);
+    }
+
+    MaterialSlots.Empty();
+    for (int materialIndex = 0; materialIndex < Skeleton->GetRefSkeletal().Materials.Num(); materialIndex++) {
+        FMaterialSlot newMaterialSlot;
+        // Change
+
+        newMaterialSlot.Material = FManagerOBJ::GetMaterial(Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName);
+        newMaterialSlot.MaterialSlotName = Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName;
+        
+        MaterialSlots.Add(newMaterialSlot);
+    }
+    
+    return true;
+}
+
+bool USkeletalMesh::SerializeToFile(std::ostream& Out)
+{
+    return UAsset::SerializeToFile(Out);
+}
+
+bool USkeletalMesh::DeserializeFromFile(std::istream& In)
+{
+    return UAsset::DeserializeFromFile(In);
+}
+
+void USkeletalMesh::PostLoad()
+{
+    const uint32 verticeNum = SkeletalMeshRenderData.Vertices.Num();
+    if (verticeNum <= 0) return;
+
+    FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
+    SkeletalMeshRenderData.VB = renderResourceManager->CreateDynamicVertexBuffer<FSkeletalVertex>(SkeletalMeshRenderData.Vertices);
+    
+    const uint32 indexNum = SkeletalMeshRenderData.Indices.Num();
+    if (indexNum > 0)
+    {
+        SkeletalMeshRenderData.IB = renderResourceManager->CreateIndexBuffer(SkeletalMeshRenderData.Indices);
+    }
+
+    MaterialSlots.Empty();
+    for (int materialIndex = 0; materialIndex < Skeleton->GetRefSkeletal().Materials.Num(); materialIndex++) {
+        FMaterialSlot newMaterialSlot;
+        // Change
+
+        newMaterialSlot.Material = FManagerOBJ::GetMaterial(Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName);
+        newMaterialSlot.MaterialSlotName = Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName;
+        
+        MaterialSlots.Add(newMaterialSlot);
+    }
+}
+
 void USkeletalMesh::UpdateSkinnedVertices()
 {
     if (SkeletalMeshRenderData.Vertices.Num() <= 0)
@@ -211,14 +271,5 @@ void USkeletalMesh::UpdateSkinnedVertices()
     }
 
     FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
-    GetRenderData().VB = renderResourceManager->CreateDynamicVertexBuffer<FSkeletalVertex>(SkeletalMeshRenderData.Vertices);
-}
-
-void USkeletalMesh::UpdateVertexBuffer()
-{
-    if (SkeletalMeshRenderData.Vertices.Num() <= 0)
-        return;
-
-    // 버텍스 버퍼 업데이트 - 이미 SetData에서 처리되므로 여기서는 간단히 호출
-    SetData(SkeletalMeshRenderData, Skeleton);
+    SkeletalMeshRenderData.VB = renderResourceManager->CreateDynamicVertexBuffer<FSkeletalVertex>(SkeletalMeshRenderData.Vertices);
 }

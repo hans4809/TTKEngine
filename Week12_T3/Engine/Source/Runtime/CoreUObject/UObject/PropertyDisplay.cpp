@@ -867,12 +867,17 @@ void FStructProperty::DisplayRawDataInImGui(const char* PropertyLabel, void* Dat
 
 void FStructProperty::Serialize(FArchive2& Ar, void* DataPtr) const
 {
-    if (UScriptStruct* const* StructType = std::get_if<UScriptStruct*>(&TypeSpecificData))
+    if (UScriptStruct* const* StructTypePtr = std::get_if<UScriptStruct*>(&TypeSpecificData))
     {
-        for (const FProperty* Property : (*StructType)->GetProperties())
+        // 현재 Struct과 모든 부모 Struct까지 순회
+        for (UStruct* StructIter = *StructTypePtr; StructIter != nullptr; StructIter = StructIter->GetSuperStruct())
         {
-            void* Data = static_cast<std::byte*>(DataPtr) + Property->Offset;
-            Property->Serialize(Ar, Data);
+            // 이 Struct에 정의된 프로퍼티들을 직렬화
+            for (const FProperty* Property : StructIter->GetProperties())
+            {
+                void* MemberData = static_cast<std::byte*>(DataPtr) + Property->Offset;
+                Property->Serialize(Ar, MemberData);
+            }
         }
     }
 }
