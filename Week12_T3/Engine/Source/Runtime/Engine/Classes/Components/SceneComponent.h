@@ -1,6 +1,5 @@
 #pragma once
 #include "ActorComponent.h"
-#include "Math/Quat.h"
 #include "UObject/ObjectMacros.h"
 #include "ActorComponentInfo.h"
 #include "Math/Rotator.h"
@@ -65,10 +64,7 @@ public:
     virtual void TickComponent(float DeltaTime) override;
     void DestroyComponent() override;
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
-    
-    virtual void PostDuplicate() {};
+    void PostDuplicate() override {};
 
 protected:
     UPROPERTY
@@ -80,10 +76,14 @@ protected:
     UPROPERTY
     (EPropertyFlags::EditAnywhere, FVector, RelativeScale, = FVector::ZeroVector)
 
-    USceneComponent* AttachParent = nullptr;
-    TArray<USceneComponent*> AttachChildren;
+    UPROPERTY
+    (USceneComponent*,  AttachParent,  = nullptr)
 
-    FBoundingBox AABB;
+    UPROPERTY
+    (TArray<USceneComponent*>, AttachChildren, = {})
+
+    UPROPERTY
+    (FBoundingBox, AABB, = FBoundingBox())
     
 public:
     FVector GetRelativeForwardVector() const;
@@ -110,6 +110,8 @@ public:
     FVector GetWorldLocation() const;
     FRotator GetWorldRotation() const;
     FVector GetWorldScale() const;
+
+    FTransform GetWorldTransform() const;
 
     void AddWorldLocation(const FVector& InAddValue);
     void AddWorldRotation(const FRotator& InAddValue);

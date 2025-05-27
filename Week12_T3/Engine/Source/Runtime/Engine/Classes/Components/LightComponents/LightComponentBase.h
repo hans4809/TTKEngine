@@ -56,9 +56,9 @@ public:
     FVector4 GetColor() const;
 
 protected:
-    FVector4 LightColor = { 1, 1, 1, 1 }; // RGBA
-    float Intensity = 1.0f;
-    bool bCastShadows = true;
+    UPROPERTY(EditAnywhere, FVector4, LightColor, = FVector4(1, 1, 1, 1))
+    UPROPERTY(EditAnywhere, float, Intensity, = 1.0f)
+    UPROPERTY(EditAnywhere, bool, bCastShadows, = true)
     
 public:
     FVector4 GetLightColor() const { return LightColor; }
@@ -78,9 +78,7 @@ public:
 
     // virtual void CreateShadowMap();
 
-    // duplictae
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    // duplicta
     virtual void PostDuplicate() override;
     
     virtual void SaveComponentInfo(FActorComponentInfo& OutInfo) override;

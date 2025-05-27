@@ -20,36 +20,35 @@ public:
     /**
      * 안개 밀도
      */
-    float FogDensity;
+    UPROPERTY(EditAnywhere, float, FogDensity, = 0.2f)
 
     /**
      * 높이 감소에 따라 밀도가 증가하는 방식을 조절할 수 있는 높이 밀도 인수
      * 값이 작을수록 전환 폭이 커짐
      */
-    float FogHeightFalloff;
+    UPROPERTY(EditAnywhere, float, FogHeightFalloff, = 0.02f)
 
     /**
      * 카메라와 안개 시작 지점 간의 거리
      */
-    float StartDistance;
+    UPROPERTY(EditAnywhere, float, StartDistance, = 0.0f)
 
     /**
      * 해당 거리를 지나는 씬 엘리먼트에는 안개가 적용되지 않음
      */
-    float FogCutOffDistance;
+    UPROPERTY(EditAnywhere, float, FogCutOffDistance, = 0.0f)
 
     /**
      * 안개의 최대 불투명도
      * 1 : 불투명
      * 0 : 투명
      */
-    float FogMaxOpacity;
+    UPROPERTY(EditAnywhere, float, FogMaxOpacity, = 1.0f)
     
     /**
      * 안개 내부의 스캐터링되는 색 (안개의 주요 색상)
      */
-    FLinearColor FogInscatteringColor;
-
+    UPROPERTY(EditAnywhere, FLinearColor, FogInscatteringColor, = FLinearColor::Black)
 public:
     void SetFogDensity(float Density);
 

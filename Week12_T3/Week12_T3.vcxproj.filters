@@ -561,6 +561,8 @@
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\PhysicsDetailPreviewEditorPanel.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\PhysicsTreePreviewEditorPanel.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\PhysicsGraphPreviewEditorPanel.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\APostProcessVolume.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\CameraRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\PhysicsCore\HitResult.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysXSDKManager.h" />
     <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysScene.h" />
@@ -669,6 +671,7 @@
     <FxCompile Include="Shaders\SkeletalUberLitVertexShader.hlsl" />
     <FxCompile Include="Shaders\ParticleSystemPixelShader.hlsl" />
     <FxCompile Include="Shaders\ParticleSystemVertexShader.hlsl" />
+    <FxCompile Include="Shaders\DOFPixelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Week12_T3.natvis" />
@@ -875,6 +878,8 @@
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\PhysicsDetailPreviewEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\PhysicsTreePreviewEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\PhysicsGraphPreviewEditorPanel.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\APostProcessVolume.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\CameraRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\PhysicsCore\HitResult.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\PhysXSDKManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\PhysicsCore\PhysScene.cpp" />

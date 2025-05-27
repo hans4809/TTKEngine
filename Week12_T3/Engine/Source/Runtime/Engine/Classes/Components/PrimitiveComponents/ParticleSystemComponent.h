@@ -281,9 +281,8 @@ struct FParticleEventKismetData : public FParticleEventData
 
 class UParticleSystemComponent : public UPrimitiveComponent
 {
-    friend class FParticleSystemWorldManager;
-    
     DECLARE_CLASS(UParticleSystemComponent, UPrimitiveComponent)
+    friend class FParticleSystemWorldManager;
 public:
     UParticleSystemComponent();
     ~UParticleSystemComponent() override;
@@ -293,7 +292,7 @@ public:
     UPROPERTY(EditAnywhere, TArray<FParticleEmitterInstance*>, EmitterInstances, = {})
 
     //얘는 원본데이터
-    UParticleSystem* Template = nullptr;
+    UPROPERTY(EditAnywhere | DuplicateTransient, UParticleSystem*, Template, = nullptr)
     
     //이게 렌더할 때 필요한 데이터 렌더할때 이거 돌면서 렌더
     //이 데이터가 Emitter가 뿜어낸 모든 Particle

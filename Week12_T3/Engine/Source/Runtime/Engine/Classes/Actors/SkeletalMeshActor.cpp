@@ -10,19 +10,3 @@ ASkeletalMeshActor::ASkeletalMeshActor()
     //SkeletalMeshComp->SetAnimInstance(TestAnimInstance);
     RootComponent = SkeletalMeshComp;
 }
-
-
-UObject* ASkeletalMeshActor::Duplicate(UObject* InOuter)
-{
-    ASkeletalMeshActor* ClonedActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    ClonedActor->DuplicateSubObjects(this, InOuter);
-    ClonedActor->PostDuplicate();
-    return ClonedActor;
-}
-
-void ASkeletalMeshActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    ASkeletalMeshActor* ClonedActor = Cast<ASkeletalMeshActor>(Source);
-    SkeletalMeshComp = Cast<USkeletalMeshComponent>(ClonedActor->SkeletalMeshComp->Duplicate(this));
-    AddDuplicatedComponent(SkeletalMeshComp);
-}

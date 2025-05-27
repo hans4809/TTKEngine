@@ -9,15 +9,17 @@ enum class EShapeType
 
 struct FShapeInfo
 {
+    DECLARE_STRUCT(FShapeInfo)
+    
     FShapeInfo() : Type(EShapeType::None), Center(FVector::ZeroVector), WorldMatrix(FMatrix::Identity) {}
     FShapeInfo(EShapeType InType, const FVector& InCenter, const FMatrix& InWorldMatrix)
         : Type(InType), Center(InCenter), WorldMatrix(InWorldMatrix) {}
 
     virtual ~FShapeInfo() = default;
 
-    EShapeType Type;
-    FVector Center;
-    FMatrix WorldMatrix;
+    UPROPERTY(EditAnywhere, EShapeType, Type, = EShapeType::None)
+    UPROPERTY(EditAnywhere, FVector, Center, = FVector::ZeroVector)
+    UPROPERTY(EditAnywhere, FMatrix, WorldMatrix, = FMatrix::Identity)
 };
 
 class UShapeComponent : public UPrimitiveComponent
@@ -32,9 +34,6 @@ public:
     void BeginPlay() override;
     void TickComponent(float DeltaTime) override;
     void DestroyComponent() override;
-
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
 
     // Getter, Setter
@@ -61,13 +60,13 @@ protected:
     mutable FShapeInfo ShapeInfo;
 
     FBoundingBox BroadAABB;
-
+    
     FVector PrevLocation;
     FRotator PrevRotation;
     FVector PrevScale;
 
 private:
-    FLinearColor ShapeColor;
-    bool bDrawOnlyIfSelected;
+    UPROPERTY(EditAnywhere, FLinearColor, ShapeColor, = FLinearColor::Green)
+    UPROPERTY(EditAnywhere, bool, bDrawOnlyIfSelected, = true)
 };
 

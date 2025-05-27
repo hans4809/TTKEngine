@@ -67,18 +67,6 @@ void UParticleSubUVComp::TickComponent(float DeltaTime)
 	finalIndexV = float(indexV) * normalHeightOffset;
 }
 
-UObject* UParticleSubUVComp::Duplicate(UObject* InOuter)
-{
-    UParticleSubUVComp* Cloned = Cast<ThisClass>(Super::Duplicate(InOuter));
-    Cloned->DuplicateSubObjects(this, InOuter);
-    return Cloned;
-}
-
-void UParticleSubUVComp::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    UBillboardComponent::DuplicateSubObjects(Source, InOuter);
-}
-
 void UParticleSubUVComp::SetRowColumnCount(int _cellsPerRow, int _cellsPerColumn)
 {
 	CellsPerRow = _cellsPerRow;

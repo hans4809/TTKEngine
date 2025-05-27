@@ -40,8 +40,6 @@ public:
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
 
-    UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     void SetRowColumnCount(int _cellsPerRow, int _cellsPerColumn);
 
     // ID3D11Buffer* vertexSubUVBuffer;
@@ -53,15 +51,15 @@ public:
     virtual void LoadAndConstruct(const FActorComponentInfo& Info) override;
 
 protected:
-    bool bIsLoop = true;
+    UPROPERTY(EditAnywhere, bool, bIsLoop, = true)
 
 private:
     int indexU = 0;
     int indexV = 0;
     float second = 0;
 
-    int CellsPerRow;
-    int CellsPerColumn;
+    UPROPERTY(EditAnywhere, int, CellsPerRow, = 1)
+    UPROPERTY(EditAnywhere, int, CellsPerColumn, = 1)
 
     void UpdateVertexBuffer(const TArray<FVertexTexture>& vertices);
     void CreateSubUVVertexBuffer();

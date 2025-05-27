@@ -8,11 +8,8 @@ class UAnimationAsset : public UObject
     DECLARE_CLASS(UAnimationAsset, UObject)
 public:
     UAnimationAsset() = default;
-
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
+    
     virtual void PostDuplicate() override;
-
 };
 
 struct FAnimExtractContext

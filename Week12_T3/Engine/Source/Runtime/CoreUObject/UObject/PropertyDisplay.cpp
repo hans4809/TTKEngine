@@ -1,6 +1,7 @@
 #include "Property.h"
 
 #include "Class.h"
+#include "ObjectDuplicator.h"
 #include "ScriptStruct.h"
 #include "UObjectHash.h"
 #include "Editor/UnrealEd/ImGuiWidget.h"
@@ -728,6 +729,13 @@ void FObjectProperty::Serialize(FArchive2& Ar, void* DataPtr) const
     }
 }
 
+void FObjectProperty::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    UObject* SrcObj = *reinterpret_cast<UObject* const*>(SrcPtr);
+    UObject* DstObj = SrcObj ? Duplicator.DuplicateObject(SrcObj) : nullptr;
+    *reinterpret_cast<UObject**>(DstPtr) = DstObj;
+}
+
 void FAssetProperty::DisplayRawDataInImGui(const char* PropertyLabel, void* DataPtr) const
 {
     FProperty::DisplayRawDataInImGui(PropertyLabel, DataPtr);
@@ -799,7 +807,7 @@ void FAssetProperty::Serialize(FArchive2& Ar, void* DataPtr) const
 
     if (Ar.IsSaving())
     {
-        // 에셋이 있을 때만 경로 저장
+        // 에셋이 있을 때만 이름 저장
         FString AssetName = AssetPtr ? AssetPtr->GetDescriptor().AssetName.ToString() : TEXT("");
         int32 NameLen = AssetName.Len();
         Ar.SerializeRaw(&NameLen, sizeof(NameLen));
@@ -827,6 +835,16 @@ void FAssetProperty::Serialize(FArchive2& Ar, void* DataPtr) const
             AssetPtr = nullptr;
         }
     }
+}
+
+void FAssetProperty::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    // SrcPtr/DstPtr는 UAsset* 값을 저장하는 메모리 주소입니다.
+    UAsset* const* SrcAssetPtr = reinterpret_cast<UAsset* const*>(SrcPtr);
+    UAsset**      DstAssetPtr = reinterpret_cast<UAsset**>(DstPtr);
+
+    // 에셋은 보통 공유 자원(shared resource)이므로 얕은 복사합니다.
+    *DstAssetPtr = *SrcAssetPtr;
 }
 
 void FStructProperty::DisplayRawDataInImGui(const char* PropertyLabel, void* DataPtr) const
@@ -878,4 +896,14 @@ void FUnresolvedPtrProperty::Serialize(FArchive2& Ar, void* DataPtr) const
 
     void* Data = static_cast<std::byte*>(DataPtr);
     ResolvedProperty->Serialize(Ar, Data);
+}
+
+void FUnresolvedPtrProperty::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    if (Type == EPropertyType::Unknown)
+    {
+        return;
+    }
+    
+    ResolvedProperty->CopyData(SrcPtr, DstPtr, Duplicator);
 }

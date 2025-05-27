@@ -12,9 +12,6 @@ class USkeletalMesh : public UObject
 public:
     USkeletalMesh() = default;
     virtual ~USkeletalMesh() override = default;
-    
-    USkeletalMesh* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
 
     FSkeletalMeshRenderData& GetRenderData() { return SkeletalMeshRenderData; }
     USkeleton* GetSkeleton() const { return Skeleton;}
@@ -42,7 +39,6 @@ public:
     void SetPhysicsAsset(UPhysicsAsset* InPhysicsAsset);
 
 private:
-    
     FSkeletalMeshRenderData SkeletalMeshRenderData;
     USkeleton* Skeleton = nullptr;
     TArray<FMaterialSlot> MaterialSlots;

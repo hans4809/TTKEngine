@@ -8,7 +8,7 @@ ADirectionalLightActor::ADirectionalLightActor()
     : Super()
 {
     LightComponent = AddComponent<UDirectionalLightComponent>(EComponentOrigin::Constructor);
-    BillboardComponent->SetTexture(L"Assets/Texture/S_LightDirectional.png");
+    BillboardComponent->SetTexture(L"S_LightDirectional");
 }
 
 void ADirectionalLightActor::BeginPlay()
@@ -34,19 +34,6 @@ void ADirectionalLightActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 bool ADirectionalLightActor::Destroy()
 {
     return Super::Destroy();
-}
-
-UObject* ADirectionalLightActor::Duplicate(UObject* InOuter)
-{
-    ALight* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewActor->DuplicateSubObjects(this, InOuter);
-    NewActor->PostDuplicate();
-    return NewActor;
-}
-
-void ADirectionalLightActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
 }
 
 void ADirectionalLightActor::PostDuplicate()

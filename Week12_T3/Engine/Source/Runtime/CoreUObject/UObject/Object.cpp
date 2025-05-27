@@ -2,6 +2,7 @@
 
 #include "Engine/Engine.h"
 #include "FunctionRegistry.h"
+#include "ObjectDuplicator.h"
 #include "UserInterface/Console.h"
 
 extern UEngine* GEngine;
@@ -31,9 +32,15 @@ FFunctionRegistry* UObject::FunctionRegistry()
 
 UObject* UObject::Duplicate(UObject* InOuter)
 {
-    const auto NewObject = FObjectFactory::ConstructObject(GetClass(), InOuter);
-    NewObject->DuplicateSubObjects(this, InOuter);       // 깊은 복사 수행
-    return NewObject;
+    // 복제 파라미터 설정
+    FDuplicateParams Params;
+    Params.Source     = this;                          // 원본 액터(this)
+    Params.DestOuter  = InOuter;                       // 새 Outer (예: 스폰된 월드)
+    Params.DestName   = TEXT("CopyOf_") + GetName();   // 새 이름
+
+    // 복제 실행
+    FObjectDuplicator Duplicator(Params);
+    return Duplicator.DuplicateObject(this);
 }
 
 UObject::UObject()

@@ -4,6 +4,7 @@
 #include "Skeletal/SkeletalDefine.h"
 
 struct FRefSkeletal;
+
 class USkeleton : public UObject
 {
     DECLARE_CLASS(USkeleton, UObject)

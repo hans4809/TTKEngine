@@ -1,5 +1,6 @@
 #include "PrimitiveComponent.h"
 
+#include "UObject/Property.h"
 #include "GameFramework/Actor.h"
 #include "UObject/ObjectFactory.h"
 
@@ -7,9 +8,10 @@
 #include "UserInterface/Console.h"
 
 #include <PxRigidActor.h>
+#include <PxScene.h>
+
 #include "PhysicsEngine/PhysXSDKManager.h"
 #include "PhysicsEngine/PhysicsMaterial.h"
-
 #include "Engine/World.h"
 
 UPrimitiveComponent::UPrimitiveComponent()
@@ -42,6 +44,10 @@ void UPrimitiveComponent::OnRegister()
 
 }
 
+void UPrimitiveComponent::PostEditChangeProperty(const FProperty* PropertyThatChanged)
+{
+    RecreatePhysicsState();
+}
 int UPrimitiveComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
     //if (!AABB.Intersect(rayOrigin, rayDirection, pfNearHitDistance)) return 0;
@@ -122,19 +128,6 @@ bool UPrimitiveComponent::IntersectRayTriangle(const FVector& rayOrigin, const F
     return false;
 }
 
-UObject* UPrimitiveComponent::Duplicate(UObject* InOuter)
-{
-    UPrimitiveComponent* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void UPrimitiveComponent::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    USceneComponent::DuplicateSubObjects(Source, InOuter);
-}
-
 void UPrimitiveComponent::PostDuplicate()
 {
     USceneComponent::PostDuplicate();
@@ -172,6 +165,17 @@ bool UPrimitiveComponent::MoveComponent(const FVector& Delta)
     return true;
 }
 
+void UPrimitiveComponent::RecreatePhysicsState()
+{
+    DestroyPhysicsState();
+    OnCreatePhysicsState();
+}
+
+void UPrimitiveComponent::DestroyPhysicsState()
+{
+ 
+}
+
 void UPrimitiveComponent::OnCreatePhysicsState()
 {
 }
@@ -193,10 +197,10 @@ void UPrimitiveComponent::SaveComponentInfo(FActorComponentInfo& OutInfo)
 
 }
 
-void UPrimitiveComponent::LoadAndConstruct(const FActorComponentInfo& Info)
+UPhysicalMaterial* UPrimitiveComponent::GetPhysicalMaterial() const
 {
-    Super::LoadAndConstruct(Info);
-    const FPrimitiveComponentInfo* PrimitiveInfo = static_cast<const FPrimitiveComponentInfo*>(&Info);
-    ComponentVelocity = PrimitiveInfo->ComponentVelocity;
-    VBIBTopologyMappingName = PrimitiveInfo->VBIBTopologyMappingName;
+    if (OverridePhysMaterial)
+    {
+        return OverridePhysMaterial;
+    }
 }

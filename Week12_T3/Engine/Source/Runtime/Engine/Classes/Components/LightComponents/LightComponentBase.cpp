@@ -34,21 +34,6 @@ FVector4 ULightComponentBase::GetColor() const
     return LightColor;
 }
 
-UObject* ULightComponentBase::Duplicate(UObject* InOuter)
-{
-    ULightComponentBase* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
-    //NewComp->InitializeLight();
-    NewComp->DuplicateSubObjects(this, InOuter);
-    NewComp->PostDuplicate();
-    return NewComp;
-}
-
-void ULightComponentBase::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    // 복사할 것?
-    Super::DuplicateSubObjects(Source, InOuter);
-}
-
 void ULightComponentBase::PostDuplicate()
 {
 }

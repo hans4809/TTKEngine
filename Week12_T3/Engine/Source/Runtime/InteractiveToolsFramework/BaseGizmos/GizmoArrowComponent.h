@@ -14,7 +14,6 @@ public:
 
 private:
     EArrowDirection Dir;
-
 public:
     EArrowDirection GetDir() const { return Dir; }
     void SetDir(const EArrowDirection InDir) { Dir = InDir; }

@@ -16,8 +16,6 @@ public:
     void TickComponent(float DeltaTime) override;
     void DestroyComponent() override;
 
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     void PostDuplicate() override;
 
 private:
@@ -79,32 +77,33 @@ public:
 
 private:
     USphereShapeComponent* Probe = nullptr;
-    USceneComponent* TargetComponent = nullptr;
+    UPROPERTY(EditAnywhere, USceneComponent*, TargetComponent, = nullptr)
 
     // 1. Offset
-    float ChangeTargetArmLength = 0;
-    float TargetArmLength = 2;
-    FVector SocketOffset = FVector(0, 0, 0);
-    FVector TargetOffset = FVector(0, 0, 0);
+    UPROPERTY(EditAnywhere, float, ChangeTargetArmLength, = 0.f)
+    UPROPERTY(EditAnywhere, float, TargetArmLength, = 0.f)
+
+    UPROPERTY(EditAnywhere, FVector, SocketOffset, = FVector::ZeroVector)
+    UPROPERTY(EditAnywhere, FVector, TargetOffset, = FVector::ZeroVector)
 
     // 2. Camera Collision
-    bool bUseCollisionTest = true;
-    float ProbeSize = 0.5f;
+    UPROPERTY(EditAnywhere, bool, bUseCollisionTest, = true)
+    UPROPERTY(EditAnywhere, float, ProbeSize, = 0.5f)
     //float ProbeChannel = 0.5f;
 
     // 3. Lag
-    bool bActiveCameraLag = false;
-    float CameraLagSpeed = 0.5f;
-    float CameraLagMaxDistance = 50.f;
+    UPROPERTY(EditAnywhere, bool, bActiveCameraLag, = false)
+    UPROPERTY(EditAnywhere, float, CameraLagSpeed, = 0.5f)
+    UPROPERTY(EditAnywhere, float, CameraLagMaxDistance, = 50.f)
 
-    bool bActiveCameraRotationLag = false;
-    float CameraRotationLagSpeed = 0.5f;
-    float CameraRotationLagMaxAngle = 20.f;
+    UPROPERTY(EditAnywhere, bool, bActiveCameraRotationLag, = false)
+    UPROPERTY(EditAnywhere, float, CameraRotationLagSpeed, = 0.5f)
+    UPROPERTY(EditAnywhere, float, CameraRotationLagMaxAngle, = 20.f)
 
     // 4. Camera Setting
-    bool bUsePawnControlRotation = false;
-    bool bInheritPitch = true;
-    bool bInheritYaw = true;
-    bool bInheritRoll = true;
+    UPROPERTY(EditAnywhere, bool, bUsePawnControlRotation, = false)
+    UPROPERTY(EditAnywhere, bool, bInheritPitch, = true)
+    UPROPERTY(EditAnywhere, bool, bInheritYaw, = true)
+    UPROPERTY(EditAnywhere, bool, bInheritRoll, = true)
 };
 

@@ -25,6 +25,7 @@ enum EObjects : uint8
     OBJ_SKYSPHERE,
     OBJ_SKELETAL,
     OBJ_CHARACTER,
+    OBJ_POSTPROCESS,
 
     OBJ_CAR,
     OBJ_FISH,
@@ -37,7 +38,7 @@ enum EObjects : uint8
     OBJ_END
 };
 
-enum EArrowDirection : uint8
+enum class EArrowDirection : uint8
 {
     AD_X,
     AD_Y,

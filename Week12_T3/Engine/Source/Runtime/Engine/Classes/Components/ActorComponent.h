@@ -79,8 +79,6 @@ public:
 
     bool IsRegistered() const { return bRegistered; }
 
-    UObject* Duplicate(UObject* InOuter) override;
-    void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     void PostDuplicate() override;
 
 protected:
@@ -111,7 +109,7 @@ protected:
     uint8 bWantsInitializeComponent : 1 = 0;
 
 private:
-    AActor* Owner = nullptr;
+    UPROPERTY(AActor*, Owner, = nullptr)
 
     /** InitializeComponent가 호출 되었는지 여부 */
     uint8 bHasBeenInitialized : 1 = 0;
@@ -132,5 +130,5 @@ public:
     uint8 bAutoActive : 1;
 
 public:
-    EComponentOrigin ComponentOrigin = EComponentOrigin::None;
+    UPROPERTY(EComponentOrigin, ComponentOrigin, = EComponentOrigin::None)
 };

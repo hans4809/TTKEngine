@@ -1,13 +1,17 @@
 #pragma once
+#include "UObject/ObjectMacros.h"
+#include "UObject/Object.h"
 namespace physx 
 {
     class PxMaterial;
     class PxPhysics;
 };
 
-class UPhysicalMaterial
+class UPhysicalMaterial : public UObject
 {
+    DECLARE_CLASS(UPhysicalMaterial, UObject)
 public:
+    UPhysicalMaterial() {};
     UPhysicalMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution);
     ~UPhysicalMaterial();
 
@@ -22,7 +26,11 @@ public:
 
     float GetRestitution() const;
     void SetRestitution(float NewValue);
-
+public:
+    UPROPERTY(EditAnywhere,float, StaticFriction,=0);
+    UPROPERTY(EditAnywhere,float, DynamicFriction,=0);
+    UPROPERTY(EditAnywhere,float, Restitution,=0);
+  
 private:
     physx::PxPhysics* OwningPxPhysicsSDK = nullptr;
     physx::PxMaterial* PxMaterialInstance = nullptr;

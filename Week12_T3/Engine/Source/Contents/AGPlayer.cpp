@@ -86,19 +86,6 @@ void AGPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
     UE_LOG(LogLevel::Display, "AGamePlayer End Play");
 }
 
-UObject* AGPlayer::Duplicate(UObject* InOuter)
-{
-    AGPlayer* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
-    NewActor->DuplicateSubObjects(this, InOuter);
-    return NewActor;
-}
-
-void AGPlayer::DuplicateSubObjects(const UObject* Source, UObject* InOuter)
-{
-    Super::DuplicateSubObjects(Source, InOuter);
-    AGPlayer* Origin = Cast<AGPlayer>(Source);
-}
-
 void AGPlayer::PostDuplicate()
 {
     Super::PostDuplicate();

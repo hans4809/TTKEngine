@@ -51,26 +51,46 @@ FStaticMeshRenderPass::FStaticMeshRenderPass(const FName& InShaderName) : FBaseR
 
 void FStaticMeshRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
-    for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    for (AActor* Actor : World->GetLevel()->GetActors())
     {
-        if (SceneComponent->GetWorld() != World)
+        for (UActorComponent* Component : Actor->GetComponents())
         {
-            continue;
-        }
-                
-        if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(SceneComponent))
-        {
-            if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
+            if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component))
             {
-                StaticMeshComponents.Add(StaticMeshComponent);
+                if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
+                {
+                    StaticMeshComponents.Add(StaticMeshComponent);
+                    continue;
+                }
+            }
+
+            if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(Component))
+            {
+                LightComponents.Add(LightComponent);
+                continue;
             }
         }
-            
-        if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
-        {
-            LightComponents.Add(LightComponent);
-        }
     }
+    // for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    // {
+    //     if (SceneComponent->GetWorld() != World)
+    //     {
+    //         continue;
+    //     }
+    //             
+    //     if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(SceneComponent))
+    //     {
+    //         if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
+    //         {
+    //             StaticMeshComponents.Add(StaticMeshComponent);
+    //         }
+    //     }
+    //         
+    //     if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
+    //     {
+    //         LightComponents.Add(LightComponent);
+    //     }
+    // }
 }
 
 void FStaticMeshRenderPass::Prepare(const std::shared_ptr<FViewportClient> InViewportClient)

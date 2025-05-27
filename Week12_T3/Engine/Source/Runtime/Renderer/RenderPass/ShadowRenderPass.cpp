@@ -40,26 +40,46 @@ FShadowRenderPass::FShadowRenderPass(const FName& InShaderName)
 
 void FShadowRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
-    for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    for (AActor* Actor : World->GetLevel()->GetActors())
     {
-        if (SceneComponent->GetWorld() != World)
+        for (UActorComponent* Component : Actor->GetComponents())
         {
-            continue;
-        }
-
-        if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(SceneComponent))
-        {
-            if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
+            if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component))
             {
-                StaticMeshComponents.Add(StaticMeshComponent);
+                if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
+                {
+                    StaticMeshComponents.Add(StaticMeshComponent);
+                    continue;
+                }
+            }
+
+            if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(Component))
+            {
+                Lights.Add(LightComponent);
+                continue;
             }
         }
-
-        if (ULightComponentBase* LightComponentBase = Cast<ULightComponentBase>(SceneComponent))
-        {
-            Lights.Add(LightComponentBase);
-        }
     }
+    // for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
+    // {
+    //     if (SceneComponent->GetWorld() != World)
+    //     {
+    //         continue;
+    //     }
+    //
+    //     if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(SceneComponent))
+    //     {
+    //         if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
+    //         {
+    //             StaticMeshComponents.Add(StaticMeshComponent);
+    //         }
+    //     }
+    //
+    //     if (ULightComponentBase* LightComponentBase = Cast<ULightComponentBase>(SceneComponent))
+    //     {
+    //         Lights.Add(LightComponentBase);
+    //     }
+    // }
 }
 
 void FShadowRenderPass::ClearRenderObjects()

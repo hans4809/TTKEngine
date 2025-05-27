@@ -93,6 +93,7 @@ public:
     /** 이 프로퍼티의 메모리 블록을 읽거나 씁니다. */
     virtual void Serialize(FArchive2& Ar, void* DataPtr) const;
 
+    virtual void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const;
 private:
     /**
      * TypeSpecificData에서 특정 타입 T의 값을 안전하게 가져옵니다.
@@ -679,6 +680,7 @@ struct TArrayProperty : public FProperty
     }
 
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
 
 template <typename InArrayType>
@@ -710,6 +712,32 @@ void TArrayProperty<InArrayType>::Serialize(FArchive2& Ar, void* DataPtr) const
             void* ElemPtr = &Arr[i];
             ElementProperty->Serialize(Ar, ElemPtr);
         }
+    }
+}
+
+template <typename InArrayType>
+void TArrayProperty<InArrayType>::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    // 원본·대상 배열 참조 얻기
+    const InArrayType& SrcArr = *reinterpret_cast<const InArrayType*>(SrcPtr);
+    InArrayType&       DstArr = *reinterpret_cast<InArrayType*>(DstPtr);
+
+    // 대상 배열 초기화 및 예약
+    DstArr.Empty();
+    DstArr.Reserve(SrcArr.Num());
+
+    // 요소별 복제
+    for (int32 i = 0; i < SrcArr.Num(); ++i)
+    {
+        // 새 요소 추가 (기본값 생성)
+        DstArr.AddDefaulted();
+
+        // 원본·대상 요소 포인터
+        const void* ElemSrcPtr = &SrcArr[i];
+        void*       ElemDstPtr = &DstArr[i];
+
+        // ElementProperty에 위임하여 복제
+        ElementProperty->CopyData(ElemSrcPtr, ElemDstPtr, Duplicator);
     }
 }
 
@@ -866,6 +894,7 @@ struct TMapProperty : public FProperty
     }
 
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
 
 template <typename InMapType>
@@ -895,6 +924,35 @@ void TMapProperty<InMapType>::Serialize(FArchive2& Ar, void* DataPtr) const
             ValueProperty->Serialize(Ar, &Val);
             Map.Add(Key, Val);
         }
+    }
+}
+
+template <typename InMapType>
+void TMapProperty<InMapType>::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    const InMapType& SrcMap = *reinterpret_cast<const InMapType*>(SrcPtr);
+    InMapType&       DstMap = *reinterpret_cast<InMapType*>(DstPtr);
+
+    // 대상 맵 초기화 및 용량 확보
+    DstMap.Empty();
+    if constexpr (requires { DstMap.Reserve(SrcMap.Num()); })
+    {
+        DstMap.Reserve(SrcMap.Num());
+    }
+
+    // 각 키·값 쌍 복제
+    for (const auto& Pair : SrcMap)
+    {
+        // 키 복제
+        KeyType KeyDst{};
+        KeyProperty->CopyData(&Pair.Key, &KeyDst, Duplicator);
+
+        // 값 복제
+        ValueType ValDst{};
+        ValueProperty->CopyData(&Pair.Value, &ValDst, Duplicator);
+
+        // 맵에 추가
+        DstMap.Add(KeyDst, ValDst);
     }
 }
 
@@ -1024,6 +1082,7 @@ struct TSetProperty : public FProperty
     }
 
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
 
 template <typename InSetType>
@@ -1053,6 +1112,35 @@ void TSetProperty<InSetType>::Serialize(FArchive2& Ar, void* DataPtr) const
     }
 }
 
+template <typename InSetType>
+void TSetProperty<InSetType>::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    // 원본·대상 Set 참조 얻기
+    const InSetType& SrcSet = *reinterpret_cast<const InSetType*>(SrcPtr);
+    InSetType&       DstSet = *reinterpret_cast<InSetType*>(DstPtr);
+
+    // 대상 Set 초기화 및 용량 확보(가능 시)
+    DstSet.Empty();
+    if constexpr (requires { DstSet.Reserve(SrcSet.Num()); })
+    {
+        DstSet.Reserve(SrcSet.Num());
+    }
+
+    // 각 원소 복제
+    for (const auto& ElemSrc : SrcSet)
+    {
+        // 요소 타입별 복제
+        using ElemType = typename InSetType::ElementType;
+        ElemType ElemDst{};
+
+        // ElementProperty에 위임하여 복제 로직 수행
+        ElementProperty->CopyData(&ElemSrc, &ElemDst, Duplicator);
+
+        // 복제된 요소를 대상 Set에 추가
+        DstSet.Add(ElemDst);
+    }
+}
+
 template <typename InEnumType>
 struct TEnumProperty : public FProperty
 {
@@ -1073,7 +1161,14 @@ struct TEnumProperty : public FProperty
     {
         ImGui::BeginDisabled(HasAnyFlags(Flags, EPropertyFlags::VisibleAnywhere));
         {
-            FProperty::DisplayInImGui(Object);
+            void* Data = GetPropertyData(Object);
+            if (DisplayAndCheckEditRawDataInImGui(Object, Name, Data)) 
+            { 
+                if (Object) 
+                {
+                    Object->PostEditChangeProperty(this);
+                }
+            }
         }
         ImGui::EndDisabled();
     }
@@ -1108,9 +1203,54 @@ struct TEnumProperty : public FProperty
             ImGui::EndCombo();
         }
     }
-
+  
+    bool DisplayAndCheckEditRawDataInImGui(UObject* Object, const char* PropertyLabel, void* DataPtr) const;
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
+
+template <typename InEnumType>
+bool TEnumProperty<InEnumType>::DisplayAndCheckEditRawDataInImGui(UObject* Object, const char* PropertyLabel, void* DataPtr) const
+{
+    // FProperty::DisplayRawDataInImGui(PropertyLabel, DataPtr); // 기본 클래스 호출은 이제 필요 없음
+
+    EnumType* Data = static_cast<EnumType*>(DataPtr);
+    constexpr auto EnumEntries = magic_enum::enum_entries<EnumType>(); // magic_enum 사용
+
+    const std::string_view CurrentNameView = magic_enum::enum_name(*Data);
+    const std::string CurrentName = std::string(CurrentNameView);
+
+    ImGui::Text("%s", PropertyLabel);
+    ImGui::SameLine();
+
+    bool valueChanged = false; // 값 변경 여부 플래그
+
+    if (ImGui::BeginCombo(std::format("##{}", PropertyLabel).c_str(), CurrentName.c_str()))
+    {
+        for (const auto& [EnumValue, NameView] : EnumEntries) // C++17 구조적 바인딩
+        {
+            const std::string EnumDisplayName = std::string(NameView);
+            const bool bIsSelected = (*Data == EnumValue);
+
+            if (ImGui::Selectable(EnumDisplayName.c_str(), bIsSelected))
+            {
+                if (*Data != EnumValue) // 실제 값이 변경되었을 때만
+                {
+                    *Data = EnumValue;
+                    valueChanged = true; // 값 변경됨 표시
+                }
+            }
+
+            if (bIsSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    return valueChanged; // 값 변경 여부 반환
+}
 
 template <typename InEnumType>
 void TEnumProperty<InEnumType>::Serialize(FArchive2& Ar, void* DataPtr) const
@@ -1118,6 +1258,17 @@ void TEnumProperty<InEnumType>::Serialize(FArchive2& Ar, void* DataPtr) const
     InEnumType& Val = *reinterpret_cast<InEnumType*>(reinterpret_cast<std::byte*>(DataPtr));
     using Under = std::underlying_type_t<InEnumType>;
     Ar.SerializeRaw(&Val, sizeof(Under));
+}
+
+template <typename InEnumType>
+void TEnumProperty<InEnumType>::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    // SrcPtr/DstPtr는 InEnumType 값을 저장하는 메모리 주소입니다.
+    const InEnumType* SrcVal = reinterpret_cast<const InEnumType*>(SrcPtr);
+    InEnumType*       DstVal = reinterpret_cast<InEnumType*>(DstPtr);
+
+    // 단순 값 복사
+    *DstVal = *SrcVal;
 }
 
 struct FSubclassOfProperty : public FProperty
@@ -1154,6 +1305,7 @@ struct FAssetProperty : public FProperty
     virtual void DisplayRawDataInImGui(const char* PropertyLabel, void* DataPtr) const override;
     
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
 
 struct FObjectProperty : public FProperty
@@ -1172,6 +1324,7 @@ struct FObjectProperty : public FProperty
     virtual void DisplayRawDataInImGui(const char* PropertyLabel, void* DataPtr) const override;
     
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
 
 struct FStructProperty : public FProperty
@@ -1219,7 +1372,9 @@ struct FUnresolvedPtrProperty : public FProperty
 
     virtual void DisplayInImGui(UObject* Object) const override;
     virtual void Resolve() override;
+    
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
 
 // struct FDelegateProperty : public FProperty {};  // TODO: 나중에 Delegate Property 만들기

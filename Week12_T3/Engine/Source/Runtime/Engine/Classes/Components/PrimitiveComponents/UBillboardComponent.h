@@ -49,15 +49,14 @@ public:
     void SetTexture(FString _fileName);
     //void SetUUIDParent(USceneComponent* _parent);
     FMatrix CreateBillboardMatrix();
-    virtual UObject* Duplicate(UObject* InOuter) override;
-    virtual void DuplicateSubObjects(const UObject* Source, UObject* InOuter) override;
     virtual void PostDuplicate() override;
-    
-    float finalIndexU = 0.0f;
-    float finalIndexV = 0.0f;
-    UTexture* Texture;
-    
-    bool bOnlyForEditor = true;
+
+    UPROPERTY(EditAnywhere, float, finalIndexU, = 0.0f)
+    UPROPERTY(EditAnywhere, float, finalIndexV, = 0.0f)
+
+    UPROPERTY(EditAnywhere | DuplicateTransient, UTexture*, Texture, = nullptr)
+
+    UPROPERTY(EditAnywhere, bool, bOnlyForEditor, = true)
 
 public:
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;
