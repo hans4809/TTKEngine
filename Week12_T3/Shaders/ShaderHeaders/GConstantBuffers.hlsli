@@ -15,6 +15,8 @@ cbuffer FViewportInfo : register(b12)
 {
     float2 ViewportSize;
     float2 ViewportOffset;
+    float2 ScreenSize;
+    float2 Pad0;
 }
 
 cbuffer FProjectionConstant : register(b13)

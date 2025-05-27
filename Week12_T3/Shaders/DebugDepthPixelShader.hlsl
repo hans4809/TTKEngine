@@ -17,6 +17,8 @@ cbuffer FViewportInfo : register(b1)
 {
     float2 ViewportSize;
     float2 ViewportOffset;
+    float2 ScreenSize;
+    float2 Pad0;
 }
 
 struct VS_OUT

@@ -11,6 +11,7 @@
 #include "Engine/Engine.h"
 #include "Engine/FEditorStateManager.h"
 #include "RenderPass/BlurRenderPass.h"
+#include "RenderPass/DepthOfFieldRenderPass.h"
 #include "RenderPass/EditorIconRenderPass.h"
 #include "RenderPass/FadeRenderPass.h"
 #include "RenderPass/FinalRenderPass.h"
@@ -129,6 +130,9 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateVertexPixelShader(TEXT("ParticleSystem"), nullptr);
     ParticleRenderPass = std::make_shared<FParticleRenderPass>(TEXT("ParticleSystem"));
     ParticleRenderPass->RenderPassEmitterType = DET_Sprite;
+
+    CreateVertexPixelShader(TEXT("DOF"), nullptr);
+    DepthOfFieldRenderPass = std::make_shared<FDepthOfFieldRenderPass>(TEXT("DOF"));
     
     FString MeshParticleName = TEXT("ParticleSystem");
     MeshParticleName += MeshParticleDefines->Name;
@@ -334,12 +338,12 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
         LineBatchRenderPass->Execute(ActiveViewportClient);
 
         //TODO : FLAG로 나누기
-        if (CurrentViewMode  == EViewModeIndex::VMI_Lit_Goroud)
+        if (CurrentViewMode  == EViewModeIndex::VMI_Gouraud)
         {
             GoroudRenderPass->Prepare(ActiveViewportClient);
             GoroudRenderPass->Execute(ActiveViewportClient);
         }
-        else if (CurrentViewMode  == EViewModeIndex::VMI_Lit_Lambert)
+        else if (CurrentViewMode  == EViewModeIndex::VMI_Lambert)
         {
             LambertRenderPass->Prepare(ActiveViewportClient);
             LambertRenderPass->Execute(ActiveViewportClient);
@@ -374,7 +378,10 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
 
     BlurRenderPass->Prepare(ActiveViewportClient);
     BlurRenderPass->Execute(ActiveViewportClient);
-
+    
+    DepthOfFieldRenderPass->Prepare(ActiveViewportClient);
+    DepthOfFieldRenderPass->Execute(ActiveViewportClient);
+    
     if (ActiveViewportClient->GetViewMode() == EViewModeIndex::VMI_Depth)
     {
         DebugDepthRenderPass->Prepare(ActiveViewportClient);
@@ -425,28 +432,29 @@ void FRenderer::ClearRenderObjects() const
     FinalRenderPass->ClearRenderObjects();
     ParticleRenderPass->ClearRenderObjects();
     MeshParticleRenderPass->ClearRenderObjects();
+    DepthOfFieldRenderPass->ClearRenderObjects();
 }
 
 void FRenderer::SetViewMode(const EViewModeIndex evi)
 {
     switch (evi)
     {
-    case EViewModeIndex::VMI_Lit_Goroud:
+    case EViewModeIndex::VMI_Gouraud:
         CurrentRasterizerState = ERasterizerState::SolidBack;
-        CurrentViewMode = VMI_Lit_Goroud;
+        CurrentViewMode = VMI_Gouraud;
         //TODO : Light 받는 거
         bIsLit = true;
         bIsNormal = false;
         break;
-    case EViewModeIndex::VMI_Lit_Lambert:
+    case EViewModeIndex::VMI_Lambert:
         CurrentRasterizerState = ERasterizerState::SolidBack;
-        CurrentViewMode = VMI_Lit_Lambert;
+        CurrentViewMode = VMI_Lambert;
         bIsLit = true;
         bIsNormal = false;
         break;
-    case EViewModeIndex::VMI_Lit_Phong:
+    case EViewModeIndex::VMI_Phong:
         CurrentRasterizerState = ERasterizerState::SolidBack;
-        CurrentViewMode = VMI_Lit_Phong;
+        CurrentViewMode = VMI_Phong;
         bIsLit = true;
         bIsNormal = false;
         break;
@@ -475,7 +483,7 @@ void FRenderer::SetViewMode(const EViewModeIndex evi)
         break;
     default:
         CurrentRasterizerState = ERasterizerState::SolidBack;
-        CurrentViewMode = VMI_Lit_Phong;
+        CurrentViewMode = VMI_Phong;
         bIsLit = true;
         bIsNormal = false;
         break;
@@ -500,10 +508,13 @@ void FRenderer::AddRenderObjectsToRenderPass(UWorld* World) const
     LetterBoxRenderPass->AddRenderObjectsToRenderPass(World);
     FogRenderPass->AddRenderObjectsToRenderPass(World);
     BlurRenderPass->AddRenderObjectsToRenderPass(World);
+    
     FinalRenderPass->AddRenderObjectsToRenderPass(World);
 
     ParticleRenderPass->AddRenderObjectsToRenderPass(World);
     MeshParticleRenderPass->AddRenderObjectsToRenderPass(World);
+
+    DepthOfFieldRenderPass->AddRenderObjectsToRenderPass(World);
 }
 
 FName FRenderer::GetVSName(const FName InShaderProgramName)
