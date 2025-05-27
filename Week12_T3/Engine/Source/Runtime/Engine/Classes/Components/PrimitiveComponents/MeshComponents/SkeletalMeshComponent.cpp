@@ -18,6 +18,7 @@
 #include "UObject/Casts.h"
 #include "Animation/AnimSingleNodeInstance.h"
 #include "Animation/CustomAnimInstance/TestAnimInstance.h"
+#include "Physics/PhysicsAsset.h"
 
 uint32 USkeletalMeshComponent::GetNumMaterials() const
 {
@@ -322,6 +323,21 @@ void USkeletalMesh::ResetToOriginalPose()
 
     // 스키닝 적용
     UpdateSkinnedVertices();
+}
+
+void USkeletalMesh::SetPhysicsAsset(UPhysicsAsset* InPhysicsAsset)
+{
+    MyPhysicsAsset = InPhysicsAsset;
+
+    if (InPhysicsAsset)
+    {
+        InPhysicsAsset->SetPreviewMesh(this);
+    }
+}
+
+UPhysicsAsset* USkeletalMesh::GetPhysicsAsset() const
+{
+    return MyPhysicsAsset;
 }
 
 void USkeletalMeshComponent::Play(bool bLooping)

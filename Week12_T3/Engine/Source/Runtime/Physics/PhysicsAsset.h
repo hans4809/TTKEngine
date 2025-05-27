@@ -35,7 +35,7 @@ public:
      * RB_ConstraintSetup 객체의 배열입니다.
      * 두 바디 사이의 조인트 정보(각 바디에 대한 상대 위치, 제한 등)를 저장합니다.
      */
-    //UPROPERTY(EditAnywhere, TArray<UPhysicsConstraintTemplate*>, ConstraintSetup, = {})
+    UPROPERTY(EditAnywhere, TArray<UPhysicsConstraintTemplate*>, ConstraintSetup, = {})
     
     /** BodyName별 BodySetup 인덱스를 캐싱하여 FindBodyIndex를 빠르게 수행할 수 있게 합니다 */
     using NameToIntMapType = TMap<FName, int32>;
@@ -48,6 +48,9 @@ public:
      */
     TMap<FRigidBodyIndexPair, bool> CollisionDisableTable;
 
+public:
+    void Initialize();
+    
     const TArray<FName>& GetPhysicalAnimationProfileNames() const
     {
         return PhysicalAnimationProfiles;
@@ -121,6 +124,15 @@ public:
     /** IPreviewMeshProviderInterface 인터페이스 */
     virtual void SetPreviewMesh(USkeletalMesh* PreviewMesh, bool bMarkAsDirty = true);
     virtual USkeletalMesh* GetPreviewMesh() const;
+
+    /* Body 자동 생성*/
+    void AutoGenerateBodies();
+
+    /* Constraint 자동 생성 */
+    void AutoGenerateConstraints();
+    
+    /* Constraint 재귀 생성*/
+    void GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal, int32 ParentBoneIndex);
 
 private:
     TArray<class UBodySetup*> BodySetups;

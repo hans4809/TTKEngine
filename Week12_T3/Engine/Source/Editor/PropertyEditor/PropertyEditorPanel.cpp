@@ -47,6 +47,10 @@
 #include <Animation/AnimSingleNodeInstance.h>
 #include "UnrealEd/ParticlePreviewUI.h"
 
+#include <Physics/PhysicsAsset.h>
+#include "UnrealEd/Utils/EditorPreviewUtils.h"
+#include "Components/Mesh/SkeletalMesh.h"
+
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
 {
     Width = InWidth;
@@ -1850,42 +1854,18 @@ void PropertyEditorPanel::DrawPhysicsAssetPreviewButton(const FString& FilePath)
     
         if (ImGui::Button("Preview##Physics Asset"))
         {
-            UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
-            if (EditorEngine == nullptr)
-            {
-                return;
-            }
-
-            UWorld* World = EditorEngine->CreatePreviewWindow(EditorPreviewPhysicsAsset);
-
-            World->ClearSelectedActors();
-
-            // SkySphere 생성
-            AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
-            SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
-            UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
-            FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
-            MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
-            MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
-            MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
-            MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
-            SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
-
-            // SkeletalMeshActor 생성
-            ASkeletalMeshActor* SkeletalMeshActor = World->SpawnActor<ASkeletalMeshActor>();
-            SkeletalMeshActor->SetActorLabel("PhysicsPreviewSkeletalMeshActor");
-            SkeletalMeshActor->GetSkeletalMeshComponent()->SetAnimInstance(nullptr);
-
-            World->SetSelectedActor(SkeletalMeshActor);
-            // Mesh 설정
-            // 새로운 SkeletalMeshComponent 생성
-            //USkeletalMeshComponent* NewSkeletalMeshComp = SkeletalMeshActor->AddComponent<USkeletalMeshComponent>(EComponentOrigin::Editor);
-
-            //// 메시 할당
-            //NewSkeletalMeshComp->SetSkeletalMesh(FFBXLoader::CreateSkeletalMesh(FilePath));
-
-            //SkeletalMeshActor->SetRootComponent(NewSkeletalMeshComp);
-
+            PhysicsPreviewUtils::SetupPhysicsAssetPreview(FilePath);
+            
+            //// SkySphere 생성
+            //AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
+            //SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
+            //UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
+            //FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
+            //MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
+            //MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
+            //MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
+            //MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
+            //SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
         }
 }
 

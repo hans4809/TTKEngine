@@ -12,7 +12,7 @@ public:
     
     virtual void OnResize(HWND hWnd) override;
 
-    void DrawBoneNodeRecursive(FRefSkeletal* RefSkeletal, int32 BoneIndex, const TArray<FBoneNode>& BoneTree, const TArray<FBone>& RawBones);
+    void DrawBoneNodeRecursive(FRefSkeletal& RefSkeletal, int32 BoneIndex, const TArray<FBoneNode>& BoneTree, const TArray<FBone>& RawBones);
 private:
     SLevelEditor* activeLevelEditor = nullptr;
     float Width = 0, Height = 0;

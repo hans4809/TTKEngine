@@ -581,6 +581,14 @@
     <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\ShapeElem.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\SphylElem.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\BoundingBox.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\MathVectorContants.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ConstraintInstance.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\ConstraintProfileProperties.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\PhysicsAsset.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\PhysicsConstraintTemplate.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\RigidBodyIndexPair.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.h" />
+    <ClInclude Include="Engine\Source\Editor\UnrealEd\Utils\EditorPreviewUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -886,6 +894,10 @@
     <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\SphylElem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\BoundingBox.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\MathSSE.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Math\MathVectorContants.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\PhysicsAsset.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\RigidBodyIndexPair.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

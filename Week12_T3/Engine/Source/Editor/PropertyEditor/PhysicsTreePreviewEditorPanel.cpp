@@ -61,14 +61,12 @@ void PhysicsTreePreviewEditorPanel::Render()
             USkeleton* SkeletonAsset = SkeletalMeshComp->GetSkeletalMesh()->GetSkeleton();
             if (SkeletonAsset)
             {
-                FRefSkeletal* RefSkeletal = SkeletonAsset->GetRefSkeletal();
-                if (RefSkeletal)
+                FRefSkeletal& RefSkeletal = SkeletonAsset->GetRefSkeletal();
+               
+                // 2BoneTree 루트부터 그리기
+                for (int32 RootIndex : RefSkeletal.RootBoneIndices)
                 {
-                    // 2BoneTree 루트부터 그리기
-                    for (int32 RootIndex : RefSkeletal->RootBoneIndices)
-                    {
-                        DrawBoneNodeRecursive(RefSkeletal, RootIndex, RefSkeletal->BoneTree, RefSkeletal->RawBones);
-                    }
+                    DrawBoneNodeRecursive(RefSkeletal, RootIndex, RefSkeletal.BoneTree, RefSkeletal.RawBones);
                 }
             }
         }
@@ -85,7 +83,7 @@ void PhysicsTreePreviewEditorPanel::OnResize(HWND hWnd)
     Height = clientRect.bottom - clientRect.top;
 }
 
-void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal* RefSkeletal, int32 BoneIndex, const TArray<FBoneNode>& BoneTree, const TArray<FBone>& RawBones)
+void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkeletal, int32 BoneIndex, const TArray<FBoneNode>& BoneTree, const TArray<FBone>& RawBones)
 {
     const FBone& Bone = RawBones[BoneIndex];
     std::stringstream ss;
