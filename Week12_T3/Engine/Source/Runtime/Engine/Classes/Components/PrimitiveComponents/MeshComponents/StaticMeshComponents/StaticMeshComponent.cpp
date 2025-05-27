@@ -191,7 +191,7 @@ void UStaticMeshComponent::DestroyPhysicsState()
 void UStaticMeshComponent::OnCreatePhysicsState()
 {
     //임시 테스트 용 ---
-    FTransform ShapeLocalPose = GetWorldTransform();
+    FTransform ShapeLocalPose = FTransform::Identity;
 
     BodyInstance.Initialize(this, FPhysXSDKManager::GetInstance().GetPhysicsSDK());
 

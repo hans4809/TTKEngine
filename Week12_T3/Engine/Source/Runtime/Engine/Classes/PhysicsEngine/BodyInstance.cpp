@@ -193,7 +193,7 @@ physx::PxShape* FBodyInstance::AddConvexGeometry(physx::PxConvexMesh* CookedMesh
     }
 
     // 컨벡스 메시에 대한 스케일링은 PxMeshScale을 사용
-    physx::PxMeshScale MeshScale(LocalPose.GetScale().ToPxVec3());
+    physx::PxMeshScale MeshScale(FVector::OneVector.ToPxVec3());
     physx::PxConvexMeshGeometry ConvexGeom(CookedMesh, MeshScale);
 
     physx::PxShapeFlags shapeFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSIMULATION_SHAPE);
