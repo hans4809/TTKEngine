@@ -5,7 +5,7 @@
 
 class USkeleton;
 struct FMaterialSlot;
-
+class UPhysicsAsset;
 class USkeletalMesh : public UObject
 {
     DECLARE_CLASS(USkeletalMesh, UObject)
@@ -33,11 +33,18 @@ public:
     int FindBoneIndexByName(const FString& BoneName) const;
 
     void ResetToOriginalPose();
+
+public:
+    UPhysicsAsset* GetPhysicsAsset() const;
+    void SetPhysicsAsset(UPhysicsAsset* InPhysicsAsset);
+
 private:
     FSkeletalMeshRenderData SkeletalMeshRenderData;
     USkeleton* Skeleton = nullptr;
     TArray<FMaterialSlot> MaterialSlots;
+    UPhysicsAsset* MyPhysicsAsset = nullptr;
 
     void UpdateChildBones(int ParentIndex);
     void ApplyRotationToBone(int BoneIndex, float DeltaAngleInDegrees, const FVector& RotationAxis);
+    
 };

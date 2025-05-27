@@ -4,6 +4,7 @@
 #include "BodySetup/BodySetup.h"
 #include "Components/Mesh/SkeletalMesh.h"
 #include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
+#include "PhysicsConstraintTemplate.h"
 
 int32 UPhysicsAsset::FindBodyIndex(const FName BodyName) const
 {
@@ -19,15 +20,23 @@ int32 UPhysicsAsset::FindBodyIndex(const FName BodyName) const
 void UPhysicsAsset::BodyFindConstraints(int32 BodyIndex, TArray<int32>& Constraints)
 {
     Constraints.Empty();
-    FName BodyName = BodySetups[BodyIndex]->BoneName;
+    if (!BodySetups.IsValidIndex(BodyIndex))
+    {
+        UE_LOG(LogLevel::Warning, "[UPhysicsAsset::BodyFindConstraints()] Invalid BodyIndex ");
+    }
 
-    // for(int32 ConIdx=0; ConIdx < ConstraintSetup.Num(); ConIdx++)
-    // {
-    //     if( ConstraintSetup[ConIdx]->DefaultInstance.ConstraintBone1 == BodyName || ConstraintSetup[ConIdx]->DefaultInstance.ConstraintBone2 == BodyName )
-    //     {
-    //         Constraints.Add(ConIdx);
-    //     }
-    // }
+    FName BodyName = BodySetups[BodyIndex]->BoneName;
+    
+    for (int32 ConIdx = 0; ConIdx < ConstraintSetup.Num(); ConIdx++)
+    {
+        const UPhysicsConstraintTemplate* Constraint = ConstraintSetup[ConIdx];
+        {
+            if (Constraint->ConstraintBone1 == BodyName || Constraint->ConstraintBone2 == BodyName)
+            {
+                Constraints.Add(ConIdx);
+            }
+        }
+    }
 }
 
 void UPhysicsAsset::SetPreviewMesh(USkeletalMesh* PreviewMesh, bool bMarkAsDirty)
@@ -40,12 +49,98 @@ USkeletalMesh* UPhysicsAsset::GetPreviewMesh() const
     return PreviewSkeletalMesh;
 }
 
+void UPhysicsAsset::AutoGenerateBodies()
+{
+    if (!PreviewSkeletalMesh || !PreviewSkeletalMesh->GetSkeleton())
+    {
+        UE_LOG(LogLevel::Warning, "[UPhysicsAsset::AutoGenerateBodies()] Invalid SkeletalMesh or Skeleton");
+    }
+
+    const FRefSkeletal& RefSkeletal = PreviewSkeletalMesh->GetSkeleton()->GetRefSkeletal();
+
+    // 기존 BodySetup 클리어
+    BodySetups.Empty();
+
+    for (int32 BoneIndex = 0; BoneIndex < RefSkeletal.RawBones.Num(); ++BoneIndex) {
+        const FName BoneName = RefSkeletal.GetBoneName(BoneIndex);
+
+        // BodySetup 생성
+        UBodySetup* NewBodySetup = FObjectFactory::ConstructObject<UBodySetup>(this);
+        NewBodySetup->BoneName = BoneName;
+
+        // Default 캡슐 추가
+        FKSphylElem Capsule;
+        Capsule.Center = FVector::ZeroVector;
+        Capsule.Rotation = FQuat::Identity;
+        Capsule.Radius = 5.0f;
+        Capsule.Length = 20.0f;
+        NewBodySetup->AggGeom.SphylElems.Add(Capsule);
+
+        // BodySetup 배열에 추가
+        BodySetups.Add(NewBodySetup);
+    }
+
+    UpdateBodySetupIndexMap();
+
+    UpdateBoundsBodiesArray();
+
+   
+}
+
+void UPhysicsAsset::AutoGenerateConstraints()
+{
+    if (!PreviewSkeletalMesh || !PreviewSkeletalMesh->GetSkeleton())
+    {
+        UE_LOG(LogLevel::Warning, "[UPhysicsAsset::AutoGenerateConstraints()] Invalid SkeletalMesh or Skeleton");
+    }
+
+    const FRefSkeletal& RefSkeletal = PreviewSkeletalMesh->GetSkeleton()->GetRefSkeletal();
+
+    for (int32 RootIndex : RefSkeletal.RootBoneIndices) {
+        GenerateConstraintRecursive(RefSkeletal, RootIndex);
+    }
+}
+
+
+void UPhysicsAsset::GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal, int32 ParentBoneIndex)
+{
+    const FBoneNode& ParentNode = RefSkeletal.BoneTree[ParentBoneIndex];
+
+    for (int32 ChildIndex : ParentNode.ChildIndices) {
+        const FName ParentBoneName = RefSkeletal.GetBoneName(ParentBoneIndex);
+        const FName ChildBoneName = RefSkeletal.GetBoneName(ChildIndex);
+
+        // Default Constraint 생성
+        UPhysicsConstraintTemplate* NewConstraint = FObjectFactory::ConstructObject<UPhysicsConstraintTemplate>(this);
+        NewConstraint->ConstraintBone1 = ParentBoneName;
+        NewConstraint->ConstraintBone2 = ChildBoneName;
+        NewConstraint->JointName = FName(*(ParentBoneName.ToString() + TEXT("_") + ChildBoneName.ToString()));
+
+        // 기본 프로퍼티 설정.
+        NewConstraint->TwistLimit = 45.f;
+        NewConstraint->SwingLimit1 = 45.f;
+        NewConstraint->SwingLimit2 = 45.0f;
+
+        ConstraintSetup.Add(NewConstraint);
+
+        // Child도 재귀 처리.
+        GenerateConstraintRecursive(RefSkeletal, ChildIndex);
+    }
+}
+
 UPhysicsAsset::UPhysicsAsset()
 {
 }
 
 UPhysicsAsset::~UPhysicsAsset()
 {
+}
+
+void UPhysicsAsset::Initialize()
+{
+    // NOTICE : MySkeletalMesh->SetPhysicsAsset(NewPhysicsAsset); 처럼 physicsasset의 previewMesh 설정 이후 호출해줘야 합니다.-
+    AutoGenerateBodies();
+    AutoGenerateConstraints();
 }
 
 int32 UPhysicsAsset::FindControllingBodyIndex(const class USkeletalMesh* skelMesh, int32 StartBoneIndex) const

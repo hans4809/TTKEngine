@@ -76,4 +76,5 @@ enum EViewportClientType : uint8
     Editor,
     EditorPreviewSkeletal,
     EditorPreviewParticle,
+    EditorPreviewPhysicsAsset
 };
