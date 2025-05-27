@@ -25,6 +25,7 @@
 #include "GameFramework/PlayerController.h"
 #include "UnrealEd/SkeletalPreviewUI.h"
 #include "UnrealEd/ParticlePreviewUI.h"
+#include "UnrealEd/PhysicsPreviewUI.h"
 
 class ULevel;
 
@@ -40,6 +41,7 @@ void UEditorEngine::Init()
     ContentsUI = new FContentsUI();
     SkeletalPreviewUI = new FSkeletalPreviewUI();
     ParticlePreviewUI = new FParticlePreviewUI();
+    PhysicsPreviewUI = new FPhysicsPreviewUI();
 
     if (AssetManager == nullptr)
     {
@@ -69,7 +71,9 @@ void UEditorEngine::Init()
     UnrealEditor->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
     SkeletalPreviewUI->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
     ParticlePreviewUI->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
-
+    PhysicsPreviewUI->Initialize(LevelEditor,
+        GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth,
+        GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
     ContentsUI->Initialize();
     CollisionManager.Initialize();  
     FLuaManager::Get().Initialize();    
@@ -318,6 +322,9 @@ UWorld* UEditorEngine::CreatePreviewWindow(EViewportClientType Type, const FStri
             wClassName = L"EditorPreviewParticleWindowClass";
             wTitleName = L"Editor Preview Particle";
             break;
+        case EditorPreviewPhysicsAsset:
+            wClassName = L"EditorPreviewPhysicsWIndowClass";
+            wTitleName = L"Editor Preview Physics";
         }
         int Count = GetLevelEditor()->GetNumViewportClientByType(Type);
         if (Count > 0)
