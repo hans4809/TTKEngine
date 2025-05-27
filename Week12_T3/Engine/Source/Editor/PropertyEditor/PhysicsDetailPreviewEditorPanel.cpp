@@ -1,7 +1,11 @@
 #include "PhysicsDetailPreviewEditorPanel.h"
 #include "EditorEngine.h"
 #include "LevelEditor/SLevelEditor.h"
-
+#include "PhysicsCore/PhysicsAssetTypes.h"
+#include "PhysicsTreePreviewEditorPanel.h"
+#include <Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h>
+#include <Actors/SkeletalMeshActor.h>
+#include "Physics/PhysicsAsset.h"
 
 void PhysicsDetailPreviewEditorPanel::Initialize(SLevelEditor* levelEditor, float InWidth, float InHeight)
 {
@@ -18,6 +22,23 @@ void PhysicsDetailPreviewEditorPanel::Render()
     {
         return;
     }
+
+    AActor* PickedActor = nullptr;
+
+    if (!World->GetSelectedActors().IsEmpty())
+    {
+        PickedActor = *World->GetSelectedActors().begin();
+    }
+
+    USkeletalMeshComponent* SkeletalMeshComp;
+    ASkeletalMeshActor* SkeletalActor = Cast<ASkeletalMeshActor>(PickedActor);
+    UPhysicsAsset* PhysicsAsset = nullptr;
+    
+    if (SkeletalActor) {
+        SkeletalMeshComp = SkeletalActor->GetSkeletalMeshComponent();
+        PhysicsAsset = SkeletalMeshComp->GetSkeletalMesh()->GetPhysicsAsset();
+    }
+
 
     /* Pre Setup */
     float PanelWidth = (Width) * 0.2f - 6.0f;
@@ -44,13 +65,23 @@ void PhysicsDetailPreviewEditorPanel::Render()
     /* Render Start */
     ImGui::Begin("Detail", nullptr, PanelFlags);
 
-    // 프리뷰 월드에서는 오로지 하나의 액터만 선택 가능 (스켈레탈 메쉬 프리뷰인 경우, 스켈레탈 메쉬 액터)
-    AActor* PickedActor = nullptr;
+    using EType = EPhysicsNodeType;
+    UObject* ToInspect = nullptr;
 
-    if (!World->GetSelectedActors().IsEmpty())
-    {
-        PickedActor = *World->GetSelectedActors().begin();
+    switch (PhysicsTreePreviewEditorPanel::SelectedType) {
+    case EType::Bone:
+        break;
+    case EType::Constraint:
+        ToInspect = PhysicsAsset->ConstraintSetup[PhysicsTreePreviewEditorPanel::SelectedConstraintIndex];
+        break;
+    case EType::Body:
+        break;
+    case EType::Primitive:
+        break;
+    default:
     }
+
+    
 
     ImGui::End();
 }
