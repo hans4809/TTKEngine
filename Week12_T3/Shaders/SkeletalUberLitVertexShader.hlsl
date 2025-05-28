@@ -242,7 +242,7 @@ PS_INPUT mainVS(VS_INPUT input)
             }
         }
 
-        /*if (input.boneWeights.x > 0.0)
+        if (input.boneWeights.x > 0.0)
         {
             weightedPos += mul(input.position, BoneSkinningMatrices[input.boneIndices.x]) * input.boneWeights.x;
         }
@@ -260,7 +260,7 @@ PS_INPUT mainVS(VS_INPUT input)
         if (input.boneWeights.w > 0.0)
         {
             weightedPos += mul(input.position, BoneSkinningMatrices[input.boneIndices.w]) * input.boneWeights.w;
-        }*/
+        }
     }
     else
     {

@@ -688,8 +688,8 @@ void USkeletalMeshComponent::CreatePhysicsState()
         FTransform JointAnchorWorldTransform = GetBoneTransform(ChildSkelBoneIndex);
 
         JointAnchorWorldTransform.SetLocation(JointAnchorWorldTransform.GetLocation());
-        //JointAnchorWorldTransform.SetRotation(Actor1WorldTransform.GetRotation());
-        //JointAnchorWorldTransform.SetScale(FVector::OneVector);
+        JointAnchorWorldTransform.SetRotation(Actor1WorldTransform.GetRotation());
+        JointAnchorWorldTransform.SetScale(FVector::OneVector);
 
         //FTransform JointAnchorLocationOnly = GetBoneTransform(ChildSkelBoneIndex); // 위치 정보만 사용
 
