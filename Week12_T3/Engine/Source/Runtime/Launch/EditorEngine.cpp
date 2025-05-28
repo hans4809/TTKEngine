@@ -21,6 +21,10 @@
 #include "UObject/Casts.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetImporter.h"
+#include "Engine/Asset/Animation/UAnimationFactory.h"
+#include "Engine/Asset/SkeletalMesh/USkeletalMeshFactory.h"
+#include "Engine/Asset/Skeleton/USkeletonFactory.h"
+#include "Engine/Asset/StaticMesh/UStaticMeshFactory.h"
 #include "Engine/Asset/Texture/TextureFactory.h"
 #include "GameFramework/PlayerController.h"
 #include "UnrealEd/SkeletalPreviewUI.h"
@@ -50,15 +54,23 @@ void UEditorEngine::Init()
         
         UTextureFactory* TextureFactory = FObjectFactory::ConstructObject<UTextureFactory>(this);
         AssetManager->RegisterFactory(TextureFactory);
-        AssetManager->InitAssetManager();
+        USkeletonFactory* SkeletonFactory = FObjectFactory::ConstructObject<USkeletonFactory>(this);
+        AssetManager->RegisterFactory(SkeletonFactory);
+        USkeletalMeshFactory* SkeletalMeshFactory = FObjectFactory::ConstructObject<USkeletalMeshFactory>(this);
+        AssetManager->RegisterFactory(SkeletalMeshFactory);
+        UAnimationFactory* AnimationFactory = FObjectFactory::ConstructObject<UAnimationFactory>(this);
+        AssetManager->RegisterFactory(AnimationFactory);
+        UStaticMeshFactory* StaticMeshFactory = FObjectFactory::ConstructObject<UStaticMeshFactory>(this);
+        AssetManager->RegisterFactory(StaticMeshFactory);
+        
         AssetManager->Initalize();
     }
 
     if (AssetImporter == nullptr)
     {
         AssetImporter = FObjectFactory::ConstructObject<UAssetImporter>(this);
-        AssetImporter->ImportDirectory(TEXT("Assets/Texture"), nullptr);
-        AssetImporter->ImportDirectory(TEXT("Contents/Textures"), nullptr);
+        AssetImporter->ImportDirectory(UTexture::StaticClass(), TEXT("Assets/Texture"), nullptr);
+        AssetImporter->ImportDirectory(UTexture::StaticClass(), TEXT("Contents/Textures"), nullptr);
         assert(AssetImporter);
     }
 
@@ -348,6 +360,19 @@ UWorld* UEditorEngine::CreatePreviewWindow(EViewportClientType Type, const FStri
 
     HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(GEngineLoop.GetDefaultWindow(), GWLP_HINSTANCE));
     HWND AppWnd = GEngineLoop.CreateEngineWindow(hInstance, EnginePreviewWindowClass, EnginePreviewTitle);
+
+    switch (Type)
+    {
+    case EditorPreviewSkeletal:
+        GetSkeletalPreviewUI()->ActiveHandle = AppWnd;
+        break;
+    case EditorPreviewParticle:
+        GetParticlePreviewUI()->ActiveHandle = AppWnd;
+        break;
+    case EditorPreviewPhysicsAsset:
+        GetPhysicsPreviewUI()->ActiveHandle = AppWnd;
+        break;
+    }
         
     UWorld* NewPreviewWorld = CreateWorld(EWorldType::EditorPreview, LEVELTICK_All);
     

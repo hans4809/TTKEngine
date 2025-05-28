@@ -30,11 +30,11 @@ public:
     ~UAssetImporter() override;
     
     // 단일 파일 임포트
-    void Import(const FString& InFilepath, const ImportCallback& InCallback);
+    void Import(UClass* InClass, const FString& InFilepath, const ImportCallback& InCallback);
     // 디렉터리 전체 임포트
-    void ImportDirectory(const FString& InDir, const ImportCallback& InCallback);
+    void ImportDirectory(UClass* InClass, const FString& InDir, const ImportCallback& InCallback);
 
 private:
     // 팩토리 검색 및 호출 
-    UAssetFactory* FindFactory(const FString& filepath);
+    UAssetFactory* FindFactory(UClass* InClass, const FString& filepath);
 };

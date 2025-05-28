@@ -31,15 +31,6 @@ extern UEngine* GEngine;
 
 FSkeletalMeshRenderPass::FSkeletalMeshRenderPass(const FName& InShaderName) : FBaseRenderPass(InShaderName)
 {
-    const FGraphicsDevice& Graphics = FEngineLoop::GraphicDevice;
-
-    D3D11_BUFFER_DESC constdesc = {};
-    constdesc.ByteWidth = sizeof(FLightingConstants);
-  
-    constdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constdesc.Usage = D3D11_USAGE_DYNAMIC;
-    constdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    Graphics.Device->CreateBuffer(&constdesc, nullptr, &LightConstantBuffer);
 }
 
 void FSkeletalMeshRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
@@ -60,31 +51,9 @@ void FSkeletalMeshRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
             if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(Component))
             {
                 LightComponents.Add(LightComponent);
-                continue;
             }
         }
     }
-    
-    // for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
-    // {
-    //     if (SceneComponent->GetWorld() != World)
-    //     {
-    //         continue;
-    //     }
-    //             
-    //     if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SceneComponent))
-    //     {
-    //         if (!Cast<UGizmoBaseComponent>(SkeletalMeshComponent))
-    //         {
-    //             SkeletalMeshComponents.Add(SkeletalMeshComponent);
-    //         }
-    //     }
-    //         
-    //     if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
-    //     {
-    //         LightComponents.Add(LightComponent);
-    //     }
-    // }
 }
 
 void FSkeletalMeshRenderPass::Prepare(const std::shared_ptr<FViewportClient> InViewportClient)
@@ -197,9 +166,9 @@ void FSkeletalMeshRenderPass::Execute(const std::shared_ptr<FViewportClient> InV
         // SubSet마다 Material Update 및 Draw
         for (int subMeshIndex = 0; subMeshIndex < RefSkeletal.MaterialSubsets.Num(); ++subMeshIndex)
         {
-            const int materialIndex = RefSkeletal.MaterialSubsets[subMeshIndex].MaterialIndex;
+            //const int materialIndex = RefSkeletal.MaterialSubsets[subMeshIndex].MaterialIndex;
             
-            UpdateMaterialConstants(SkeletalMeshComponent->GetMaterial(materialIndex)->GetMaterialInfo());
+            UpdateMaterialConstants(RefSkeletal.Materials[subMeshIndex]->GetMaterialInfo());
 
             // index draw
             const uint64 startIndex = RefSkeletal.MaterialSubsets[subMeshIndex].IndexStart;
@@ -380,7 +349,7 @@ void FSkeletalMeshRenderPass::UpdateLightConstants()
     LightConstant.NumPointLights = PointLightCount;
     LightConstant.NumSpotLights = SpotLightCount;
     
-    renderResourceManager->UpdateConstantBuffer(LightConstantBuffer, &LightConstant);
+    renderResourceManager->UpdateConstantBuffer(TEXT("FLightingConstants"), &LightConstant);
 }
 
 void FSkeletalMeshRenderPass::UpdateBoneConstant(USkeletalMeshComponent* SkeletalMeshComponent)

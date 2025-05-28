@@ -1,17 +1,21 @@
 #pragma once
 #include "Math/MathUtility.h"
+#include "UObject/ObjectMacros.h"
 
 /**
  * CollisionDisableTable의 TMap에서 키로 사용되는 두 강체 인덱스 쌍을 저장하는 엔디안 안전 저장 구조체입니다.
  */
 struct FRigidBodyIndexPair
 {
+    DECLARE_STRUCT(FRigidBodyIndexPair)
     /** 인덱스 쌍 */
-    int32		Indices[2];
+    UPROPERTY(EditAnywhere, TArray<int32>, Indices, = {})
 	
     /** TMap에서 사용되기 위한 기본 생성자 */
     FRigidBodyIndexPair()
-    {}
+    {
+        Indices.SetNum(2);
+    }
 
     /**
      * 정렬되지 않은 인덱스 쌍을 받아 키를 생성하는 생성자입니다.

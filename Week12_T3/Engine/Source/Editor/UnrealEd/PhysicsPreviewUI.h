@@ -22,6 +22,8 @@ public:
     void OnResize(HWND hWnd) const;
     void SetWorld(UWorld* InWorld);
 
+    HWND ActiveHandle;
+    
 private:
     UWorld* PreviewWorld = nullptr;
     TMap<FString, std::shared_ptr<UEditorPanel>> Panels;

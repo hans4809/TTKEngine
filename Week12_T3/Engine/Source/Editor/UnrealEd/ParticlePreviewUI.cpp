@@ -88,6 +88,11 @@ void FParticlePreviewUI::Render() const
 
 void FParticlePreviewUI::OnResize(HWND hWnd) const
 {
+    if (ActiveHandle != hWnd)
+    {
+        return;
+    }
+    
     for (auto& Panel : Panels)
     {
         Panel.Value->OnResize(hWnd);

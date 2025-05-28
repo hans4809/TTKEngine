@@ -1,7 +1,9 @@
 #include "SphereComp.h"
 
 #include "Engine/FLoaderOBJ.h"
+#include "Engine/Asset/AssetManager.h"
 #include "UnrealEd/EditorViewportClient.h"
+#include "Engine/Classes/Components/Mesh/StaticMesh.h"
 
 
 USphereComp::USphereComp()
@@ -18,8 +20,10 @@ USphereComp::~USphereComp()
 void USphereComp::InitializeComponent()
 {
     Super::InitializeComponent();
-    FManagerOBJ::CreateStaticMesh("Assets/Sphere.obj");
-    SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Sphere.obj"));
+    //FManagerOBJ::CreateStaticMesh("Assets/Sphere.obj");
+    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Sphere"));
+
+    SetStaticMesh(StaticMesh);
 }
 
 void USphereComp::TickComponent(float DeltaTime)

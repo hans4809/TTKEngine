@@ -11,8 +11,11 @@ public:
     UAnimSequence() = default;
     
     virtual void PostDuplicate() override;
-    
+    bool LoadFromFile(const FString& filepath) override;
+    bool SerializeToFile(std::ostream& Out) override;
+    bool DeserializeFromFile(std::istream& In) override;
+
 private:
-    EAnimInterpolationType InterpolationType;
+    UPROPERTY(EditAnywhere, EAnimInterpolationType, InterpolationType, = EAnimInterpolationType::None)
 };
 

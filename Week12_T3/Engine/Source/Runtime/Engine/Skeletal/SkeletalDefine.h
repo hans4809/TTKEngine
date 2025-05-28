@@ -13,12 +13,14 @@ class UMaterial;
 
 struct FBone
 {
-    FString BoneName;
-    FMatrix SkinningMatrix;
-    FMatrix InverseBindPoseMatrix;
-    FMatrix GlobalTransform;
-    FMatrix LocalTransform;
-    int ParentIndex;
+    DECLARE_STRUCT(FBone)
+    
+    UPROPERTY(VisibleAnywhere, FString, BoneName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, FMatrix, SkinningMatrix, = FMatrix::Identity)
+    UPROPERTY(VisibleAnywhere, FMatrix, InverseBindPoseMatrix, = FMatrix::Identity)
+    UPROPERTY(VisibleAnywhere, FMatrix, GlobalTransform, = FMatrix::Identity)
+    UPROPERTY(VisibleAnywhere, FMatrix, LocalTransform, = FMatrix::Identity)
+    UPROPERTY(VisibleAnywhere, int, ParentIndex, = -1)
 
     void Serialize(FArchive& Ar) const
     {
@@ -43,9 +45,10 @@ struct FBone
 
 struct FBoneNode
 {
-    FString BoneName;
-    int BoneIndex;             // Index in the Bones array
-    TArray<int> ChildIndices;  // Indices of child bones
+    DECLARE_STRUCT(FBoneNode)
+    UPROPERTY(VisibleAnywhere, FString, BoneName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, int, BoneIndex, = -1)
+    UPROPERTY(VisibleAnywhere, TArray<int>, ChildIndices, = {})
 
     void Serialize(FArchive& Ar) const
     {
@@ -60,27 +63,35 @@ struct FBoneNode
 
 struct FSkeletalVertex
 {
-    FVector4 Position;
-    FVector Normal;
-    FVector4 Tangent;
-    FVector2D TexCoord;
-    int32 BoneIndices[4];
-    float BoneWeights[4];
+    DECLARE_STRUCT(FSkeletalVertex)
 
+    FSkeletalVertex()
+    {
+    }
+    
+    UPROPERTY(FVector4, Position)
+    UPROPERTY(FVector, Normal)
+    UPROPERTY(FVector4, Tangent)
+    UPROPERTY(FVector2D, TexCoord)
+    UPROPERTY(int32, BoneIndices0)
+    UPROPERTY(int32, BoneIndices1)
+    UPROPERTY(int32, BoneIndices2)
+    UPROPERTY(int32, BoneIndices3)
+    UPROPERTY(float, BoneWeights0)
+    UPROPERTY(float, BoneWeights1)
+    UPROPERTY(float, BoneWeights2)
+    UPROPERTY(float, BoneWeights3)
+    
     void SkinningVertex(const TArray<FBone>& bones);
 
     void Serialize(FArchive& Ar) const
     {
         Ar << Position << Normal << Tangent << TexCoord;
-        Ar << BoneIndices[0] << BoneIndices[1] << BoneIndices[2] << BoneIndices[3];
-        Ar << BoneWeights[0] << BoneWeights[1] << BoneWeights[2] << BoneWeights[3];
     }
 
     void Deserialize(FArchive& Ar)
     {
         Ar >> Position >> Normal >> Tangent >> TexCoord;
-        Ar >> BoneIndices[0] >> BoneIndices[1] >> BoneIndices[2] >> BoneIndices[3];
-        Ar >> BoneWeights[0] >> BoneWeights[1] >> BoneWeights[2] >> BoneWeights[3];
     }
     
 private:
@@ -90,15 +101,18 @@ private:
 
 struct FRefSkeletal
 {
+    DECLARE_STRUCT(FRefSkeletal)
+    
     // Tree structure for bones
-    FString Name;
-    TArray<FSkeletalVertex> RawVertices;
-    TArray<FBone> RawBones;
-    TArray<FBoneNode> BoneTree;
-    TArray<int> RootBoneIndices;  // Indices of root bones (no parents)
-    TMap<FString, int> BoneNameToIndexMap;  // For quick lookups
-    TArray<UMaterial*> Materials;
-    TArray<FMaterialSubset> MaterialSubsets;
+    UPROPERTY(VisibleAnywhere, FString, Name, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, TArray<FSkeletalVertex>, RawVertices, = {})
+    UPROPERTY(VisibleAnywhere, TArray<FBone>, RawBones, ={})
+    UPROPERTY(VisibleAnywhere, TArray<FBoneNode>, BoneTree, = {})
+    UPROPERTY(VisibleAnywhere, TArray<int>, RootBoneIndices, = {})
+    using StringToIntMapType = TMap<FString, int>;
+    UPROPERTY(VisibleAnywhere, StringToIntMapType, BoneNameToIndexMap, = {})
+    UPROPERTY(VisibleAnywhere, TArray<UMaterial*>, Materials, ={})
+    UPROPERTY(VisibleAnywhere, TArray<FMaterialSubset>, MaterialSubsets, = {})
 
     void Serialize(FArchive& Ar) const;
 
@@ -114,12 +128,14 @@ struct FRefSkeletal
 
 struct FSkeletalMeshRenderData
 {
+    DECLARE_STRUCT(FSkeletalMeshRenderData)
+    
     // @todo PreviewName과 FilePath 분리하기
-    FString Name = "Empty";
-    TArray<FSkeletalVertex> Vertices;
-    TArray<uint32> Indices;
-    TArray<FBone> Bones;
-    FBoundingBox BoundingBox;
+    UPROPERTY(VisibleAnywhere, FString, Name, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, TArray<FSkeletalVertex>, Vertices, = {})
+    UPROPERTY(VisibleAnywhere, TArray<uint32>, Indices, = {})
+    UPROPERTY(VisibleAnywhere, TArray<FBone>, Bones, = {})
+    UPROPERTY(VisibleAnywhere, FBoundingBox, BoundingBox, = {})
     ID3D11Buffer* VB = nullptr;
     ID3D11Buffer* IB = nullptr;
 

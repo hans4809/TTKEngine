@@ -58,12 +58,7 @@ void UAssetManager::Initalize()
     Registry->ScanDirectory();
     Registry->ScanDirectory(TEXT("Assets"));
     
-    LoadObjFiles();
-}
-
-void UAssetManager::InitAssetManager()
-{
-    AssetRegistry = std::make_unique<FAssetRegistry>();
+    //LoadObjFiles();
 }
 
 void UAssetManager::RegisterFactory(UAssetFactory* InFactory)
@@ -149,14 +144,17 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
 {
     namespace fs = std::filesystem;
     fs::path     fsPath(Path.ToWideString());
-    FString      Name = fsPath.stem().string();
+    FString      BaseName = fsPath.stem().string();
 
     // 1) 캐시 조회
     {
         std::lock_guard<std::mutex> lock(Mutex);
-        if (UAsset** Cached = LoadedAssets.Find(Name))
+        if (UAsset** Cached = LoadedAssets.Find(BaseName))
         {
-            return *Cached;
+            if ((*Cached)->GetClass() == ClassType)
+            {
+                return *Cached;
+            }
         }
     }
 
@@ -171,27 +169,42 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
     if (ext == ".ttalkak")
     {
         UObject* Raw = Serializer::LoadFromFile(fsPath);
-        Asset = Cast<UAsset>(Raw);
+        Asset = static_cast<UAsset*>(Raw);
+        Asset->PostLoad();
     }
     // 4) 그 외 포맷 → 팩토리 임포트
     else
     {
         for (UAssetFactory* F : Factories)
         {
-            if (F->CanImport(Path))
+            if (F->CanImport(ClassType, Path))
             {
                 Asset = F->ImportFromFile(Path);
-                break;
+                Asset->PostLoad();
+                if (ClassType != UTexture::StaticClass())
+                {
+                    // 5) 새 파일명 + 확장자 조합
+                    const FString NewFilename = BaseName + TEXT("_") + ClassType->GetName() + TEXT(".ttalkak");
+                    // 6) 디렉터리 + 새 파일명 연결
+                    const std::filesystem::path NewPath = (fsPath.parent_path() / NewFilename).generic_wstring();
+                    Serializer::SaveToFile(Asset, NewPath);
+                    Registry->RegisterNewFile(NewPath);
+                }
             }
         }
     }
-
-    // 5) 캐시에 저장
+    
+    // 7) 캐시에 저장
     if (Asset)
     {
         std::lock_guard<std::mutex> lock(Mutex);
-        LoadedAssets.Add(Name, Asset);
+        LoadedAssets.Add(BaseName, Asset);
+        
+        FAssetDescriptor desc;
+        Registry->GetDescriptor(BaseName, desc);
+        Asset->SetAssetDescriptor(desc);
     }
+    
     return Asset;
 }
 
@@ -219,15 +232,17 @@ UAsset* UAssetManager::Get(UClass* ClassType, const FString& InName)
 {
     // 1) Registry에서 Descriptor만 꺼내고
     FAssetDescriptor desc;
-    if (!Registry || !Registry->GetDescriptor(InName, desc))
-        return nullptr;
+    const FString NewName = InName + "_" + ClassType->GetName();
+    if (!Registry || !Registry->GetDescriptor(NewName, desc))
+    {
+        if (!Registry->GetDescriptor(InName, desc))
+        {
+            return nullptr;
+        }
+    }
 
     // 2) Load 에 모든 캐시 검사+로드 로직 위임
     UAsset* Asset = Load(ClassType, desc.AbsolutePath);
-    if (Asset)
-    {
-        Asset->GetDescriptor() = desc;
-    }
     
     return Asset;
 }
@@ -253,25 +268,6 @@ bool UAssetManager::SaveAsset(UObject* Root, const FString& Path)
     return bOk;
 }
 
-UObject* UAssetManager::LoadAsset(const FString& Path, UClass* ClassType)
-{
-    const std::filesystem::path fsPath(Path.ToWideString());
-    
-    // 1) 우선 .uasset 바이너리로 로드 시도
-    UObject* Loaded = Serializer::LoadFromFile(fsPath);
-    if (Loaded && Loaded->IsA(ClassType))
-        return Loaded;
-
-    // 2) (기존) 등록된 팩토리를 통해 임포트
-    for (UAssetFactory* F : Factories)
-    {
-        if (F->CanImport(Path))
-            return F->ImportFromFile(Path);
-    }
-
-    return nullptr;
-}
-
 TArray<FAssetDescriptor> UAssetManager::GetDescriptorsByType(UClass* InClass)
 {
     if (InClass == UTexture::StaticClass())
@@ -287,54 +283,14 @@ TArray<FAssetDescriptor> UAssetManager::GetDescriptorsByType(UClass* InClass)
     return TArray<FAssetDescriptor>();
 }
 
-void UAssetManager::LoadObjFiles()
-{
-    const std::string BasePathName = "Contents/";
-
-    // Obj 파일 로드
-	
-    for (const auto& Entry : std::filesystem::recursive_directory_iterator(BasePathName))
-    {
-        if (Entry.is_regular_file() && Entry.path().extension() == ".obj")
-        {
-            FAssetInfo NewAssetInfo;
-            NewAssetInfo.AssetName = FName(Entry.path().filename().string());
-            NewAssetInfo.PackagePath = FName(Entry.path().parent_path().string());
-            NewAssetInfo.AssetType = EAssetType::StaticMesh; // obj 파일은 무조건 StaticMesh
-            NewAssetInfo.Size = static_cast<uint32>(std::filesystem::file_size(Entry.path()));
-            
-            AssetRegistry->PathNameToAssetInfo.Add(NewAssetInfo.AssetName, NewAssetInfo);
-            
-            FString MeshName = NewAssetInfo.PackagePath.ToString() + "/" + NewAssetInfo.AssetName.ToString();
-            FManagerOBJ::CreateStaticMesh(MeshName);
-            // ObjFileNames.push_back(UGTLStringLibrary::StringToWString(Entry.path().string()));
-            // FObjManager::LoadObjStaticMeshAsset(UGTLStringLibrary::StringToWString(Entry.path().string()));
-        }
-
-        if (Entry.is_regular_file() && Entry.path().extension() == ".csv")
-        {
-            FAssetInfo NewAssetInfo;
-            NewAssetInfo.AssetName = FName(Entry.path().filename().string());
-            NewAssetInfo.PackagePath = FName(Entry.path().parent_path().string());
-            NewAssetInfo.AssetType = EAssetType::Curve;
-            NewAssetInfo.Size = static_cast<uint32>(std::filesystem::file_size(Entry.path()));
-            
-            AssetRegistry->PathNameToAssetInfo.Add(NewAssetInfo.AssetName, NewAssetInfo);
-            
-            // ObjFileNames.push_back(UGTLStringLibrary::StringToWString(Entry.path().string()));
-            // FObjManager::LoadObjStaticMeshAsset(UGTLStringLibrary::StringToWString(Entry.path().string()));
-        }
-    }
-}
-
-UAssetFactory* UAssetManager::FindFactoryForFile(const FString& filepath)
+UAssetFactory* UAssetManager::FindFactoryForFile(UClass* InClass, const FString& filepath)
 {
     std::string ext = std::filesystem::path(filepath).extension().string();
     std::lock_guard<std::mutex> lock(Mutex);
     for (const auto& factory : Factories)
     {
         // CanImport 내부에서 확장자 검사 등을 수행하도록 구현되어 있어야 함
-        if (factory->CanImport(filepath))
+        if (factory->CanImport(InClass, filepath))
         {
             return factory;
         }

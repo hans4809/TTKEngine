@@ -14,6 +14,7 @@
 #include "UObject/Casts.h"
 #include "Animation/AnimSingleNodeInstance.h"
 #include "Animation/CustomAnimInstance/TestAnimInstance.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Physics/PhysicsAsset.h"
 #include "Physics/ConstraintInstance.h"
 #include "Physics/PhysicsConstraintTemplate.h"
@@ -30,7 +31,7 @@ UMaterial* USkeletalMeshComponent::GetMaterial(uint32 ElementIndex) const
 {
     if (SkeletalMesh != nullptr)
     {
-        if (OverrideMaterials[ElementIndex] != nullptr)
+        if (OverrideMaterials.IsValidIndex(ElementIndex))
         {
             return OverrideMaterials[ElementIndex];
         }
@@ -136,8 +137,7 @@ void USkeletalMeshComponent::SetSkeletalMesh(USkeletalMesh* value)
     ResetToOriginPos();
 
     //value->UpdateBoneHierarchy();
-
-    OverrideMaterials.SetNum(value->GetMaterials().Num());
+    
     AABB = SkeletalMesh->GetRenderData().BoundingBox;
 
     // CreateBoneComponents();
@@ -172,20 +172,22 @@ void USkeletalMeshComponent::CreateBoneComponents()
         BoneComp->DestroyComponent();
     }
 
-    FManagerOBJ::CreateStaticMesh("Contents/helloBlender.obj");
+    //FManagerOBJ::CreateStaticMesh("Contents/helloBlender.obj");
+    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("helloBlender"));
+
     for (const auto& Bone : GetSkeletalMesh()->GetRenderData().Bones)
     {
         UStaticMeshComponent* BoneComp = GetOwner()->AddComponent<UStaticMeshComponent>(EComponentOrigin::Runtime);
-        BoneComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"helloBlender.obj"));
+        BoneComp->SetStaticMesh(StaticMesh);
         BoneComp->SetWorldLocation(Bone.GlobalTransform.GetTranslationVector());
         BoneComp->SetFName(Bone.BoneName);
         BoneComponents.Add(BoneComp);
     }
 }
 
-USkeletalMesh* USkeletalMeshComponent::LoadSkeletalMesh(const FString& FilePath)
+USkeletalMesh* USkeletalMeshComponent::LoadSkeletalMesh(const FString& FileName)
 {
-    USkeletalMesh* SkeletalMesh = FFBXLoader::CreateSkeletalMesh(FilePath);
+    USkeletalMesh* SkeletalMesh = UAssetManager::Get().Get<USkeletalMesh>(FileName);
     SetSkeletalMesh(SkeletalMesh);
 
     return SkeletalMesh;
@@ -337,11 +339,6 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
             bCPUSkinned = false;
         }
     }
-}
-
-void USkeletalMeshComponent::SetData(const FString& FilePath)
-{
-    SkeletalMesh = LoadSkeletalMesh(FilePath);
 }
 
 void USkeletalMesh::ResetToOriginalPose()

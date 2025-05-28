@@ -34,24 +34,10 @@ int32 FEngineLoop::Init(const HINSTANCE hInstance)
     
     Renderer.Initialize(&GraphicDevice);
     ResourceManager.Initialize(&GraphicDevice);
-    
-    // if (bIsEditor)
-    {
-        GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
-    }
-    //else
-    {
-        //TODO : UENGINE으로 만들 수 있게 해주기 
-        // GEngine = FObjectFactory::ConstructObject<UEngine>();
-    }
 
+    GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
 
-    for (const auto& AppWnd : AppWindows)
-    {
-        UpdateUI(AppWnd);
-    }
-    
     return 0;
 }
 
@@ -210,7 +196,7 @@ void FEngineLoop::Render() const
         ImGuiManager::Get().EndFrame(AppWindow);
     
         // Pending 처리된 오브젝트 제거
-        GUObjectArray.ProcessPendingDestroyObjects();
+        //GUObjectArray.ProcessPendingDestroyObjects();
         GraphicDevice.SwapBuffer(AppWindow);
     }
     LevelEditor->FocusViewportClient(OriginalWindow, OriginalIndex);
@@ -274,15 +260,15 @@ void FEngineLoop::UpdateUI(HWND AppWnd) const
     Console::GetInstance().OnResize(AppWnd);
     if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
     {
-        if (const UnrealEd* UnrealEditor = EditorEngine->GetUnrealEditor())
+        if (DefaultWindow == AppWnd)
         {
-            UnrealEditor->OnResize(AppWnd);
+            EditorEngine->GetUnrealEditor()->OnResize(AppWnd);
         }
 
-        if (const FSkeletalPreviewUI* SkeletalPreviewUI = EditorEngine->GetSkeletalPreviewUI())
-        {
-            SkeletalPreviewUI->OnResize(AppWnd);
-        }
+        // Todo: should make loop statement
+        EditorEngine->GetSkeletalPreviewUI()->OnResize(AppWnd);
+        EditorEngine->GetParticlePreviewUI()->OnResize(AppWnd);
+        EditorEngine->GetPhysicsPreviewUI()->OnResize(AppWnd);
 
         if (EditorEngine->ContentsUI)
         {
@@ -330,10 +316,11 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(const HWND hWnd, const UINT Msg, const 
                 break;
             }
         }
-        //break;
+        
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
+        
         case WM_SIZE:
             if (wParam != SIZE_MINIMIZED)
             {
@@ -345,17 +332,13 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(const HWND hWnd, const UINT Msg, const 
                     {
                         const FVector2D ClientSize = FWindowsCursor::GetClientSize(hWnd);
                         LevelEditor->ResizeWindow(hWnd, ClientSize);
-                        // for (std::shared_ptr<FEditorViewportClient>& ViewportClient : LevelEditor->GetViewports())
-                        // {
-                        //     FWindowData& WindowData = FEngineLoop::GraphicDevice.SwapChains[hWnd];
-                        //     ViewportClient->ResizeViewport(WindowData.screenWidth, WindowData.screenHeight);
-                        // }
                     }   
                 }
             }
             ViewportTypePanel::GetInstance().OnResize(hWnd);
             GEngineLoop.UpdateUI(hWnd);
             break;
+        
         default:
             GEngineLoop.AppMessageHandler->ProcessMessage(hWnd, Msg, wParam, lParam);
             return DefWindowProc(hWnd, Msg, wParam, lParam);

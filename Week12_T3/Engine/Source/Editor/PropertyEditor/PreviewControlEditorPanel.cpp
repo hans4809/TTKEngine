@@ -26,11 +26,13 @@
 #include "Components/PrimitiveComponents/MeshComponents/StaticMeshComponents/StaticMeshComponent.h"
 #include "Components/USpringArmComponent.h"
 #include "Components/Mesh/StaticMesh.h"
+#include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
 
 #include "Contents/AGPlayer.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Font/IconDefs.h"
 #include "ImGUI/imgui.h"
+#include "Physics/PhysicsAsset.h"
 #include "Renderer/Renderer.h"
 #include "UnrealEd/EditorPlayer.h"
 #include "UObject/ObjectTypes.h"
@@ -115,13 +117,46 @@ void PreviewControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* Icon
 
         ImGui::Begin("Menu", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
-        if (ImGui::BeginMenu("Import"))
+        if (PreviewType == EPreviewType::EPhysicsAsset)
         {
-            if (ImGui::MenuItem("Fbx"))
+            if (ImGui::BeginMenu("Save"))
             {
-            }
+                if (ImGui::MenuItem("PhysicsAsset"))
+                {
+                    char const* lFilterPatterns[1] = { "*_UPhysicsAsset.ttalkak" };
+                    const char* SaveFilePath = tinyfd_saveFileDialog("Save PhysicsAsset",       // 다이얼로그 제목
+                                                "Contents/FBX",            // 기본 디렉터리
+                                                1, lFilterPatterns,        // 필터 개수 및 배열
+                                                "PhysicsAsset (.ttalkak)" // 설명
+                                                );
 
-            ImGui::EndMenu();
+                    if (SaveFilePath == nullptr)
+                    {
+                        tinyfd_messageBox("Error", "파일을 저장할 수 없습니다.", "ok", "error", 1);
+                        ImGui::End();
+                        return;
+                    }
+
+                    std::filesystem::path SavePath = std::filesystem::path(SaveFilePath).generic_wstring();
+                    
+                    for (AActor* Actor : World->GetActors())
+                    {
+                        for (UActorComponent* Comp : Actor->GetComponents())
+                        {
+                            if (USkeletalMeshComponent* SkeletalMeshComp = Cast<USkeletalMeshComponent>(Comp))
+                            {
+                                UPhysicsAsset* PhysicsAsset = SkeletalMeshComp->GetSkeletalMesh()->GetPhysicsAsset();
+                                if (PhysicsAsset)
+                                {
+                                    Serializer::SaveToFile(PhysicsAsset, SavePath);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
         }
 
         ImGui::Separator();
@@ -277,9 +312,10 @@ void PreviewControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* Ic
                     {
                         SpawnedActor = World->SpawnActor<AGPlayer>();
                         SpawnedActor->SetActorLabel(TEXT("OBJ_GAMEPLAYER"));
-                        FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
+                        //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
+                        UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Cube"));
                         UStaticMeshComponent* MeshComp = SpawnedActor->AddComponent<UStaticMeshComponent>(EComponentOrigin::Editor);
-                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+                        MeshComp->SetStaticMesh(StaticMesh);
                         USpringArmComponent* SpringComp = SpawnedActor->AddComponent<USpringArmComponent>(EComponentOrigin::Editor);
                         UCameraComponent* Camera = SpawnedActor->AddComponent<UCameraComponent>(EComponentOrigin::Editor);
                         //SpawnedActor->AddComponent<USphereShapeComponent>(EComponentOrigin::Editor)->SetAttachParent(SpringComp);
@@ -294,8 +330,9 @@ void PreviewControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* Ic
                         AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
                         TempActor->SetActorLabel(TEXT("Cube"));
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                        FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
-                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+                        //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
+                        UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Cube"));
+                        MeshComp->SetStaticMesh(StaticMesh);
                         TempActor->AddComponent<UBoxShapeComponent>(EComponentOrigin::Editor);
 
                         SpawnedActor = TempActor;
@@ -306,8 +343,9 @@ void PreviewControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* Ic
                         AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
                         TempActor->SetActorLabel(TEXT("Sphere"));
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                        FManagerOBJ::CreateStaticMesh("Assets/Primitives/Sphere.obj");
-                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Sphere.obj"));
+                        //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Sphere.obj");
+                        UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Sphere"));
+                        MeshComp->SetStaticMesh(StaticMesh);
                         TempActor->AddComponent<USphereShapeComponent>(EComponentOrigin::Editor);
 
                         SpawnedActor = TempActor;
@@ -318,8 +356,9 @@ void PreviewControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* Ic
                         AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
                         TempActor->SetActorLabel(TEXT("Capsule"));
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                        FManagerOBJ::CreateStaticMesh("Assets/Primitives/Capsule.obj");
-                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Capsule.obj"));
+                        //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Capsule.obj");
+                        UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Capsule"));
+                        MeshComp->SetStaticMesh(StaticMesh);
                         TempActor->AddComponent<UCapsuleShapeComponent>(EComponentOrigin::Editor);
 
                         SpawnedActor = TempActor;
@@ -330,10 +369,11 @@ void PreviewControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* Ic
                         AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
                         TempActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                        FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
-                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
-                        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
-                        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
+                        UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("SkySphere"));
+                        //FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
+                        MeshComp->SetStaticMesh(StaticMesh);
+                        MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetDiffuse(FVector::OneVector);
+                        MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetEmissive(FVector::OneVector);
                         TempActor->SetActorRotation(FRotator(0.0f, 0.0f, 90.0f));
                         TempActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
                         SpawnedActor = TempActor;
@@ -420,8 +460,9 @@ void PreviewControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* Ic
                         AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
                         TempActor->SetActorLabel(TEXT("OBJ_DODGE"));
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                        FManagerOBJ::CreateStaticMesh("Assets/Dodge/Dodge.obj");
-                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Dodge.obj"));
+                        UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Dodge"));
+                        //FManagerOBJ::CreateStaticMesh("Assets/Dodge/Dodge.obj");
+                        MeshComp->SetStaticMesh(StaticMesh);
                         SpawnedActor = TempActor;
                         break;
                     }

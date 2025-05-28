@@ -20,6 +20,8 @@ public:
     void AddEditorPanel(const FString& PanelId, const std::shared_ptr<UEditorPanel>& EditorPanel);
     std::shared_ptr<UEditorPanel> GetEditorPanel(const FString& PanelId);
 
+    HWND ActiveHandle;
+    
 private:
     TMap<FString, std::shared_ptr<UEditorPanel>> Panels;
     UWorld* World = nullptr;

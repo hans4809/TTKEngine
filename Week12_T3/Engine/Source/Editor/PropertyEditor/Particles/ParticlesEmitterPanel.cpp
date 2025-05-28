@@ -16,6 +16,7 @@
 #include "Engine/FLoaderOBJ.h"
 
 #include "Engine/Texture.h"
+#include "Engine/Asset/AssetManager.h"
 
 void ParticlesEmitterPanel::Initialize(SLevelEditor* LevelEditor, float InWidth, float InHeight)
 {
@@ -206,8 +207,8 @@ void ParticlesEmitterPanel::RenderModuleTypeData(UParticleModuleTypeDataBase* Mo
             UParticleModuleTypeDataMesh* NewMesh = FObjectFactory::ConstructObject<UParticleModuleTypeDataMesh>(nullptr);
             Emitter->LODLevels[UI->GetSelectedLODIndex()]->TypeDataModule = NewMesh;
             
-            NewMesh->Mesh = FManagerOBJ::GetStaticMesh(L"apple_mid.obj");
-
+            //NewMesh->Mesh = FManagerOBJ::GetStaticMesh(L"apple_mid.obj");
+            NewMesh->Mesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("apple_mid"));
             //NewLODLevel->AnalyzeModules();
 
             UI->RegisterFlags(NewMesh);

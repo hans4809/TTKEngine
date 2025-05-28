@@ -5,6 +5,7 @@
 #include "Components/Mesh/SkeletalMesh.h"
 #include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
 #include "PhysicsConstraintTemplate.h"
+#include "Serialization/Serializer.h"
 
 int32 UPhysicsAsset::FindBodyIndex(const FName BodyName) const
 {
@@ -284,6 +285,26 @@ void UPhysicsAsset::GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal,
 void UPhysicsAsset::GetBodySetups(TArray<class UBodySetup*>& OutBodySetup) const
 {
     OutBodySetup = BodySetups;
+}
+
+bool UPhysicsAsset::LoadFromFile(const FString& filepath)
+{
+    return Serializer::LoadFromFile(filepath);
+}
+
+bool UPhysicsAsset::SerializeToFile(std::ostream& Out)
+{
+    return UAsset::SerializeToFile(Out);
+}
+
+bool UPhysicsAsset::DeserializeFromFile(std::istream& In)
+{
+    return UAsset::DeserializeFromFile(In);
+}
+
+void UPhysicsAsset::PostLoad()
+{
+    UAsset::PostLoad();
 }
 
 UPhysicsAsset::UPhysicsAsset()
