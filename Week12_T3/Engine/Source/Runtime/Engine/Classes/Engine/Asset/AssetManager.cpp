@@ -169,7 +169,7 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
     if (ext == ".ttalkak")
     {
         UObject* Raw = Serializer::LoadFromFile(fsPath);
-        Asset = Cast<UAsset>(Raw);
+        Asset = static_cast<UAsset*>(Raw);
         Asset->PostLoad();
     }
     // 4) 그 외 포맷 → 팩토리 임포트

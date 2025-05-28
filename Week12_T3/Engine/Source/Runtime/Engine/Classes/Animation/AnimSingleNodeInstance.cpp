@@ -119,7 +119,7 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
 
     for (int32 i = 0; i < boneNum; ++i)
     {
-        const FTransform& BoneTransform = CurrentPose.Pose.BoneTransforms[i];
+        const FTransform& BoneTransform = Pose.Pose.BoneTransforms[i];
         const FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
             BoneTransform.GetLocation(),
             BoneTransform.GetRotation(),
@@ -127,15 +127,15 @@ void UAnimSingleNodeInstance::NativeUpdateAnimation(float DeltaSeconds)
         );
         SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
     }
-    
-    for (int32 i = 0; i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
-    {
-        const FTransform& BoneTransform = Pose.Pose.BoneTransforms[i];
-        FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
-            BoneTransform.GetLocation(),
-            BoneTransform.GetRotation(),
-            BoneTransform.GetScale()
-        );
-        SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
-    }
+    //
+    // for (int32 i = 0; i < SkeletalMesh->GetRenderData().Bones.Num(); ++i)
+    // {
+    //     const FTransform& BoneTransform = Pose.Pose.BoneTransforms[i];
+    //     FMatrix TransformMatrix = JungleMath::CreateModelMatrix(
+    //         BoneTransform.GetLocation(),
+    //         BoneTransform.GetRotation(),
+    //         BoneTransform.GetScale()
+    //     );
+    //     SkeletalMeshComp->BoneLocalTransforms[i] = TransformMatrix;
+    // }
 }
