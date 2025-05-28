@@ -228,13 +228,12 @@ void FConstraintInstance::ApplyLimits()
     JointD6->setMotion(physx::PxD6Axis::eTWIST, ConvertMotion(ProfileInstance.AngularTwistMotion));
     JointD6->setMotion(physx::PxD6Axis::eSWING1, ConvertMotion(ProfileInstance.AngularSwing1Motion));
     JointD6->setMotion(physx::PxD6Axis::eSWING2, ConvertMotion(ProfileInstance.AngularSwing2Motion));
-    //////JointD6->setMotion(physx::PxD6Axis::eTWIST, ConvertMotion(ProfileInstance.AngularTwistMotion));
     if (ProfileInstance.AngularTwistMotion == EConstraintMotion::Limited)
     {
-        physx::PxReal TwistRad = physx::PxPi * ProfileInstance.TwistLimitAngle / 180.0f;
+        physx::PxReal TwistRad = physx::PxPi * 20 / 180.0f;
         if (ProfileInstance.bTwistSoftConstraint && (ProfileInstance.AngularStiffness > 0.f || ProfileInstance.AngularDamping > 0.f))
         {
-            physx::PxSpring Spring(ProfileInstance.AngularStiffness, ProfileInstance.AngularDamping);
+            physx::PxSpring Spring(100, 10);
             JointD6->setTwistLimit(physx::PxJointAngularLimitPair(-TwistRad, TwistRad, Spring));
         }
         else

@@ -51,6 +51,8 @@ public:
     void UpdateMassAndInertia(float DensityOrMass, const FVector* MassLocalPose = nullptr);
 
     void SetLinearVelocity(const FVector& Velocity);
+
+    void SetDamping(float linearDamping, float angularDamping);
     
     FVector GetLinearVelocity() const;
     

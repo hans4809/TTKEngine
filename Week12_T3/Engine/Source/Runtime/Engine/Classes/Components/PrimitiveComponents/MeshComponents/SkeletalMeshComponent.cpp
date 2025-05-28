@@ -645,7 +645,8 @@ void USkeletalMeshComponent::CreatePhysicsState()
             for (auto& E : BS->AggGeom.ConvexElems)
                 BI->AddConvexGeometry(E.CookedPxConvexMesh, PhysMat, E.GetTransform(), FVector::OneVector);
 
-            BI->UpdateMassAndInertia(10);
+            BI->UpdateMassAndInertia(100);
+            BI->SetDamping(0,3);
             BI->AddObject(PhysScene);
             Bodies.Add(BI);
         }

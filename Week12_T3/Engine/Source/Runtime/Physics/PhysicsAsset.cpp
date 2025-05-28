@@ -99,14 +99,14 @@ void UPhysicsAsset::AutoGenerateBodies()
         {
             // 말단 본의 길이를 반지름에 기반하여 설정하거나, 다른 휴리스틱 사용 가능
             // 여기서는 임시로 작은 값 또는 이전처럼 DefaultCapsuleRadiusFactor를 사용
-            CurrentBoneLength = MinCapsuleRadiusFallback * 4.0f;
+            CurrentBoneLength = MinCapsuleRadiusFallback * 5.0f;
         }
 
         if (CurrentBoneLength < KINDA_SMALL_NUMBER)
         {
             CurrentBoneLength = KINDA_SMALL_NUMBER;
         }
-        BoneRadii[BoneIndex] = FMath::Max(CurrentBoneLength * DefaultCapsuleRadiusFactor, MinCapsuleRadiusFallback) * 1.5f;
+        BoneRadii[BoneIndex] = FMath::Max(CurrentBoneLength * DefaultCapsuleRadiusFactor, MinCapsuleRadiusFallback) * 3.2f;
     }
 
 
@@ -151,7 +151,7 @@ void UPhysicsAsset::AutoGenerateBodies()
         else
         {
             // 말단 본 처리(기존 로직 유지)
-            AnatomicalBoneLength = MinCapsuleRadiusFallback * 4.0f;
+            AnatomicalBoneLength = MinCapsuleRadiusFallback * 5.0f;
             BoneSegmentEnd_Local = AssumedLeafBoneDirection * AnatomicalBoneLength;
         }
 

@@ -237,7 +237,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
             {
                 FVector Scale = ComponentWorldTransform.GetScale();
                 float ScaledRadius = Elem.Radius * Scale.Magnitude();
-                BodyInstance.AddSphereGeometry(ScaledRadius, Mat, LocalTransform);
+                BodyInstance.AddSphereGeometry(ScaledRadius, Mat, ComponentWorldTransform);
             }
         }
         break;
@@ -250,7 +250,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
                 FVector Scale = ComponentWorldTransform.GetScale();
                 FVector ScaledHalfExtents = HalfExtents * Scale;
 
-                BodyInstance.AddBoxGeometry(ScaledHalfExtents, Mat, LocalTransform);
+                BodyInstance.AddBoxGeometry(ScaledHalfExtents, Mat, ComponentWorldTransform);
             }
         }
         break;
@@ -263,7 +263,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
                 float Radius = Elem.Radius * Scale.Magnitude(); // Sphyl의 반지름
 
                 float HalfHeight = Elem.Length * 0.5f * Scale.Magnitude();
-                BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, Mat, LocalTransform);
+                BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, Mat, ComponentWorldTransform);
             }
         }
         break;
