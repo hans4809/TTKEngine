@@ -45,6 +45,9 @@
 #include <PxRigidActor.h>
 #include <PxPhysics.h>
 
+#include "Physics/Vehicle4W.h"
+#include "PhysicsEngine/PhysicsMaterial.h"
+
 void UWorld::InitWorld()
 {
     FParticleSystemWorldManager::OnWorldInit(this);
@@ -57,8 +60,14 @@ void UWorld::InitWorld()
     if (!InitializePhysicsScene())
     {
         UE_LOG(LogLevel::Error, "FATAL ERROR: UWorld::InitWorld - Failed to initialize physics scene!");
-
     }
+    
+    FVehicle4W* vehicle = new FVehicle4W();
+
+    FPhysXSDKManager* sdkManager = &FPhysXSDKManager::GetInstance();
+    const snippetvehicle::VehicleDesc desc = FPhysXSDKManager::InitVehicleDesc(sdkManager->GetDefaultMaterial()->GetPxMaterial());
+    vehicle->Initialize(desc, sdkManager->GetPhysicsSDK(), sdkManager->GetCooking());
+    CurrentPhysicsScene->AddVehicle(vehicle->GetVehicle());
 
     /*if (WorldType == EWorldType::Editor)
     {

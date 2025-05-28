@@ -5,6 +5,7 @@
 #include <PxQueryFiltering.h> 
 namespace physx
 {
+    class PxVehicleDrive4W;
     class PxPhysics;
     class PxScene;
     class PxCpuDispatcher;
@@ -27,6 +28,9 @@ public:
     virtual void Simulate(float DeltaTime) = 0;
     virtual physx::PxU32 GetNbActors(physx::PxActorTypeFlags Flags) const = 0;
     virtual void GetActors(physx::PxActorTypeFlags Flags, physx::PxActor** OutActors, physx::PxU32 MaxCount) const = 0;
+
+    virtual void AddVehicle(physx::PxVehicleDrive4W* InVehicle4W) = 0;
+    virtual void AddActor(physx::PxActor* InRigidActor) = 0;
     // virtual void FetchResults(bool bBlock) = 0; // Simulate에 통합될 수도 있음
     
     // 가장 가까운 첫 번째 교차점에 대한 정보만을 반환

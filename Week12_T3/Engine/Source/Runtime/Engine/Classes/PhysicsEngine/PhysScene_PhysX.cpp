@@ -12,6 +12,9 @@
 #include <PxScene.h>
 #include <PxPhysics.h>
 
+#include "Physics/Vehicle4W.h"
+#include "snippets/snippetvehiclecommon/SnippetVehicleSceneQuery.h"
+
 FPhysScene_PhysX::FPhysScene_PhysX(physx::PxPhysics* InPxSDK, physx::PxPvd* InPvd, UWorld* InOwningWorld)
     :PxSDK(InPxSDK), Pvd(InPvd), OwningEngineWorld(InOwningWorld)
 {
@@ -77,7 +80,8 @@ bool FPhysScene_PhysX::Initialize()
     }
 
     physx::PxPvdSceneClient* pvdClient = PxSceneInstance->getScenePvdClient();
-
+    BatchQuery = snippetvehicle::VehicleSceneQueryData::setUpBatchedSceneQuery(0, *vehicleSceneQueryData, PxSceneInstance);
+    
     if (pvdClient)
     {
         pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
@@ -143,6 +147,20 @@ void FPhysScene_PhysX::AddObject(FBodyInstance* BodyInstance)
     }
 }
 
+void FPhysScene_PhysX::AddVehicle(physx::PxVehicleDrive4W* InVehicle4W)
+{
+    AddActor(InVehicle4W->getRigidDynamicActor());
+    FVehicle4W::StartBrakeMode();
+    InVehicle4W->setToRestState();
+    InVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
+    InVehicle4W->mDriveDynData.setUseAutoGears(true);
+}
+
+void FPhysScene_PhysX::AddActor(physx::PxActor* InRigidActor)
+{
+    PxSceneInstance->addActor(*InRigidActor);
+}
+
 void FPhysScene_PhysX::RemoveObject(FBodyInstance* BodyInstance)
 {
     if (PxSceneInstance && BodyInstance && BodyInstance->GetPxRigidActor())
@@ -160,6 +178,25 @@ void FPhysScene_PhysX::RemoveObject(FBodyInstance* BodyInstance)
 void FPhysScene_PhysX::Simulate(float DeltaTime)
 {
     if (DeltaTime < 0) return;
+
+    if (Vehicle4W)
+    {
+        physx::PxVehicleWheels* vehicles[1] = { Vehicle4W->GetVehicle() };
+        physx::PxRaycastQueryResult* raycastResults = vehicleSceneQueryData->getRaycastQueryResultBuffer(0);
+        const physx::PxU32 raycastResultsSize = vehicleSceneQueryData->getQueryResultBufferSize();
+        PxVehicleSuspensionRaycasts(BatchQuery, 1, vehicles, raycastResultsSize, raycastResults);
+
+        //Vehicle update.
+        const physx::PxVec3 grav = PxSceneInstance->getGravity();
+        physx::PxWheelQueryResult wheelQueryResults[PX_MAX_NB_WHEELS];
+        physx::PxVehicleWheelQueryResult vehicleQueryResults[1] = {{wheelQueryResults, Vehicle4W->GetVehicle()->mWheelsSimData.getNbWheels()}};
+        PxVehicleUpdates(DeltaTime, grav, *FrictionPairs, 1, vehicles, vehicleQueryResults);
+
+        //Work out if the vehicle is in the air.
+        IsVehicleInAir = Vehicle4W->GetVehicle()->getRigidDynamicActor()->isSleeping()
+                            ? false : PxVehicleIsInAir(vehicleQueryResults[0]);
+    }
+    
     PxSceneInstance->simulate(DeltaTime);
     PxSceneInstance->fetchResults(true); //블로킹 방식으로 결과 가져오기
 }

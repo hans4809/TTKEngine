@@ -181,6 +181,7 @@ void UStaticMeshComponent::DestroyPhysicsState()
     }
     BodyInstance.ReleasePhysicsState();
 }
+
 void UStaticMeshComponent::OnCreatePhysicsState()
 {
     //임시 테스트 용 ---
@@ -191,7 +192,8 @@ void UStaticMeshComponent::OnCreatePhysicsState()
     FTransform ComponentWorldTransform = GetWorldTransform();
 
 
-    UPhysicalMaterial* MyMaterial = new UPhysicalMaterial(FPhysXSDKManager::GetInstance().GetPhysicsSDK(), 1, 1, 1);
+    UPhysicalMaterial* MyMaterial = FObjectFactory::ConstructObject<UPhysicalMaterial>(this);
+    MyMaterial->Initialize(FPhysXSDKManager::GetInstance().GetPhysicsSDK(), 1, 1, 1);
 
     bool bActorCreated = BodyInstance.CreatePhysicsState(GetWorldTransform(), BodyType);
 

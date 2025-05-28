@@ -3,18 +3,13 @@
 #include <PxPhysics.h>
 #include <PxMaterial.h>
 
-UPhysicalMaterial::UPhysicalMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution)
-    :OwningPxPhysicsSDK(InPxPhysicsSDK)
+void UPhysicalMaterial::Initialize(physx::PxPhysics* InPxPhysicsSDK, float InStaticFriction, float InDynamicFriction, float InRestitution)
 {
-    if (OwningPxPhysicsSDK)
-    {
-        PxMaterialInstance = OwningPxPhysicsSDK->createMaterial(StaticFriction, DynamicFriction, Restitution);
-    }
-
-    if (!PxMaterialInstance)
-    {
-        UE_LOG(LogLevel::Error, TEXT("Failed to create PxMaterial."));
-    }
+    OwningPxPhysicsSDK = InPxPhysicsSDK;
+    StaticFriction = InStaticFriction;
+    DynamicFriction = InDynamicFriction;
+    Restitution = InRestitution;
+    PxMaterialInstance = nullptr;
 }
 
 UPhysicalMaterial::~UPhysicalMaterial()
@@ -24,6 +19,12 @@ UPhysicalMaterial::~UPhysicalMaterial()
         PxMaterialInstance->release();
         PxMaterialInstance = nullptr;
     }
+}
+
+physx::PxMaterial* UPhysicalMaterial::GetPxMaterial()
+{
+    PxMaterialInstance = OwningPxPhysicsSDK->createMaterial(StaticFriction, DynamicFriction, Restitution);
+    return PxMaterialInstance;
 }
 
 float UPhysicalMaterial::GetStaticFriction() const

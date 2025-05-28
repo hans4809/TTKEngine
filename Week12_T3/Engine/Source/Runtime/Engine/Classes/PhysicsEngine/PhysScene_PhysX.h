@@ -2,18 +2,22 @@
 #include "PhysicsCore/PhysScene.h"
 #include "Math/Vector.h"
 
+class FVehicle4W;
 class UWorld;
 class UPrimitiveComponent;
 class FBodyInstance;
 class FSimulationEventCallback;
+
 namespace physx
 {
+    class PxVehicleDrive4W;
+    class PxSerializationRegistry;
     class PxPvd;
 
 };
+
 class FPhysScene_PhysX : public FPhysScene
 {
-
 public:
     FPhysScene_PhysX(physx::PxPhysics* InPxSDK, physx::PxPvd* InPvd, UWorld* InOwningWorld);
 
@@ -24,6 +28,9 @@ public:
     virtual void Shutdown() override;
     // FPhysScene 인터페이스 구현
     virtual void AddObject(FBodyInstance* BodyInstance) override;
+
+    void AddVehicle(physx::PxVehicleDrive4W* InVehicle4W) override;
+    void AddActor(physx::PxActor* InRigidActor) override;
 
     virtual void RemoveObject(FBodyInstance* BodyInstance) override;
 
@@ -50,4 +57,6 @@ private:
     physx::PxCpuDispatcher* CpuDispatcher;
 
     FSimulationEventCallback* EventCallback;
+
+    FVehicle4W* Vehicle4W;
 };

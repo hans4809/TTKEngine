@@ -84,6 +84,7 @@ void FBodyInstance::AddObject(FPhysScene* PhysScene)
 {
     PhysScene->AddObject(this);
 }
+
 physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose)
 {
     if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
