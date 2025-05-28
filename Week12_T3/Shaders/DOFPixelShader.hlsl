@@ -37,32 +37,47 @@ cbuffer FFogCameraConstant : register(b2)
 
 float CalculateCircleOfConfusion(float Depth) // Depth는 LinearDepth (미터 단위로 가정)
 {
-    if (Depth <= 0.0001f) // 물체가 카메라 위치 또는 그 뒤, 혹은 극도로 가까울 때
+    // 초점 허용 오차
+    // "거의 초점이 맞은" 영역의 선명도를 조절하려면 이 값을 변경하세요.
+    // 값이 클수록 초점 거리 주변의 더 넓은 영역이 완벽하게 선명해집니다.
+    const float FocusDepthTolerance = 5.0f; // 허용 오차
+
+    // 물체의 깊이가 (초점 거리 ± 허용 오차) 범위 내에 있다면 CoC를 0으로 강제합니다.
+    if (abs(Depth - FocusDistance) < FocusDepthTolerance)
     {
-        return (abs(Depth - FocusDistance) < 0.0001f) ? 0.0f : 0.0f;
+        return 0.0f; // 완벽히 초점이 맞은 것으로 처리
+    }
+    
+    if (Depth <= 0.0001f) 
+    {
+        return 0.0f; 
     }
     if (FocalLength <= 0.0f || Aperture <= 0.0f || SensorWidth <= 0.0f)
     {
         return 0.0f;
     }
 
-    // 초점 거리가 렌즈의 초점 길이(FocalLength)와 같거나 더 가까운 경우.
     float focusMinusFocal = FocusDistance - FocalLength;
-    if (focusMinusFocal <= 0.00001f)
+    if (focusMinusFocal <= 0.00001f) 
     {
-        if (abs(Depth - FocusDistance) < 0.0001f)
-        {
-            return 0.0f;
-        }
-        if (focusMinusFocal <= 0.0f) return MaxCoCRadius;
+        if (focusMinusFocal <= 0.0f) return MaxCoCRadius; // 초점 설정이 물리적으로 어렵거나 무한대 초점 시 예외적 블러
     }
     
+    // Numerator: |D - S| / D (단위 없음)
     float Numerator = abs(Depth - FocusDistance) / Depth;
+
+    // LensFactor: f^2 / (N * (S - f))
     float LensFactor = (FocalLength * FocalLength) / (Aperture * focusMinusFocal);
-    float SensorFactor = 1.0 / SensorWidth;
-    float RawCoC_NormalizedDiameter = Numerator * LensFactor * SensorFactor;
-    float CoC_PixelRadius = RawCoC_NormalizedDiameter * ScreenSize.x * 0.5f;
     
+    // SensorFactor: 1 / SensorWidth
+    float SensorFactor = 1.0 / SensorWidth;
+
+    // RawCoC_NormalizedDiameter: 센서 폭에 대한 CoC 직경의 비율 (단위 없음)
+    float RawCoC_NormalizedDiameter = Numerator * LensFactor * SensorFactor;
+
+    // 정규화된 CoC 직경을 픽셀 반경으로 변환
+    float CoC_PixelRadius = RawCoC_NormalizedDiameter * ScreenSize.x * 0.5f;
+
     return clamp(CoC_PixelRadius, 0.0, MaxCoCRadius);
 }
 

@@ -25,8 +25,8 @@ physx::PxMaterial* UPhysicalMaterial::GetPxMaterial()
 {
     PxMaterialInstance = OwningPxPhysicsSDK->createMaterial(StaticFriction, DynamicFriction, Restitution);
     return PxMaterialInstance;
-}
 
+}
 float UPhysicalMaterial::GetStaticFriction() const
 {
     return StaticFriction;

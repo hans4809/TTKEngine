@@ -6,6 +6,13 @@ struct ImFont;
 struct ImVec2;
 class SLevelEditor;
 
+enum class EPreviewType
+{
+    EPhysicsAsset,
+    SkeletalMesh,
+    MAX,
+};
+
 class PreviewControlEditorPanel : public UEditorPanel
 {
 public:
@@ -31,6 +38,8 @@ private:
 
     float* FOV = nullptr;
     float CameraSpeed = 0.0f;
-    float GridScale = 1.0f;  
+    float GridScale = 1.0f;
+
+    EPreviewType PreviewType = EPreviewType::EPhysicsAsset;
 };
 

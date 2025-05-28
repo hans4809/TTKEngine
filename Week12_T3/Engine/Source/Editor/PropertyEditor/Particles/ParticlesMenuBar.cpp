@@ -87,7 +87,7 @@ void ParticlesMenuBar::Render()
             for (int n = 0; n < ParticleSystems.Num(); n++)
             {
                 bool open = true;
-                FString SystemName = ParticleSystems[n]->GetDescriptor().AssetName.ToString();
+                FString SystemName = ParticleSystems[n]->GetDescriptorCopy().AssetName.ToString();
                 if (ImGui::BeginTabItem(*SystemName, &open, ImGuiTabItemFlags_None))
                 {
                     //ImGui::Text("This is the %s tab!", *SystemName);

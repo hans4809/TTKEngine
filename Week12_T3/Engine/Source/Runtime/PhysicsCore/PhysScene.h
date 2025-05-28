@@ -37,4 +37,9 @@ public:
     virtual bool RaycastSingle(const FVector& Origin, const FVector& Direction, float MaxDistance, FHitResult& OutHit,
         const physx::PxQueryFilterData& FilterData, physx::PxHitFlags InQueryFlags = physx::PxHitFlags(physx::PxHitFlag::eDEFAULT)) = 0;
     virtual void SetGravity(const FVector& NewGravity) = 0;
+    virtual physx::PxScene* GetPxScene() = 0; // PxScene 생성에 사용된 SDK
+        
+protected:
+    physx::PxScene* PxSceneInstance;
+
 };

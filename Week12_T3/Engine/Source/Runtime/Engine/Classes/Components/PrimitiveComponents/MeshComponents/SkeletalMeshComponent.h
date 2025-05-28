@@ -115,7 +115,12 @@ public:
     void SetAnimationMode(EAnimationMode InAnimationMode);
 
     EAnimationMode GetAnimationMode() const { return AnimationMode; }
+    int32 FindBodyIndex(FName BoneName) const;
+    void CreatePhysicsState();
 
+
+    void ApplyPhysicsStateToBoneTransforms();
+    void UpdateChildBoneTransformsFromPhysics(int32 ParentSkelBoneIndex);
 private:
 
     UPROPERTY(EditAnywhere, EAnimationMode, AnimationMode, = EAnimationMode::AnimationSingleNode)
@@ -132,4 +137,10 @@ protected:
     UPROPERTY(EditAnywhere, UAnimInstance*, AnimInstance, = nullptr)
     
     float animTime = 0.f;
+
+    /** Array of FBodyInstance objects, storing per-instance state about about each body. */
+    TArray<struct FBodyInstance*> Bodies;
+
+    /** Array of FConstraintInstance structs, storing per-instance state about each constraint. */
+    TArray<struct FConstraintInstance*> Constraints;
 };

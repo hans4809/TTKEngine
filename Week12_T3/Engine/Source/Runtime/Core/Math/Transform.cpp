@@ -102,7 +102,7 @@ void FTransform::ScaleTranslation(const FVector InScale3D)
     const VectorRegister4Float Translation = SSE::VectorLoadFloat3_W1(&Location.X);
     const VectorRegister4Float ScaledTranslation = SSE::VectorMultiply( Translation, VectorInScale3D );
 
-    SSE::VectorStoreFloat4(ScaledTranslation, &Location.X);
+    SSE::VectorStoreFloat3(ScaledTranslation, &Location.X);
 }
 
 FVector FTransform::GetScaledAxis(EAxis::Type InAxis)
@@ -125,12 +125,36 @@ void FTransform::RemoveScaling()
     Rotation.Normalize();
 }
 
+FTransform FTransform::Inverse() const
+{
+    // 1) 회전의 역(역사원수)
+    FQuat InvRot = Rotation.Inverse();
+    InvRot.Normalize();
+
+    // 2) 스케일의 역(0 방지)
+    FVector InvScale(
+        Scale.X != 0.f ? 1.f / Scale.X : 0.f,
+        Scale.Y != 0.f ? 1.f / Scale.Y : 0.f,
+        Scale.Z != 0.f ? 1.f / Scale.Z : 0.f
+    );
+
+    // 3) 위치 역변환: -T, 스케일 적용, 회전 적용
+    FVector InvTrans = InvRot.RotateVector(-Location * InvScale);
+
+    return FTransform(InvRot, InvTrans, InvScale);
+}
+
 FString FTransform::ToString() const
 {
     return FString::Printf(TEXT("Translation=%s Rotation=%s Scale3D=%s"), 
                       *Location.ToString(), 
                       *Rotation.ToString(), 
                       *Scale.ToString());
+}
+
+FTransform FTransform::GetRelativeTransform(const FTransform& Base) const
+{
+    return (*this) * Base.Inverse();
 }
 
 FTransform FTransform::Blend(const FTransform& Atom1, const FTransform& Atom2, float Alpha)
@@ -147,7 +171,7 @@ FTransform FTransform::Blend(const FTransform& Atom1, const FTransform& Atom2, f
 FMatrix FTransform::ToMatrixWithScale() const
 {
     FMatrix M;
-    
+   
     // Quaternion을 회전 행렬로 변환 (열 우선)
     float x2 = Rotation.X * Rotation.X;
     float y2 = Rotation.Y * Rotation.Y;
@@ -228,6 +252,105 @@ FMatrix FTransform::ToMatrixNoScale() const
     return M;
 }
 
+FMatrix FTransform::ToRowMatrixNoScale() const
+{
+    FMatrix M;
+
+    // Quaternion을 회전 행렬로 변환 (행 우선)
+    float x2 = Rotation.X * Rotation.X;
+    float y2 = Rotation.Y * Rotation.Y;
+    float z2 = Rotation.Z * Rotation.Z;
+    float xy = Rotation.X * Rotation.Y;
+    float xz = Rotation.X * Rotation.Z;
+    float yz = Rotation.Y * Rotation.Z;
+    float wx = Rotation.W * Rotation.X;
+    float wy = Rotation.W * Rotation.Y;
+    float wz = Rotation.W * Rotation.Z;
+
+    // 첫 번째 행 (X축 기저 벡터)
+    M.M[0][0] = 1.0f - 2.0f * (y2 + z2); // Xx
+    M.M[0][1] = 2.0f * (xy + wz);       // Xy
+    M.M[0][2] = 2.0f * (xz - wy);       // Xz
+    M.M[0][3] = 0.0f;
+
+    // 두 번째 행 (Y축 기저 벡터)
+    M.M[1][0] = 2.0f * (xy - wz);       // Yx
+    M.M[1][1] = 1.0f - 2.0f * (x2 + z2); // Yy
+    M.M[1][2] = 2.0f * (yz + wx);       // Yz
+    M.M[1][3] = 0.0f;
+
+    // 세 번째 행 (Z축 기저 벡터)
+    M.M[2][0] = 2.0f * (xz + wy);       // Zx
+    M.M[2][1] = 2.0f * (yz - wx);       // Zy
+    M.M[2][2] = 1.0f - 2.0f * (x2 + y2); // Zz
+    M.M[2][3] = 0.0f;
+
+    // 네 번째 행 (위치)
+    M.M[3][0] = Location.X;             // Tx
+    M.M[3][1] = Location.Y;             // Ty
+    M.M[3][2] = Location.Z;             // Tz
+    M.M[3][3] = 1.0f;
+
+    return M;
+}
+
+FMatrix FTransform::ToRowMatrixWithScale() const
+{
+    FMatrix M;
+
+    // Quaternion을 회전 행렬로 변환 및 스케일 적용 (행 우선)
+    float x2 = Rotation.X * Rotation.X;
+    float y2 = Rotation.Y * Rotation.Y;
+    float z2 = Rotation.Z * Rotation.Z;
+    float xy = Rotation.X * Rotation.Y;
+    float xz = Rotation.X * Rotation.Z;
+    float yz = Rotation.Y * Rotation.Z;
+    float wx = Rotation.W * Rotation.X;
+    float wy = Rotation.W * Rotation.Y;
+    float wz = Rotation.W * Rotation.Z;
+
+    // 첫 번째 행 (X축 기저 벡터), Scale.X 적용
+    M.M[0][0] = (1.0f - 2.0f * (y2 + z2)) * Scale.X;
+    M.M[0][1] = (2.0f * (xy + wz)) * Scale.X;
+    M.M[0][2] = (2.0f * (xz - wy)) * Scale.X;
+    M.M[0][3] = 0.0f;
+
+    // 두 번째 행 (Y축 기저 벡터), Scale.Y 적용
+    M.M[1][0] = (2.0f * (xy - wz)) * Scale.Y;
+    M.M[1][1] = (1.0f - 2.0f * (x2 + z2)) * Scale.Y;
+    M.M[1][2] = (2.0f * (yz + wx)) * Scale.Y;
+    M.M[1][3] = 0.0f;
+
+    // 세 번째 행 (Z축 기저 벡터), Scale.Z 적용
+    M.M[2][0] = (2.0f * (xz + wy)) * Scale.Z;
+    M.M[2][1] = (2.0f * (yz - wx)) * Scale.Z;
+    M.M[2][2] = (1.0f - 2.0f * (x2 + y2)) * Scale.Z;
+    M.M[2][3] = 0.0f;
+
+    // 네 번째 행 (위치) - 위치 자체는 스케일의 직접적인 영향을 받지 않음 (TRS 순서 가정)
+    M.M[3][0] = Location.X;
+    M.M[3][1] = Location.Y;
+    M.M[3][2] = Location.Z;
+    M.M[3][3] = 1.0f;
+
+    return M;
+}
+FVector FTransform::GetUnitAxis(EAxis::Type Axis) const
+{
+    {
+        // 로컬 축 벡터
+        static const FVector LocalAxes[3] = {
+            {1,0,0}, // X
+            {0,1,0}, // Y
+            {0,0,1}  // Z
+        };
+
+        FVector Local = LocalAxes[static_cast<int>(Axis)-1];
+        // 회전만 적용한 후 정규화
+        return Rotation.RotateVector(Local).GetSafeNormal();
+    }
+}
+
 bool FTransform::Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D)
 {
     VectorRegister4Float InScale = SSE::VectorLoadFloat3_W0(&InScale3D.X);
@@ -280,7 +403,6 @@ void FTransform::Multiply(FTransform* OutTransform, const FTransform* A, const F
 {
     if (Private_AnyHasNegativeScale(A->Scale, B->Scale))
     {
-        // @note, if you have 0 scale with negative, you're going to lose rotation as it can't convert back to quat
         MultiplyUsingMatrixWithScale(OutTransform, A, B);
     }
     else
@@ -294,17 +416,19 @@ void FTransform::Multiply(FTransform* OutTransform, const FTransform* A, const F
         VectorRegister4Float ScaleA = SSE::VectorLoadFloat3_W0(&A->Scale.X);
         VectorRegister4Float ScaleB = SSE::VectorLoadFloat3_W0(&B->Scale.X);
 
-        // RotationResult = B.Rotation * A.Rotation
+        // Rotation
         VectorRegister4Float ResultRotation = SSE::VectorQuaternionMultiply2(QuatB, QuatA);
-        SSE::VectorStoreFloat4(ResultRotation, &OutTransform->Rotation.X);
+        SSE::VectorStoreFloat3(ResultRotation, &OutTransform->Rotation.X);
 
+        // Translation (3채널 저장)
         VectorRegister4Float ScaledTransA = SSE::VectorMultiply(TranslateA, ScaleB);
         VectorRegister4Float RotatedTranslate = SSE::VectorQuaternionRotateVector(QuatB, ScaledTransA);
         VectorRegister4Float ResultTranslation = SSE::VectorAdd(RotatedTranslate, TranslateB);
-        SSE::VectorStoreFloat4(ResultTranslation, &OutTransform->Location.X);
+        SSE::VectorStoreFloat3(ResultTranslation, &OutTransform->Location.X);
 
+        // Scale    (3채널 저장)
         VectorRegister4Float ResultScale = SSE::VectorMultiply(ScaleA, ScaleB);
-        SSE::VectorStoreFloat4(ResultScale, &OutTransform->Scale.X);
+        SSE::VectorStoreFloat3(ResultScale, &OutTransform->Scale.X);
     }
 }
 

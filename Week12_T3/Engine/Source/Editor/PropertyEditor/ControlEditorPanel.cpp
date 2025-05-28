@@ -417,7 +417,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
                         MeshComp->ShapeType = EPhysBodyShapeType::Box;
-                        MeshComp->OnCreatePhysicsState();
+                        //MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<UBoxShapeComponent>(EComponentOrigin::Editor);
                         SpawnedActor = TempActor;
                         break;
@@ -431,7 +431,6 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Sphere.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
                         MeshComp->ShapeType = EPhysBodyShapeType::Sphere;
-                        MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<USphereShapeComponent>(EComponentOrigin::Editor);
 
                         SpawnedActor = TempActor;
@@ -446,7 +445,6 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Capsule.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
                         MeshComp->ShapeType = EPhysBodyShapeType::Sphyl;
-                        MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<UCapsuleShapeComponent>(EComponentOrigin::Editor);
 
                         SpawnedActor = TempActor;
@@ -460,7 +458,6 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("SkySphere"));
                         //FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
-                        MeshComp->OnCreatePhysicsState();
                         MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetDiffuse(FVector::OneVector);
                         MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetEmissive(FVector::OneVector);
                         TempActor->SetActorRotation(FRotator(0.0f, 0.0f, 90.0f));
@@ -478,6 +475,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     {
                         SpawnedActor = World->SpawnActor<ASkeletalMeshActor>();
                         SpawnedActor->SetActorLabel("SkeletalMesh");
+                        //SpawnedActor->GetComponentByClass<USkeletalMeshComponent>()->CreatePhysicsState();
                         break;
                     }
                     case OBJ_CHARACTER:

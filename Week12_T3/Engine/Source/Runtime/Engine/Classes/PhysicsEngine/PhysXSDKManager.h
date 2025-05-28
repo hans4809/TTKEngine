@@ -43,6 +43,7 @@ public:
     UPhysicalMaterial* GetDefaultMaterial();
     static snippetvehicle::VehicleDesc InitVehicleDesc(physx::PxMaterial* InMaterial, FVector InChassisDims);
     bool Initalize();
+    void ConnectPVD();
     void Shutdown();
     physx::PxCooking* GetCooking() const { return PxCookingInstance; }
     physx::PxPhysics* GetPhysicsSDK();

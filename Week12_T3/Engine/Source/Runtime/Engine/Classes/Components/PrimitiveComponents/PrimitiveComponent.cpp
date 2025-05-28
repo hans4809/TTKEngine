@@ -40,8 +40,6 @@ void UPrimitiveComponent::TickComponent(float DeltaTime)
 void UPrimitiveComponent::OnRegister()
 {
     Super::OnRegister();
-    OnCreatePhysicsState();
-
 }
 
 void UPrimitiveComponent::PostEditChangeProperty(const FProperty* PropertyThatChanged)
@@ -167,8 +165,7 @@ bool UPrimitiveComponent::MoveComponent(const FVector& Delta)
 
 void UPrimitiveComponent::RecreatePhysicsState()
 {
-    DestroyPhysicsState();
-    OnCreatePhysicsState();
+
 }
 
 void UPrimitiveComponent::DestroyPhysicsState()

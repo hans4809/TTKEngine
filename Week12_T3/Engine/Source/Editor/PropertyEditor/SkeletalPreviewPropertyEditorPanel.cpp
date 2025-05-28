@@ -912,7 +912,7 @@ void SkeletalPreviewPropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComp
             ? "No .fbx files" 
             : fbxFiles[currentIndex].c_str();
 
-        FString PreviewName = SkeletalMeshComp->GetSkeletalMesh()->GetDescriptor().AssetName.ToString();
+        FString PreviewName = SkeletalMeshComp->GetSkeletalMesh()->GetDescriptorCopy().AssetName.ToString();
         std::filesystem::path P = PreviewName;
         FString FileName = FString( P.filename().string() ); 
         

@@ -4,13 +4,15 @@
 #include "Vector.h"
 #include "Rotator.h"
 #include <PxTransform.h>
+
+
 class FTransform
 {
 public:
     FTransform() : Rotation(FQuat::Identity), Location(FVector::ZeroVector), Scale(FVector::OneVector) {}
     FTransform(FQuat InRotation, FVector InLocation, FVector InScale) : Rotation(InRotation), Location(InLocation), Scale(InScale) {}
     FTransform(const FMatrix& InMatrix);
-    FTransform(const  physx::PxTransform& PxTransform) 
+    FTransform(const  physx::PxTransform& PxTransform)
     {
         Location = FVector::PToFVector(PxTransform.p);
         Rotation = FQuat::PToFQuat(PxTransform.q);
@@ -37,16 +39,20 @@ public:
 
     FTransform operator*(const FTransform& transform) const;
     void operator*=(const FTransform& Other);
-    
+
     FVector InverseTransformPositionNoScale(FVector vector) const;
     FVector TransformPositionNoScale(FVector vector) const;
     FVector TransformVectorNoScale(FVector Vector) const;
     void ScaleTranslation(FVector InScale3D);
-    
+
     FVector GetScaledAxis(EAxis::Type InAxis);
     void RemoveScaling();
-    
+    /** 이 트랜스폼의 역변환을 반환합니다. */
+    FTransform Inverse() const;
+
     FString ToString() const;
+
+    FTransform GetRelativeTransform(const FTransform& Base) const;
 
     const static FTransform Identity;
 
@@ -67,14 +73,25 @@ public:
     static void MultiplyUsingMatrixWithScale(FTransform* transform, const FTransform* transform1, const FTransform* transform2);
     static void Multiply(FTransform* OutTransform, const FTransform* A, const FTransform* B);
 
-	FVector TransformVector(const FVector InVector) const;
+    FVector TransformVector(const FVector InVector) const;
 
     FVector TransformPosition(const FVector V) const;
 
-    physx::PxTransform ToPxTransform() const // const 멤버 함수로 변경
+    physx::PxTransform ToPxTransform() const
     {
-            return physx::PxTransform(Location.ToPxVec3(), Rotation.ToPxQuat());
+        physx::PxQuat pxRotation = Rotation.ToPxQuat();
+        if (!pxRotation.isUnit())
+        {
+            pxRotation.normalize(); // PxQuat 정규화
+        }
+        return physx::PxTransform(Location.ToPxVec3(), pxRotation);
     }
+    FMatrix ToRowMatrixNoScale() const;
+    FMatrix ToRowMatrixWithScale() const;
+
+    // 로컬 축을 월드 공간 단위 벡터로 반환
+    FVector GetUnitAxis(EAxis::Type Axis) const;
+    
 
 private:
     static bool Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D);

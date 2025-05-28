@@ -590,6 +590,9 @@
     <ClInclude Include="Engine\Source\Runtime\Physics\RigidBodyIndexPair.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.h" />
     <ClInclude Include="Engine\Source\Editor\UnrealEd\Utils\EditorPreviewUtils.h" />
+    <ClInclude Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\DepthOfFieldRenderPass.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysicsAssetTypes.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Animation\UAnimationFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Material\UMaterialFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.h" />
@@ -1119,6 +1122,8 @@
     <ClCompile Include="Engine\Source\ThirdParty\PhysX\include\snippets\snippetvehiclecommon\SnippetVehicleSceneQuery.cpp" />
     <ClCompile Include="Engine\Source\ThirdParty\PhysX\include\snippets\snippetvehiclecommon\SnippetVehicleTankCreate.cpp" />
     <ClCompile Include="Engine\Source\ThirdParty\PhysX\include\snippets\snippetvehiclecommon\SnippetVehicleTireFriction.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\DepthOfFieldRenderPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

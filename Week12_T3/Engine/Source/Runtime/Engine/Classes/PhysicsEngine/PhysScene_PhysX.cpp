@@ -42,7 +42,7 @@ bool FPhysScene_PhysX::Initialize()
 
     physx::PxSceneDesc sceneDesc(PxSDK->getTolerancesScale());
 
-    sceneDesc.gravity = physx::PxVec3(0.0f, 0.f, -0.18f);
+    sceneDesc.gravity = physx::PxVec3(0.0f, 0.f, -30.8f);
 
     unsigned int numCores = std::thread::hardware_concurrency();
 
@@ -182,7 +182,7 @@ void FPhysScene_PhysX::RemoveObject(FBodyInstance* BodyInstance)
 
 void FPhysScene_PhysX::Simulate(float DeltaTime)
 {
-    if (DeltaTime < 0) return;
+    if (DeltaTime <= 0) return;
 
     if (Vehicle4W)
     {
@@ -239,6 +239,11 @@ void FPhysScene_PhysX::SetGravity(const FVector& NewGravity)
     {
         UE_LOG(LogLevel::Warning, TEXT("FPhysScene_PhysX::SetGravity: PxSceneInstance is null."));
     }
+}
+
+physx::PxScene* FPhysScene_PhysX::GetPxScene()
+{
+    return PxSceneInstance;
 }
 
 physx::PxU32 FPhysScene_PhysX::GetNbActors(physx::PxActorTypeFlags Flags) const

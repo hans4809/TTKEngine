@@ -140,6 +140,6 @@ public:
     bool DeserializeFromFile(std::istream& In) override;
     void PostLoad() override;
 
-private:
+    void GetBodySetups(TArray<class UBodySetup*>& OutBodySetup) const;
     UPROPERTY(EditAnywhere, TArray<UBodySetup*>, BodySetups, = {})
 };

@@ -275,6 +275,26 @@ bool FQuat::operator==(const FQuat& Other) const
     return bNegatedEqual;
 }
 
+FQuat FQuat::Inverse() const
+{
+    const float NormSq = X * X + Y * Y + Z * Z + W * W;
+
+    // 노름이 너무 작으면 단위(quaternion identity)로 대체
+    if (FMath::IsNearlyZero(NormSq))
+    {
+        return FQuat::Identity;
+    }
+
+    // 쿼터니언의 역은 켤레(conjugate) 나누 노름 제곱
+    const float InvNormSq = 1.0f / NormSq;
+    return FQuat{
+         W * InvNormSq,
+        -X * InvNormSq,
+        -Y * InvNormSq,
+        -Z * InvNormSq
+    };
+}
+
 FQuat FQuat::PToFQuat(physx::PxQuat InPxQuat)
 {
     return FQuat(InPxQuat.w, InPxQuat.x, InPxQuat.y, InPxQuat.z);
