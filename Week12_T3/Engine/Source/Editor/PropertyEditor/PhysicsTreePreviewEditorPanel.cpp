@@ -97,6 +97,8 @@ void PhysicsTreePreviewEditorPanel::OnResize(HWND hWnd)
 
 void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkeletal, int32 BoneIndex, const TArray<FBoneNode>& BoneTree, const TArray<FBone>& RawBones, UPhysicsAsset* PhysicsAsset)
 {
+    TArray<UBodySetup*> BodySetups;
+    PhysicsAsset->GetBodySetups(BodySetups);
     const FBone& Bone = RawBones[BoneIndex];
     std::stringstream ss;
     ss << Bone.BoneName.ToAnsiString() << "##Bone" << BoneIndex;
@@ -160,7 +162,7 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
         ImGui::TreePop();
 
         // primitives inside body
-        UBodySetup* BS = PhysicsAsset->BodySetups[BodyIdx];
+        UBodySetup* BS = BodySetups[BodyIdx];
         // spheres
 
         

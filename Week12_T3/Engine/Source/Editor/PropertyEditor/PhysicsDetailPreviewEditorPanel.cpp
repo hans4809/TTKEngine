@@ -69,7 +69,11 @@ void PhysicsDetailPreviewEditorPanel::Render()
         ImGui::End();
         return;
     }
+   
+    TArray<UBodySetup*> BodySetups;
+    PhysicsAsset->GetBodySetups(BodySetups);
 
+    
     /* Pre Setup */
     float PanelWidth = (Width) * 0.2f - 6.0f;
     float PanelHeight = (Height) * 0.65f;
@@ -98,6 +102,7 @@ void PhysicsDetailPreviewEditorPanel::Render()
     using EType = EPhysicsNodeType;
     EType Type = PhysicsTreePreviewEditorPanel::SelectedType;
 
+    
     switch (PhysicsTreePreviewEditorPanel::SelectedType) {
     case EType::Bone:
     {
@@ -112,7 +117,7 @@ void PhysicsDetailPreviewEditorPanel::Render()
     }
     case EType::Body:
     {
-        UBodySetup* Body = PhysicsAsset->BodySetups[PhysicsTreePreviewEditorPanel::SelectedBodyIndex];
+        UBodySetup* Body = BodySetups[PhysicsTreePreviewEditorPanel::SelectedBodyIndex];
         DrawPropertiesForObject(Body);
         break;
     }
