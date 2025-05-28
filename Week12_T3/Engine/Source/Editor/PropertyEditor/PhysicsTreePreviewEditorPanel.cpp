@@ -6,7 +6,8 @@
 #include "Physics/PhysicsAsset.h"
 #include "Physics/PhysicsConstraintTemplate.h"
 #include "Classes/Animation/Skeleton.h"
-
+#include <Engine/Texture.h>
+#include "Engine/Asset/AssetManager.h"
 EPhysicsNodeType PhysicsTreePreviewEditorPanel::SelectedType = EPhysicsNodeType::None;
 int32 PhysicsTreePreviewEditorPanel::SelectedBoneIndex = -1;
 int32 PhysicsTreePreviewEditorPanel::SelectedConstraintIndex = -1;
@@ -116,6 +117,11 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
     }
 
+    ID3D11ShaderResourceView* BoneIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Bone_16x"))->TextureSRV;
+    const ImTextureID BoneIcon = reinterpret_cast<ImTextureID>(BoneIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+    ImGui::Image(BoneIcon, ImVec2(16, 16));
+    ImGui::SameLine();
     bool bOpen = ImGui::TreeNodeEx(ss.str().c_str(), BoneFlags);
 
     if (isSelected) {
@@ -147,6 +153,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
             ImGui::PushStyleColor(ImGuiCol_HeaderHovered, HighlightColor);
             ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
         }
+
+        ID3D11ShaderResourceView* BodyIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Body_16x"))->TextureSRV;
+        const ImTextureID BodyIcon = reinterpret_cast<ImTextureID>(BodyIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+        ImGui::Image(BodyIcon, ImVec2(16, 16));
+        ImGui::SameLine();
 
         ImGui::TreeNodeEx(BLabel.c_str(), BodyFlags);
 
@@ -209,6 +221,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
 
+            ID3D11ShaderResourceView* SphereIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Sphere_16px"))->TextureSRV;
+            const ImTextureID SphereIcon = reinterpret_cast<ImTextureID>(SphereIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(SphereIcon, ImVec2(16, 16));
+            ImGui::SameLine();
+
             ImGui::TreeNodeEx(PLabel.c_str(), PrimitiveFlags);
 
             if (isSelected) {
@@ -257,6 +275,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderHovered, HighlightColor);
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
+
+            ID3D11ShaderResourceView* BoxIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("box_16px"))->TextureSRV;
+            const ImTextureID BoxIcon = reinterpret_cast<ImTextureID>(BoxIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(BoxIcon, ImVec2(16, 16));
+            ImGui::SameLine();
 
             ImGui::TreeNodeEx(PLabel.c_str(), ImGuiTreeNodeFlags_Leaf);
 
@@ -308,6 +332,11 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
 
+            ID3D11ShaderResourceView* SphylIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Sphyl_16x"))->TextureSRV;
+            const ImTextureID SphylIcon = reinterpret_cast<ImTextureID>(SphylIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(SphylIcon, ImVec2(16, 16));
+            ImGui::SameLine();
 
             ImGui::TreeNodeEx(PLabel.c_str(), PrimitiveFlags);
 
@@ -392,6 +421,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
 
+            ID3D11ShaderResourceView* ConstIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Constraint_16x"))->TextureSRV;
+            const ImTextureID ConstIcon = reinterpret_cast<ImTextureID>(ConstIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(ConstIcon, ImVec2(16, 16));
+            ImGui::SameLine();
+            
             ImGui::TreeNodeEx(CLabel.c_str(), ConstraintFlags);
 
             if (isSelected) {
