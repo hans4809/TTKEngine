@@ -101,33 +101,33 @@ void VehicleSetUpdateMode(PxVehicleUpdateMode::Enum vehicleUpdateMode)
     }
 }
 
-VehicleDesc FPhysXSDKManager::InitVehicleDesc(physx::PxMaterial* InMaterial)
+VehicleDesc FPhysXSDKManager::InitVehicleDesc(physx::PxMaterial* InMaterial, const FVector InChassisDims)
 {
-    //Set up the chassis mass, dimensions, moment of inertia, and center of mass offset.
-    //The moment of inertia is just the moment of inertia of a cuboid but modified for easier steering.
-    //Center of mass offset is 0.65m above the base of the chassis and 0.25m towards the front.
-    const PxF32 chassisMass = 1500.0f;
-    // 원래 (length, width, height) 라고 생각했지만
-    // 실제 구현은 (width, length, height) 로 읽으므로 이렇게 바꿔야 앞뒤가 길어진다.
-    const PxVec3 chassisDims = PxVec3(
-        /* X=차량 폭(좌우) */  2.5f,
-        /* Y=차량 길이(앞뒤) */ 5.0f,
-        /* Z=높이(위아래) */     2.0f
-    );
+    // 1) 차체 파라미터
+    const PxF32 chassisMass = 10.0f;
+    const PxF32 length      = InChassisDims.X;
+    const PxF32 width       = InChassisDims.Y;
+    const PxF32 height      = InChassisDims.Z;
+
+    const PxVec3 chassisDims = PxVec3(width, length, height);
+
     const PxVec3 chassisMOI
         ((chassisDims.y*chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 12.0f,
          (chassisDims.x*chassisDims.x + chassisDims.z * chassisDims.z) * 0.8f * chassisMass / 12.0f,
          (chassisDims.x*chassisDims.x + chassisDims.y * chassisDims.y) * chassisMass / 12.0f);
     const PxVec3 chassisCMOffset(0.25f, 0.0f, -chassisDims.z * 0.5f + 0.65f);
 
-    //Set up the wheel mass, radius, width, moment of inertia, and number of wheels.
-    //Moment of inertia is just the moment of inertia of a cylinder.
-    const PxF32 wheelMass = 20.0f;
-    const PxF32 wheelRadius = 0.5f;
-    const PxF32 wheelWidth = 0.4f;
-    const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
     // 가운데 바퀴 빼고 4륜만 쓸 거면 이걸 4로!
     const PxU32 nbWheels = 4;
+    
+    // 반경: 전장 1/10
+    const PxF32 wheelRadius = length * 0.1f;
+    // 너비: 전폭 1/8
+    const PxF32 wheelWidth  = width  * 0.125f;
+    // 질량: 차체 질량 / 휠 개수 × 0.5 (임의 계수, 필요 시 튜닝)
+    const PxF32 wheelMass   = (chassisMass / nbWheels) * 0.5f;
+    // 관성모멘트(원통 가정)
+    const PxF32 wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius;
 
     VehicleDesc vehicleDesc;
 

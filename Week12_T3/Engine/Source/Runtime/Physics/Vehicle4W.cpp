@@ -95,7 +95,7 @@ void SetupWheelsSimulationData(
         wheelCenterActorOffsets,
         chassisCMOffset,
         chassisMass,
-        1,
+        2,
         suspSprungMasses);
 
     PxVehicleSuspensionData suspensions[PX_MAX_NB_WHEELS];

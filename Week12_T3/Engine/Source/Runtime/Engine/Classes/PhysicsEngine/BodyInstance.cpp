@@ -20,9 +20,11 @@ FBodyInstance::FBodyInstance()
     , CurrentBodyType(EPhysBodyType::Static)
 {
 }
+
 FBodyInstance::~FBodyInstance()
 {
 }
+
 void FBodyInstance::Initialize(UPrimitiveComponent* InOwnerComponent, physx::PxPhysics* InPxPhysicsSDK)
 {
     OwnerComponent = InOwnerComponent;
@@ -30,6 +32,7 @@ void FBodyInstance::Initialize(UPrimitiveComponent* InOwnerComponent, physx::PxP
     assert(OwnerComponent != nullptr && "OwnerComponent cannot be null in FBodyInstance constructor");
     assert(PxPhysicsSDK != nullptr && "PxPhysicsSDK cannot be null in FBodyInstance constructor");
 }
+
 bool FBodyInstance::CreatePhysicsState(const FTransform& InitialTransform, EPhysBodyType BodyType)
 {
     if (PxActor)

@@ -67,6 +67,9 @@ public:
     virtual void RecreatePhysicsState();
     virtual void DestroyPhysicsState();
     virtual void OnCreatePhysicsState();
+
+    void InitializeBodyInstance();
+    FBodyInstance& GetBodyInstance() { return BodyInstance; }
 public:
 
     std::unique_ptr<FActorComponentInfo> GetComponentInfo() override;

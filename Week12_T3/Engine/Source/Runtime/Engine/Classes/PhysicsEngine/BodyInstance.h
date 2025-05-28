@@ -1,4 +1,6 @@
 #pragma once
+#include "PxRigidActor.h"
+#include "PxVehicleDrive4W.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
@@ -8,6 +10,7 @@
 
 namespace physx 
 {
+    class PxVehicleDrive4W;
     class PxRigidActor;
     class PxShape;
     class PxPhysics;
@@ -77,6 +80,18 @@ public:
     UPrimitiveComponent* GetOwnerComponent() const { return OwnerComponent; }
 
     bool IsPhysicsStateCreated() const { return PxActor != nullptr; }
+
+    void SetVehicle(physx::PxVehicleDrive4W* InVehicle)
+    {
+        PxActor = InVehicle->getRigidDynamicActor();
+        PxActor->userData = this;
+    }
+
+    void SetRigidActor(physx::PxRigidActor* InPxActor)
+    {
+        PxActor = InPxActor;
+        PxActor->userData = this;
+    }
 
 private:
     UPrimitiveComponent* OwnerComponent;   // 이 FBodyInstance를 소유하는 UPrimitiveComponent

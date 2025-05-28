@@ -15,6 +15,7 @@
 
 #include "LaunchEngineLoop.h"
 #include "ShowFlags.h"
+#include "Actors/APhysicsVehicleActor.h"
 #include "Actors/APostProcessVolume.h"
 #include "Engine/FBXLoader.h"
 #include "Actors/SkeletalMeshActor.h"
@@ -38,6 +39,8 @@
 #include "Animation/CustomAnimInstance/TestAnimInstance.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Font/IconDefs.h"
+#include "Physics/Vehicle4W.h"
+#include "PhysicsCore/PhysScene.h"
 
 void ControlEditorPanel::Initialize(SLevelEditor* LevelEditor, float Width, float Height)
 {
@@ -342,6 +345,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { "Shapes", "Sphere",          OBJ_SPHERE },
             { "Shapes", "Capsule",         OBJ_CAPSULE },
             { "Shapes", "Car (Dodge)",     OBJ_CAR },
+            {"Shapes", "Vehicle", OBJ_VEHICLE },
             { "Shapes", "SkySphere",       OBJ_SKYSPHERE},
             { "Shapes", "SkeletalMesh",    OBJ_SKELETAL},
             {"Shapes", "Character",           OBJ_CHARACTER},
@@ -557,7 +561,14 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         SpawnedActor = TempActor;
                         break;
                     }
-
+                    case OBJ_VEHICLE:
+                    {
+                        APhysicsVehicleActor* TempActor = World->SpawnActor<APhysicsVehicleActor>();
+                        TempActor->Init();
+                        TempActor->GetWorld()->GetPhysicsScene()->AddVehicle(TempActor->GetVehicle4W()->GetVehicle());
+                        TempActor->SetActorLabel(TEXT("OBJ_VEHICLE"));
+                        break;
+                    }
                     case OBJ_POSTPROCESS:
                     {
                         APostProcessVolume* TempActor = World->SpawnActor<APostProcessVolume>();

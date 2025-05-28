@@ -62,13 +62,6 @@ void UWorld::InitWorld()
         UE_LOG(LogLevel::Error, "FATAL ERROR: UWorld::InitWorld - Failed to initialize physics scene!");
     }
     
-    FVehicle4W* vehicle = new FVehicle4W();
-
-    FPhysXSDKManager* sdkManager = &FPhysXSDKManager::GetInstance();
-    const snippetvehicle::VehicleDesc desc = FPhysXSDKManager::InitVehicleDesc(sdkManager->GetDefaultMaterial()->GetPxMaterial());
-    vehicle->Initialize(desc, sdkManager->GetPhysicsSDK(), sdkManager->GetCooking());
-    CurrentPhysicsScene->AddVehicle(vehicle->GetVehicle());
-
     /*if (WorldType == EWorldType::Editor)
     {
         LoadScene("NewScene.scene");

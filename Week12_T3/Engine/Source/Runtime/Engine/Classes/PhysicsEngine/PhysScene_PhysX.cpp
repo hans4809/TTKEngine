@@ -133,6 +133,11 @@ void FPhysScene_PhysX::AddObject(FBodyInstance* BodyInstance)
 
         if (ActorToAdd)
         {
+            physx::PxScene* oldScene = ActorToAdd->getScene();
+            if (oldScene)
+            {
+                oldScene->removeActor(*ActorToAdd);
+            }
             PxSceneInstance->addActor(*ActorToAdd);
         }
         else

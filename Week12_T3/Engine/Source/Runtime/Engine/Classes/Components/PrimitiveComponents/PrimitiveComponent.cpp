@@ -180,6 +180,11 @@ void UPrimitiveComponent::OnCreatePhysicsState()
 {
 }
 
+void UPrimitiveComponent::InitializeBodyInstance()
+{
+    BodyInstance.Initialize(this, FPhysXSDKManager::GetInstance().GetPhysicsSDK());
+}
+
 std::unique_ptr<FActorComponentInfo> UPrimitiveComponent::GetComponentInfo()
 {
     auto Info = std::make_unique<FPrimitiveComponentInfo>();

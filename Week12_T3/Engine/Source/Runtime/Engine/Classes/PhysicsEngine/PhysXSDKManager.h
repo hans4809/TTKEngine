@@ -9,6 +9,7 @@
 #include <PxDefaultAllocator.h>
 #include <PxDefaultErrorCallback.h>
 
+#include "Math/Vector.h"
 #include "snippets/snippetvehiclecommon/SnippetVehicleCreate.h"
 
 namespace snippetvehicle
@@ -40,7 +41,7 @@ public:
         return Inst;
     }
     UPhysicalMaterial* GetDefaultMaterial();
-    static snippetvehicle::VehicleDesc InitVehicleDesc(physx::PxMaterial* InMaterial);
+    static snippetvehicle::VehicleDesc InitVehicleDesc(physx::PxMaterial* InMaterial, FVector InChassisDims);
     bool Initalize();
     void Shutdown();
     physx::PxCooking* GetCooking() const { return PxCookingInstance; }
