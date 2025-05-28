@@ -40,7 +40,7 @@ public:
 
     bool InitializePhysicsScene(); // 물리 씬 초기화
     void ShutdownPhysicsScene();  // 물리 씬 종료
-    FPhysScene* GetPhysicsScene() const;
+    FPhysScene* GetPhysicsScene();
 
     void Release();
     void LoadScene(const FString& FileName);

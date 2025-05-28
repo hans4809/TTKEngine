@@ -37,6 +37,8 @@ public:
     virtual physx::PxU32 GetNbActors(physx::PxActorTypeFlags Flags) const override;
 
     virtual void GetActors(physx::PxActorTypeFlags Flags, physx::PxActor** OutActors, physx::PxU32 MaxCount) const override;
+
+    virtual physx::PxScene* GetPxScene() override;
 private:
 
     physx::PxPhysics* PxSDK; // PxScene 생성에 사용된 SDK
@@ -45,8 +47,7 @@ private:
 
     UWorld* OwningEngineWorld;     // 이 씬을 사용하는 엔진 월드
 
-    physx::PxScene* PxSceneInstance;
-
+ 
     physx::PxCpuDispatcher* CpuDispatcher;
 
     FSimulationEventCallback* EventCallback;

@@ -17,6 +17,7 @@ FBodyInstance::FBodyInstance()
     : OwnerComponent(nullptr)
     , PxPhysicsSDK(nullptr)
     , PxActor(nullptr)
+    , DefaultPhysicalMaterial(nullptr)
     , CurrentBodyType(EPhysBodyType::Static)
 {
 }
@@ -71,6 +72,10 @@ bool FBodyInstance::CreatePhysicsState(const FTransform& InitialTransform, EPhys
     return true;
 }
 
+void FBodyInstance::InitConstraint(FBodyInstance InBody1, FBodyInstance InBody2)
+{
+}
+
 void FBodyInstance::ReleasePhysicsState()
 {
     if (PxActor)
@@ -84,21 +89,28 @@ void FBodyInstance::AddObject(FPhysScene* PhysScene)
 {
     PhysScene->AddObject(this);
 }
-physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& LocalPose)
+physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& Transform)
 {
     if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
     {
-        UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxActor, SDK, Material, or PxMaterial."));
+        if (!PxActor)
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxActor."));
+        if (!PxPhysicsSDK)
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid SDK."));
+        if (!Material)
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid Material"));
+        if (!Material->GetPxMaterial())
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxMaterial."));
         return nullptr;
     }
 
     physx::PxBoxGeometry BoxGeom(HalfExtents.ToPxVec3());
     physx::PxShapeFlags shapeFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSIMULATION_SHAPE);
     physx::PxShape* NewShape = PxPhysicsSDK->createShape(BoxGeom, *Material->GetPxMaterial(), true, shapeFlags);
-    
+
     if (NewShape)
     {
-        NewShape->setLocalPose(LocalPose.ToPxTransform());
+        NewShape->setLocalPose(Transform.ToPxTransform());
         physx::PxFilterData filterData;
         filterData.word0 = 1;   // 예: 그룹 1
         filterData.word1 = 0xFFFFFFFF; // 모든 그룹과 충돌
@@ -115,7 +127,7 @@ physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysi
     return NewShape;
 }
 
-physx::PxShape* FBodyInstance::AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& LocalPose)
+physx::PxShape* FBodyInstance::AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& Transform)
 {
     if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
     {
@@ -129,7 +141,7 @@ physx::PxShape* FBodyInstance::AddSphereGeometry(float Radius, UPhysicalMaterial
 
     if (NewShape)
     {
-        NewShape->setLocalPose(LocalPose.ToPxTransform());
+        NewShape->setLocalPose(Transform.ToPxTransform());
         physx::PxFilterData filterData;
         filterData.word0 = 1;   // 예: 그룹 1
         filterData.word1 = 0xFFFFFFFF; // 모든 그룹과 충돌
@@ -146,7 +158,7 @@ physx::PxShape* FBodyInstance::AddSphereGeometry(float Radius, UPhysicalMaterial
     return NewShape;
 }
 
-physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& LocalPose)
+physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& Transform)
 {
     if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
     {
@@ -154,28 +166,25 @@ physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight
         return nullptr;
     }
 
-    physx::PxCapsuleGeometry CapsuleGeom(Radius,HalfHeight);
+    physx::PxCapsuleGeometry CapsuleGeom(Radius, HalfHeight);
     physx::PxShapeFlags shapeFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSIMULATION_SHAPE);
     physx::PxShape* NewShape = PxPhysicsSDK->createShape(CapsuleGeom, *Material->GetPxMaterial(), true, shapeFlags);
 
     if (NewShape)
     {
         FQuat PhysXCapsuleAxisAlignmentFix = FQuat(FVector::YAxisVector, FMath::DegreesToRadians(-90.0f));
-        FTransform FinalShapeLocalPose;
-        FinalShapeLocalPose.SetLocation(LocalPose.GetLocation());
-        
-        FinalShapeLocalPose.SetRotation(LocalPose.GetRotation() * PhysXCapsuleAxisAlignmentFix);
-        FinalShapeLocalPose.SetScale(LocalPose.GetScale());
+        FTransform FinalShapeLocalPxPose = Transform;
+        FinalShapeLocalPxPose.SetRotation(Transform.GetRotation() * PhysXCapsuleAxisAlignmentFix);
+        physx::PxTransform ShapeGlobal = FinalShapeLocalPxPose.ToPxTransform();
 
-        NewShape->setLocalPose(FinalShapeLocalPose.ToPxTransform()); // 수정된 로컬 포즈 사용
 
+        NewShape->setLocalPose(ShapeGlobal);
         physx::PxFilterData filterData;
         filterData.word0 = 1;   // 예: 그룹 1
-        filterData.word1 = 0xFFFFFFFF; // 모든 그룹과 충돌
+        filterData.word1 = 2;//0xFFFFFFFF; // 모든 그룹과 충돌
         NewShape->setSimulationFilterData(filterData);
         PxActor->attachShape(*NewShape);
         NewShape->release();
-        UpdateMassAndInertia(10);
     }
     else
     {
@@ -184,7 +193,7 @@ physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight
     return NewShape;
 }
 
-physx::PxShape* FBodyInstance::AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& LocalPose)
+physx::PxShape* FBodyInstance::AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& Transform, const FVector& Scale)
 {
     if (!PxActor || !PxPhysicsSDK || !CookedMesh)
     {
@@ -193,7 +202,7 @@ physx::PxShape* FBodyInstance::AddConvexGeometry(physx::PxConvexMesh* CookedMesh
     }
 
     // 컨벡스 메시에 대한 스케일링은 PxMeshScale을 사용
-    physx::PxMeshScale MeshScale(FVector::OneVector.ToPxVec3());
+    physx::PxMeshScale MeshScale(Scale.ToPxVec3());
     physx::PxConvexMeshGeometry ConvexGeom(CookedMesh, MeshScale);
 
     physx::PxShapeFlags shapeFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSIMULATION_SHAPE);
@@ -201,11 +210,7 @@ physx::PxShape* FBodyInstance::AddConvexGeometry(physx::PxConvexMesh* CookedMesh
 
     if (NewShape)
     {
-        FTransform PoseWithoutScale = LocalPose;
-        PoseWithoutScale.SetScale(FVector::OneVector);
-        NewShape->setLocalPose(PoseWithoutScale.ToPxTransform());
-
-        // ... (FilterData 설정 등) ...
+        NewShape->setLocalPose(Transform.ToPxTransform());
         PxActor->attachShape(*NewShape);
         NewShape->release();
     }
@@ -291,7 +296,19 @@ physx::PxFilterData FBodyInstance::GetSimulationFilterData() const
 
 FTransform FBodyInstance::GetGlobalPose() const
 {
-    return FTransform();
+    if (PxActor)
+    {
+        physx::PxTransform PxPose = PxActor->getGlobalPose();
+        
+        FQuat Rotation = FQuat::PToFQuat(PxPose.q); 
+        
+        Rotation.Normalize();
+        
+        return FTransform(Rotation, FVector::PToFVector(PxPose.p), FVector::OneVector);
+    }
+
+    return FTransform::Identity; // PxActor가 없으면 단위 행렬 반환
+
 }
 
 void FBodyInstance::SetGlobalPose(const FTransform& NewTransform, bool bAutoWake)
