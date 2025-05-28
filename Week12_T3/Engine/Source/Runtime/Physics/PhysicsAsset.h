@@ -48,8 +48,6 @@ public:
      */
     TMap<FRigidBodyIndexPair, bool> CollisionDisableTable;
 
-    TArray<class UBodySetup*> BodySetups;
-
 public:
     void Initialize();
     
@@ -135,5 +133,7 @@ public:
     
     /* Constraint 재귀 생성*/
     void GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal, int32 ParentBoneIndex);
-    
+    void GetBodySetups(TArray<class UBodySetup*>& OutBodySetup) const;
+private:
+    TArray<class UBodySetup*> BodySetups;
 };
