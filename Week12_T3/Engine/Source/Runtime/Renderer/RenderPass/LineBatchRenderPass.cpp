@@ -151,6 +151,27 @@ void FLineBatchRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
             const int32 BoneIndex = SkelComp->GetBoneIndex(BodySetup->BoneName);
             const FTransform BoneWorldTM = SkelComp->GetBoneTransform(BoneIndex);
 
+            for (const FKSphereElem& Sphere : BodySetup->AggGeom.SphereElems)
+            {
+                FTransform BoneLocalTM = SkelComp->GetBoneTransform(BoneIndex);
+
+
+
+
+                // HalfHeight, Radius 계산
+                float Radius = Sphere.Radius;
+
+                // 최종 월드 위치 (회전된 캡슐 중심)
+
+                FVector LocalCenter = Sphere.Center;
+                FVector WorldCenter = BoneWorldTM.TransformPosition(LocalCenter);
+
+
+                // 기즈모로 캡슐 추가
+                //PrimitiveBatch.AddCapsule(WorldCenter, UpAxis, HalfHeight, Radius, FVector4(0, 1, 0, 0.5f));
+                PrimitiveBatch.AddSphere(WorldCenter, Radius, FVector4(0, 1, 0, 0.5f));
+            }
+
             // 3) 이 바디의 캡슐 요소들 순회
             for (const FKSphylElem& Sphyl : BodySetup->AggGeom.SphylElems)
             {
@@ -178,6 +199,25 @@ void FLineBatchRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
                 // 기즈모로 캡슐 추가
                 PrimitiveBatch.AddCapsule(WorldCenter, UpAxis, HalfHeight, Radius, FVector4(0, 1, 0, 0.5f));
             }
+
+            for (const FKBoxElem& Box : BodySetup->AggGeom.BoxElems)
+            {
+
+                FTransform LocalXF = Box.GetTransform();
+
+                FTransform WorldXF = BoneWorldTM * LocalXF;
+
+                FBoundingBox LocalAABB(
+                    FVector(-Box.X, -Box.Y, -Box.Z),
+                    FVector(Box.X, Box.Y, Box.Z)
+                );
+
+                FMatrix ModelMatrix = WorldXF.ToMatrixWithScale();
+                FVector WorldCenter = WorldXF.GetLocation();
+                
+                PrimitiveBatch.AddOBB(LocalAABB, WorldCenter, ModelMatrix);
+            }
+
         }
 
         for (UPhysicsConstraintTemplate* CT : PhysAsset->ConstraintSetup)
@@ -200,12 +240,6 @@ void FLineBatchRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
                 PA.Distance(PB),
                 FVector4(1, 1, 0, 1)  // 노란색 불투명
             );
-
-            //// (선택) 로컬 축
-            //constexpr float AxisLen = 15.f;
-            //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::X), AxisLen, FVector4(1, 0, 0, 1));
-            //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::Y), AxisLen, FVector4(0, 1, 0, 1));
-            //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::Z), AxisLen, FVector4(0, 0, 1, 1));
         }
     }
 
