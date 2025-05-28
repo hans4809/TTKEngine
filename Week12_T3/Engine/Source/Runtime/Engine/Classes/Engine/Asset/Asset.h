@@ -31,7 +31,24 @@ class UAsset : public UObject
 public:
     UAsset();
     virtual ~UAsset() = default;
-    FAssetDescriptor& GetDescriptor() { return Descriptor; }
+    // 1) 수정 가능한 참조 반환
+    FAssetDescriptor& GetDescriptor() 
+    { 
+        return Descriptor; 
+    }
+
+    // 2) 읽기 전용(상수) 참조 반환
+    const FAssetDescriptor& GetDescriptor() const 
+    { 
+        return Descriptor; 
+    }
+
+    // 3) 값 복사 반환 (원본 건드리지 않고 사본만 필요할 때)
+    FAssetDescriptor GetDescriptorCopy() const 
+    { 
+        return Descriptor; 
+    }
+    
     virtual bool LoadFromFile(const FString& filepath) { return true; }
 
     virtual bool SerializeToFile(std::ostream& Out) { return true; }

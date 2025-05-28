@@ -50,6 +50,8 @@ public:
     using FRigidBodyIndexPairToboolMapType = TMap<FRigidBodyIndexPair, bool>;
     UPROPERTY(EditAnywhere, FRigidBodyIndexPairToboolMapType, CollisionDisableTable, = {})
 
+    UPROPERTY(EditAnywhere, TArray<UBodySetup*>, BodySetups, = {})
+
 public: 
     void Initialize();
     

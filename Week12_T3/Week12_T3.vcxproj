@@ -647,6 +647,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Launch\ShowFlags.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\PlayerCameraManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\AssetManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysicsAssetTypes.h" />
     <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysicsFilterData.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\AggregateGeom.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.h" />

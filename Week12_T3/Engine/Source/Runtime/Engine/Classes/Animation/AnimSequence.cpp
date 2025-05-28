@@ -1,6 +1,6 @@
 #include "AnimSequence.h"
-#include "CoreUObject/UObject/Casts.h"
-#include "Engine/Asset/AssetManager.h"
+#include "AnimData/AnimDataModel.h"
+
 
 void UAnimSequence::PostDuplicate()
 {
@@ -8,6 +8,7 @@ void UAnimSequence::PostDuplicate()
 
 bool UAnimSequence::LoadFromFile(const FString& FilePath)
 {
+    DataModel = FObjectFactory::ConstructObject<UAnimDataModel>(this);
     if (FFBXLoader::ParseAnimationFromFBX(FilePath, DataModel) == false)
         return false;
 

@@ -454,7 +454,6 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("SkySphere"));
                         //FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
-                        MeshComp->OnCreatePhysicsState();
                         MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetDiffuse(FVector::OneVector);
                         MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetEmissive(FVector::OneVector);
                         TempActor->SetActorRotation(FRotator(0.0f, 0.0f, 90.0f));

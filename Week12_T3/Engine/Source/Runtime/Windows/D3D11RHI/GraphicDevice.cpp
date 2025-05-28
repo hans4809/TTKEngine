@@ -286,12 +286,12 @@ void FGraphicsDevice::ReleaseDevice()
 
 void FGraphicsDevice::CreateFrameBuffer(const HWND hWindow)
 {
-    ReleaseFrameBuffer(hWindow);
-
     if (!SwapChains.Contains(hWindow))
     {
         return;
     }
+    
+    ReleaseFrameBuffer(hWindow);
 
     FWindowData& WindowData = SwapChains[hWindow];
     WindowData.SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&WindowData.FrameBuffer));
@@ -430,6 +430,10 @@ void FGraphicsDevice::Release()
 
 void FGraphicsDevice::SwapBuffer(HWND AppWnd) const
 {
+    if (!SwapChains.Contains(AppWnd))
+    {
+        return;
+    }
     SwapChains[AppWnd].SwapChain->Present(0, 0);
     // PingPong 버퍼 교체 - 다음 프레임에서는 이전 프레임의 결과를 입력으로 사용할 수 있음
 }

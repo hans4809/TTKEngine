@@ -151,7 +151,10 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
         std::lock_guard<std::mutex> lock(Mutex);
         if (UAsset** Cached = LoadedAssets.Find(BaseName))
         {
-            return *Cached;
+            if ((*Cached)->GetClass() == ClassType)
+            {
+                return *Cached;
+            }
         }
     }
 
@@ -166,7 +169,7 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
     if (ext == ".ttalkak")
     {
         UObject* Raw = Serializer::LoadFromFile(fsPath);
-        Asset = Cast<UAsset>(Raw);
+        Asset = static_cast<UAsset*>(Raw);
         Asset->PostLoad();
     }
     // 4) 그 외 포맷 → 팩토리 임포트
@@ -181,7 +184,7 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
                 if (ClassType != UTexture::StaticClass())
                 {
                     // 5) 새 파일명 + 확장자 조합
-                    const FString NewFilename = BaseName + TEXT(".ttalkak");
+                    const FString NewFilename = BaseName + TEXT("_") + ClassType->GetName() + TEXT(".ttalkak");
                     // 6) 디렉터리 + 새 파일명 연결
                     const std::filesystem::path NewPath = (fsPath.parent_path() / NewFilename).generic_wstring();
                     Serializer::SaveToFile(Asset, NewPath);

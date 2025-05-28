@@ -49,6 +49,11 @@ void FSkeletalPreviewUI::AddEditorPanel(const FString& PanelId, const std::share
 
 void FSkeletalPreviewUI::OnResize(HWND hWnd) const
 {
+    if (ActiveHandle != hWnd)
+    {
+        return;
+    }
+    
     for (auto& Panel : Panels)
     {
         Panel.Value->OnResize(hWnd);

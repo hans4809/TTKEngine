@@ -26,11 +26,13 @@
 #include "Components/PrimitiveComponents/MeshComponents/StaticMeshComponents/StaticMeshComponent.h"
 #include "Components/USpringArmComponent.h"
 #include "Components/Mesh/StaticMesh.h"
+#include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
 
 #include "Contents/AGPlayer.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Font/IconDefs.h"
 #include "ImGUI/imgui.h"
+#include "Physics/PhysicsAsset.h"
 #include "Renderer/Renderer.h"
 #include "UnrealEd/EditorPlayer.h"
 #include "UObject/ObjectTypes.h"
@@ -115,13 +117,46 @@ void PreviewControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* Icon
 
         ImGui::Begin("Menu", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
-        if (ImGui::BeginMenu("Import"))
+        if (PreviewType == EPreviewType::EPhysicsAsset)
         {
-            if (ImGui::MenuItem("Fbx"))
+            if (ImGui::BeginMenu("Save"))
             {
-            }
+                if (ImGui::MenuItem("PhysicsAsset"))
+                {
+                    char const* lFilterPatterns[1] = { "*_UPhysicsAsset.ttalkak" };
+                    const char* SaveFilePath = tinyfd_saveFileDialog("Save PhysicsAsset",       // 다이얼로그 제목
+                                                "Contents/FBX",            // 기본 디렉터리
+                                                1, lFilterPatterns,        // 필터 개수 및 배열
+                                                "PhysicsAsset (.ttalkak)" // 설명
+                                                );
 
-            ImGui::EndMenu();
+                    if (SaveFilePath == nullptr)
+                    {
+                        tinyfd_messageBox("Error", "파일을 저장할 수 없습니다.", "ok", "error", 1);
+                        ImGui::End();
+                        return;
+                    }
+
+                    std::filesystem::path SavePath = std::filesystem::path(SaveFilePath).generic_wstring();
+                    
+                    for (AActor* Actor : World->GetActors())
+                    {
+                        for (UActorComponent* Comp : Actor->GetComponents())
+                        {
+                            if (USkeletalMeshComponent* SkeletalMeshComp = Cast<USkeletalMeshComponent>(Comp))
+                            {
+                                UPhysicsAsset* PhysicsAsset = SkeletalMeshComp->GetSkeletalMesh()->GetPhysicsAsset();
+                                if (PhysicsAsset)
+                                {
+                                    Serializer::SaveToFile(PhysicsAsset, SavePath);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
         }
 
         ImGui::Separator();

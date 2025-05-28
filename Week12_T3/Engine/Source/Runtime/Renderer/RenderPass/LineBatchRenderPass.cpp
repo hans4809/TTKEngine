@@ -21,6 +21,10 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderResourceManager.h"
 #include "UObject/UObjectIterator.h"
+#include <Actors/SkeletalMeshActor.h>
+#include <Physics/PhysicsConstraintTemplate.h>
+#include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
+#include "Physics/PhysicsAsset.h"
 
 class USpotLightComponent;
 extern UEngine* GEngine;
@@ -120,6 +124,132 @@ void FLineBatchRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
             break;
         }
     }
+
+ 
+    if (!EditorEngine) return;
+    auto VPClient = EditorEngine->GetLevelEditor()->GetActiveViewportClient();
+    if (!(VPClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::Type::SF_AABB)))
+        return;
+
+  
+
+    // 1) 씬 내 모든 SkeletalMeshActor 순회
+    for (ASkeletalMeshActor* SkeletalActor : TObjectRange<ASkeletalMeshActor>())
+    {
+        USkeletalMeshComponent* SkelComp = SkeletalActor->GetSkeletalMeshComponent();
+        if (!SkelComp) continue;
+
+        UPhysicsAsset* PhysAsset = SkelComp->GetSkeletalMesh()->GetPhysicsAsset();
+        if (!PhysAsset) continue;
+
+        // 2) 각 바디셋업(BodySetup) 순회
+        for (UBodySetup* BodySetup : PhysAsset->BodySetups)
+        {
+        //    // 본 이름으로 본 인덱스, 본 트랜스폼 얻기
+            const int32 BoneIndex = SkelComp->GetBoneIndex(BodySetup->BoneName);
+            const FTransform BoneWorldTM = SkelComp->GetBoneTransform(BoneIndex);
+
+            // 3) 이 바디의 캡슐 요소들 순회
+            for (const FKSphylElem& Sphyl : BodySetup->AggGeom.SphylElems)
+            {
+                // 로컬 기준 캡슐 트랜스폼 (센터, 회전)
+                FTransform LocalXF = Sphyl.GetTransform();  // :contentReference[oaicite:0]{index=0}
+
+                // 본 월드 트랜스폼과 곱해 최종 월드 트랜스폼 계산
+                FTransform WorldXF = LocalXF * BoneWorldTM;
+
+                // 캡슐 정보 추출
+                FVector Center = WorldXF.GetLocation();
+                FVector UpAxis = WorldXF.GetUnitAxis(EAxis::Z);
+                // 축 스케일을 고려한 절반 길이/반지름 (예: 컴포넌트 스케일링 반영)
+                FVector BoneScale3D = BoneWorldTM.GetScale();
+                float   HalfHeight = Sphyl.GetScaledHalfLength(BoneScale3D);
+                float   Radius = Sphyl.GetScaledRadius(BoneScale3D);
+
+                // 4) 기즈모로 캡슐 추가
+                PrimitiveBatch.AddCapsule(Center, UpAxis, HalfHeight, Radius, FVector4(0, 1, 0, 0.5f));
+            }
+        }
+
+        for (UPhysicsConstraintTemplate* CT : PhysAsset->ConstraintSetup)
+        {
+            // 본 피벗 월드 위치
+            int32 iA = SkelComp->GetBoneIndex(CT->ConstraintBone1);
+            int32 iB = SkelComp->GetBoneIndex(CT->ConstraintBone2);
+            if (iA == INDEX_NONE || iB == INDEX_NONE)
+                continue;
+
+            FTransform TA = SkelComp->GetBoneTransform(iA);
+            FTransform TB = SkelComp->GetBoneTransform(iB);
+            FVector PA = TA.GetLocation();
+            FVector PB = TB.GetLocation();
+
+            // 두 피벗 간 선분
+            PrimitiveBatch.AddLine(
+                PA,
+                PB - PA,       // Direction
+                PA.Distance(PB),
+                FVector4(1, 1, 0, 1)  // 노란색 불투명
+            );
+
+            //// (선택) 로컬 축
+            //constexpr float AxisLen = 15.f;
+            //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::X), AxisLen, FVector4(1, 0, 0, 1));
+            //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::Y), AxisLen, FVector4(0, 1, 0, 1));
+            //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::Z), AxisLen, FVector4(0, 0, 1, 1));
+        }
+    }
+
+    // 2) Constraint 기즈모 (SF_AABB 토글 체크)
+
+    //if (!EditorEngine)
+    //    return;
+
+    //if (!(VPClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::Type::SF_AABB)))
+    //    return;
+
+    //// 월드의 모든 SkeletalMeshActor 순회
+    //for (ASkeletalMeshActor* SkelActor : TObjectRange<ASkeletalMeshActor>())
+    //{
+    //    if (SkelActor->GetWorld() != World)
+    //        continue;
+
+    //    auto* SkelComp = SkelActor->GetSkeletalMeshComponent();
+    //    if (!SkelComp)
+    //        continue;
+
+    //    UPhysicsAsset* PhysAsset = SkelComp->GetSkeletalMesh()->GetPhysicsAsset();
+    //    if (!PhysAsset)
+    //        continue;
+
+    //    for (UPhysicsConstraintTemplate* CT : PhysAsset->ConstraintSetup)
+    //    {
+    //        // 본 피벗 월드 위치
+    //        int32 iA = SkelComp->GetBoneIndex(CT->ConstraintBone1);
+    //        int32 iB = SkelComp->GetBoneIndex(CT->ConstraintBone2);
+    //        if (iA == INDEX_NONE || iB == INDEX_NONE)
+    //            continue;
+
+    //        FTransform TA = SkelComp->GetBoneTransform(iA);
+    //        FTransform TB = SkelComp->GetBoneTransform(iB);
+    //        FVector PA = TA.GetLocation();
+    //        FVector PB = TB.GetLocation();
+
+    //        // 두 피벗 간 선분
+    //        PrimitiveBatch.AddLine(
+    //            PA,
+    //            PB - PA,       // Direction
+    //            PA.Distance(PB),
+    //            FVector4(1, 1, 0, 1)  // 노란색 불투명
+    //        );
+
+    //        //// (선택) 로컬 축
+    //        //constexpr float AxisLen = 15.f;
+    //        //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::X), AxisLen, FVector4(1, 0, 0, 1));
+    //        //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::Y), AxisLen, FVector4(0, 1, 0, 1));
+    //        //PrimitiveBatch.AddLine(PA, TA.GetUnitAxis(EAxis::Z), AxisLen, FVector4(0, 0, 1, 1));
+    //    }
+    //}
 }
 
 void FLineBatchRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewportClient)
