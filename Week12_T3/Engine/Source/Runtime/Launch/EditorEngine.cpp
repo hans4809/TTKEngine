@@ -360,6 +360,19 @@ UWorld* UEditorEngine::CreatePreviewWindow(EViewportClientType Type, const FStri
 
     HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(GEngineLoop.GetDefaultWindow(), GWLP_HINSTANCE));
     HWND AppWnd = GEngineLoop.CreateEngineWindow(hInstance, EnginePreviewWindowClass, EnginePreviewTitle);
+
+    switch (Type)
+    {
+    case EditorPreviewSkeletal:
+        GetSkeletalPreviewUI()->ActiveHandle = AppWnd;
+        break;
+    case EditorPreviewParticle:
+        GetParticlePreviewUI()->ActiveHandle = AppWnd;
+        break;
+    case EditorPreviewPhysicsAsset:
+        GetPhysicsPreviewUI()->ActiveHandle = AppWnd;
+        break;
+    }
         
     UWorld* NewPreviewWorld = CreateWorld(EWorldType::EditorPreview, LEVELTICK_All);
     

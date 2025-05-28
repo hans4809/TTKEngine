@@ -260,15 +260,15 @@ void FEngineLoop::UpdateUI(HWND AppWnd) const
     Console::GetInstance().OnResize(AppWnd);
     if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
     {
-        if (const UnrealEd* UnrealEditor = EditorEngine->GetUnrealEditor())
+        if (DefaultWindow == AppWnd)
         {
-            UnrealEditor->OnResize(AppWnd);
+            EditorEngine->GetUnrealEditor()->OnResize(AppWnd);
         }
 
-        if (const FSkeletalPreviewUI* SkeletalPreviewUI = EditorEngine->GetSkeletalPreviewUI())
-        {
-            SkeletalPreviewUI->OnResize(AppWnd);
-        }
+        // Todo: should make loop statement
+        EditorEngine->GetSkeletalPreviewUI()->OnResize(AppWnd);
+        EditorEngine->GetParticlePreviewUI()->OnResize(AppWnd);
+        EditorEngine->GetPhysicsPreviewUI()->OnResize(AppWnd);
 
         if (EditorEngine->ContentsUI)
         {

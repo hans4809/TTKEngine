@@ -82,6 +82,8 @@ public:
     const float PreviewScreenWidth = 0.5f;
     const float PreviewScreenHeight = 0.4f;
     UParticleSystemComponent* Component = nullptr;
+
+    HWND ActiveHandle;
 private:
     TMap<FString, std::shared_ptr<UEditorPanel>> Panels;
     UWorld* PreviewWorld = nullptr;
