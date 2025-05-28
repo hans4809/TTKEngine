@@ -1,8 +1,5 @@
 #include "AnimSequence.h"
-
 #include "AnimData/AnimDataModel.h"
-#include "CoreUObject/UObject/Casts.h"
-#include "Engine/Asset/AssetManager.h"
 
 
 void UAnimSequence::PostDuplicate()

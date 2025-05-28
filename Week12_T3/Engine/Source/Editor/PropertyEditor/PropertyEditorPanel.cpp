@@ -1789,11 +1789,29 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& AssetName
         USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(SkeletalMeshActor->GetRootComponent());
         USkeletalMesh* SkeletalMesh = UAssetManager::Get().Get<USkeletalMesh>(AssetName);
         SkeletalMeshComponent->SetSkeletalMesh(SkeletalMesh);
+        
+        FAssetDescriptor desc = SkeletalMesh->GetDescriptorCopy();
+        FString NewName = std::filesystem::path(desc.AbsolutePath).stem().string();
+        if (std::filesystem::path(desc.AbsolutePath).extension().string() == TEXT(".ttalkak"))
+        {
+            // 1) 마지막 '_' 위치 찾기
+            int32 UnderscoreIndex = NewName.Find(
+                TEXT("_"),
+                ESearchCase::IgnoreCase,
+                ESearchDir::FromEnd
+            );
 
-        UAnimSequence* AnimSequence = UAssetManager::Get().Get<UAnimSequence>(TEXT("Rumba_Dancing"));
+            // 2) '_' 이후 부분 제거
+            if (UnderscoreIndex != INDEX_NONE)
+            {
+                NewName = NewName.Left(UnderscoreIndex);
+            }
+        }
+        
+        UAnimSequence* AnimSequence = UAssetManager::Get().Get<UAnimSequence>(NewName);
+
         UAnimSingleNodeInstance* TestAnimInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(SkeletalMeshComponent);
-        TestAnimInstance->SetAnimationAsset(AnimSequence);
-        TestAnimInstance->UpdateAnimation(TestAnimInstance->GetCurrentSequence(), 0.0f);
+        TestAnimInstance->SetCurrentSequence(AnimSequence);
         SkeletalMeshComponent->SetAnimInstance(TestAnimInstance);
     }
 }
