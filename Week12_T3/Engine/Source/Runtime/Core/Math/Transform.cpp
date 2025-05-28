@@ -252,6 +252,22 @@ FMatrix FTransform::ToMatrixNoScale() const
     return M;
 }
 
+FVector FTransform::GetUnitAxis(EAxis::Type Axis) const
+{
+    {
+        // 로컬 축 벡터
+        static const FVector LocalAxes[3] = {
+            {1,0,0}, // X
+            {0,1,0}, // Y
+            {0,0,1}  // Z
+        };
+
+        FVector Local = LocalAxes[static_cast<int>(Axis)-1];
+        // 회전만 적용한 후 정규화
+        return Rotation.RotateVector(Local).GetSafeNormal();
+    }
+}
+
 FMatrix FTransform::ToRowMatrixNoScale() const
 {
     FMatrix M;
@@ -335,22 +351,6 @@ FMatrix FTransform::ToRowMatrixWithScale() const
 
     return M;
 }
-FVector FTransform::GetUnitAxis(EAxis::Type Axis) const
-{
-    {
-        // 로컬 축 벡터
-        static const FVector LocalAxes[3] = {
-            {1,0,0}, // X
-            {0,1,0}, // Y
-            {0,0,1}  // Z
-        };
-
-        FVector Local = LocalAxes[static_cast<int>(Axis)-1];
-        // 회전만 적용한 후 정규화
-        return Rotation.RotateVector(Local).GetSafeNormal();
-    }
-}
-
 bool FTransform::Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D)
 {
     VectorRegister4Float InScale = SSE::VectorLoadFloat3_W0(&InScale3D.X);

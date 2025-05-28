@@ -330,6 +330,7 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     {
       
         ApplyPhysicsStateToBoneTransforms(); // 물리 결과를 BoneWorldTransforms 및 BoneSkinningMatrices에 적용
+        //SyncComponentToRBPhysics();
         bPhysicsApplied = true;
     }
     
@@ -727,7 +728,18 @@ void USkeletalMeshComponent::ApplyPhysicsStateToBoneTransforms()
             int32 BoneIdx = GetBoneIndex(BI->AssociatedBoneName);
             if (BoneIdx != INDEX_NONE && BoneWorldTransforms.IsValidIndex(BoneIdx))
             {
+                /*FTransform PhysTf = BI->GetGlobalPose();
+                BoneWorldTransforms[BoneIdx] = PhysTf.ToRowMatrixWithScale();*/
                 FTransform PhysTf = BI->GetGlobalPose();
+                FVector Loc = PhysTf.GetLocation();
+
+                // 💡 추가: 유효성 검사
+                if (Loc.ContainsNAN() || !Loc.IsFinitie() || Loc.Magnitude() > 100000.0f)
+                {
+                    UE_LOG(LogLevel::Error, TEXT("Bone %s PhysX Pose 폭발!"));
+                    continue; // 💡 Skip: 덮어쓰지 않음
+                }
+
                 BoneWorldTransforms[BoneIdx] = PhysTf.ToRowMatrixWithScale();
             }
         }
@@ -745,6 +757,9 @@ void USkeletalMeshComponent::ApplyPhysicsStateToBoneTransforms()
         FTransform TF(BoneWorldTransforms[i]);
         BoneSkinningMatrices[i] = Ref.RawBones[i].InverseBindPoseMatrix * TF.ToRowMatrixWithScale();
     }
+    FTransform ts1 = Bodies[0]->GetGlobalPose();
+    FTransform ts3 = Bodies[3]->GetGlobalPose();
+
 }
 
 // UpdateChildBoneTransformsFromPhysics 함수 (새로 추가 또는 UpdateChildBones 수정)
@@ -753,7 +768,7 @@ void USkeletalMeshComponent::UpdateChildBoneTransformsFromPhysics(int32 ParentIn
     const FRefSkeletal& Ref = SkeletalMesh->GetSkeleton()->GetRefSkeletal();
     
     FTransform ParentTf = FTransform(BoneWorldTransforms[ParentIndex]);
-
+    ParentTf.SetRotation(ParentTf.GetRotation().GetSafeNormal());
     for (int32 ChildIndex : Ref.BoneTree[ParentIndex].ChildIndices)
     {
         // 물리 바디가 존재하는지 검사
@@ -766,7 +781,21 @@ void USkeletalMeshComponent::UpdateChildBoneTransformsFromPhysics(int32 ParentIn
         {
             if (BI && BI->AssociatedBoneName == ChildName)
             {
+               /* NewTf = BI->GetGlobalPose();
+                bHasBody = true;
+                break;*/
+
                 NewTf = BI->GetGlobalPose();
+                FVector Loc = NewTf.GetLocation();
+
+                // 💡 추가: 유효성 검사
+                if (Loc.ContainsNAN() || !Loc.IsFinitie() || Loc.Magnitude() > 100000.0f)
+                {
+                    UE_LOG(LogLevel::Error, TEXT(" Child Bone 폭발 Pose:"));
+                    bHasBody = false; // 💡 무시 처리: ParentTf * LocalTf로 대체
+                    break;
+                }
+
                 bHasBody = true;
                 break;
             }
@@ -780,5 +809,30 @@ void USkeletalMeshComponent::UpdateChildBoneTransformsFromPhysics(int32 ParentIn
 
         BoneWorldTransforms[ChildIndex] = NewTf.ToRowMatrixWithScale();
         UpdateChildBoneTransformsFromPhysics(ChildIndex);
+    }
+}
+
+void USkeletalMeshComponent::SyncComponentToRBPhysics()
+{
+    for (FBodyInstance* BI : Bodies)
+    {
+        if (!BI || BI->AssociatedBoneName == NAME_None) continue;
+
+        int32 BoneIndex = GetBoneIndex(BI->AssociatedBoneName);
+        if (BoneIndex == INDEX_NONE || !BoneWorldTransforms.IsValidIndex(BoneIndex)) continue;
+
+        FTransform PhysTransform = BI->GetGlobalPose();
+        BoneWorldTransforms[BoneIndex] = PhysTransform.ToRowMatrixWithScale();
+    }
+    const FRefSkeletal& RefSkeleton = SkeletalMesh->GetSkeleton()->GetRefSkeletal();
+    for (int32 RootIndex : RefSkeleton.RootBoneIndices)
+    {
+        UpdateChildBoneTransformsFromPhysics(RootIndex);
+    }
+
+    for (int32 i = 0; i < BoneWorldTransforms.Num() && i < RefSkeleton.RawBones.Num(); ++i)
+    {
+        FTransform BoneTf(BoneWorldTransforms[i]);
+        BoneSkinningMatrices[i] = RefSkeleton.RawBones[i].InverseBindPoseMatrix * BoneTf.ToRowMatrixWithScale();
     }
 }

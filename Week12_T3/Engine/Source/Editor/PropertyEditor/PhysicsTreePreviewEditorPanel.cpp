@@ -6,7 +6,8 @@
 #include "Physics/PhysicsAsset.h"
 #include "Physics/PhysicsConstraintTemplate.h"
 #include "Classes/Animation/Skeleton.h"
-
+#include <Engine/Texture.h>
+#include "Engine/Asset/AssetManager.h"
 EPhysicsNodeType PhysicsTreePreviewEditorPanel::SelectedType = EPhysicsNodeType::None;
 int32 PhysicsTreePreviewEditorPanel::SelectedBoneIndex = -1;
 int32 PhysicsTreePreviewEditorPanel::SelectedConstraintIndex = -1;
@@ -32,13 +33,13 @@ void PhysicsTreePreviewEditorPanel::Render()
     }
 
     float PanelWidth = (Width) * 0.2f - 6.0f;
-    float PanelHeight = (Height) * 0.65f;
+    float PanelHeight = (Height) * 0.7f;
 
     float PanelPosX = 5.0f;
     float PanelPosY = 45.0f;
 
     ImVec2 MinSize(140, 370);
-    ImVec2 MaxSize(FLT_MAX, 900);
+    ImVec2 MaxSize(FLT_MAX, 1500);
 
     /* Min, Max Size */
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
@@ -50,7 +51,7 @@ void PhysicsTreePreviewEditorPanel::Render()
     ImGui::SetNextWindowSize(ImVec2(PanelWidth, PanelHeight), ImGuiCond_Always);
 
     /* Panel Flags */
-    ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
+    ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_HorizontalScrollbar;;
 
     /* Render Start */
     ImGui::Begin("Skeleton Tree", nullptr, PanelFlags);
@@ -97,6 +98,8 @@ void PhysicsTreePreviewEditorPanel::OnResize(HWND hWnd)
 
 void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkeletal, int32 BoneIndex, const TArray<FBoneNode>& BoneTree, const TArray<FBone>& RawBones, UPhysicsAsset* PhysicsAsset)
 {
+    TArray<UBodySetup*> BodySetups;
+    PhysicsAsset->GetBodySetups(BodySetups);
     const FBone& Bone = RawBones[BoneIndex];
     std::stringstream ss;
     ss << Bone.BoneName.ToAnsiString() << "##Bone" << BoneIndex;
@@ -114,6 +117,11 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
     }
 
+    ID3D11ShaderResourceView* BoneIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Bone_16x"))->TextureSRV;
+    const ImTextureID BoneIcon = reinterpret_cast<ImTextureID>(BoneIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+    ImGui::Image(BoneIcon, ImVec2(16, 16));
+    ImGui::SameLine();
     bool bOpen = ImGui::TreeNodeEx(ss.str().c_str(), BoneFlags);
 
     if (isSelected) {
@@ -146,6 +154,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
             ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
         }
 
+        ID3D11ShaderResourceView* BodyIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Body_16x"))->TextureSRV;
+        const ImTextureID BodyIcon = reinterpret_cast<ImTextureID>(BodyIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+        ImGui::Image(BodyIcon, ImVec2(16, 16));
+        ImGui::SameLine();
+
         ImGui::TreeNodeEx(BLabel.c_str(), BodyFlags);
 
         if (isSelected) {
@@ -157,13 +171,39 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
             SelectedType = EPhysicsNodeType::Body;
             SelectedBodyIndex = BodyIdx;
         }
+
+        if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::MenuItem("Delete Body")) {
+                // 삭제할 BodySetup을 직접 제거
+                BodySetups.RemoveAt(BodyIdx);
+
+                // 필요하다면 연결된 Constraint도 정리:
+                for (int32 i = PhysicsAsset->ConstraintSetup.Num() - 1; i >= 0; --i)
+                {
+                    UPhysicsConstraintTemplate* Constraint = PhysicsAsset->ConstraintSetup[i];
+                    if (Constraint->ConstraintBone1 == Bone.BoneName ||
+                        Constraint->ConstraintBone2 == Bone.BoneName)
+                    {
+                        PhysicsAsset->ConstraintSetup.RemoveAt(i);
+                    }
+                }
+
+                // 선택 상태 해제
+                SelectedType = EPhysicsNodeType::None;
+                SelectedBodyIndex = -1;
+
+                ImGui::EndPopup();
+                ImGui::TreePop();
+                return;
+            }
+            ImGui::EndPopup();
+        }
         ImGui::TreePop();
 
         // primitives inside body
-        UBodySetup* BS = PhysicsAsset->BodySetups[BodyIdx];
-        // spheres
+        UBodySetup* BS = BodySetups[BodyIdx];
 
-        
+        // spheres
         for (int32 Pi = 0; Pi < BS->AggGeom.SphereElems.Num(); ++Pi)
         {
             std::string PLabel = "Sphere##P" + std::to_string(BodyIdx) + "_" + std::to_string(Pi);
@@ -181,6 +221,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
 
+            ID3D11ShaderResourceView* SphereIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Sphere_16px"))->TextureSRV;
+            const ImTextureID SphereIcon = reinterpret_cast<ImTextureID>(SphereIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(SphereIcon, ImVec2(16, 16));
+            ImGui::SameLine();
+
             ImGui::TreeNodeEx(PLabel.c_str(), PrimitiveFlags);
 
             if (isSelected) {
@@ -193,6 +239,23 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 SelectedBodyIndex = BodyIdx;
                 SelectedPrimType = EAggCollisionShape::Sphere;
                 SelectedPrimIndex = Pi;
+            }
+
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Delete")) {
+                    // 실제로 삭제 수행!
+                    BS->AggGeom.SphereElems.RemoveAt(Pi);
+
+                    // 삭제 후 인덱스 재조정 (선택 해제 등)
+                    SelectedType = EPhysicsNodeType::None;
+                    SelectedPrimIndex = -1;
+
+                    // for문 중단 (삭제 후 배열 크기 변경되니까)
+                    ImGui::EndPopup();
+                    ImGui::TreePop();
+                    break;
+                }
+                ImGui::EndPopup();
             }
             ImGui::TreePop();
         }
@@ -213,6 +276,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
 
+            ID3D11ShaderResourceView* BoxIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("box_16px"))->TextureSRV;
+            const ImTextureID BoxIcon = reinterpret_cast<ImTextureID>(BoxIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(BoxIcon, ImVec2(16, 16));
+            ImGui::SameLine();
+
             ImGui::TreeNodeEx(PLabel.c_str(), ImGuiTreeNodeFlags_Leaf);
 
             if (isSelected) {
@@ -226,6 +295,24 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 SelectedPrimType = EAggCollisionShape::Box;
                 SelectedPrimIndex = Pi;
             }
+
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Delete")) {
+                    // 실제로 삭제 수행!
+                    BS->AggGeom.BoxElems.RemoveAt(Pi);
+
+                    // 삭제 후 인덱스 재조정 (선택 해제 등)
+                    SelectedType = EPhysicsNodeType::None;
+                    SelectedPrimIndex = -1;
+
+                    // for문 중단 (삭제 후 배열 크기 변경되니까)
+                    ImGui::EndPopup();
+                    ImGui::TreePop();
+                    break;
+                }
+                ImGui::EndPopup();
+            }
+
             ImGui::TreePop();
         }
         for (int32 Pi = 0; Pi < BS->AggGeom.SphylElems.Num(); ++Pi)
@@ -245,6 +332,11 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
 
+            ID3D11ShaderResourceView* SphylIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Sphyl_16x"))->TextureSRV;
+            const ImTextureID SphylIcon = reinterpret_cast<ImTextureID>(SphylIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(SphylIcon, ImVec2(16, 16));
+            ImGui::SameLine();
 
             ImGui::TreeNodeEx(PLabel.c_str(), PrimitiveFlags);
 
@@ -259,9 +351,25 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 SelectedPrimType = EAggCollisionShape::Sphyl;
                 SelectedPrimIndex = Pi;
             }
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Delete")) {
+                    // 실제로 삭제 수행!
+                    BS->AggGeom.SphylElems.RemoveAt(Pi);
+
+                    // 삭제 후 인덱스 재조정 (선택 해제 등)
+                    SelectedType = EPhysicsNodeType::None;
+                    SelectedPrimIndex = -1;
+
+                    // for문 중단 (삭제 후 배열 크기 변경되니까)
+                    ImGui::EndPopup();
+                    ImGui::TreePop();
+                    break;
+                }
+                ImGui::EndPopup();
+            }
             ImGui::TreePop();
         }
-        for (int32 Pi = 0; Pi < BS->AggGeom.ConvexElems.Num(); ++Pi)
+        /*for (int32 Pi = 0; Pi < BS->AggGeom.ConvexElems.Num(); ++Pi)
         {
             std::string PLabel = "Convex##P" + std::to_string(BodyIdx) + "_" + std::to_string(Pi);
 
@@ -292,7 +400,7 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 SelectedPrimIndex = Pi;
             }
             ImGui::TreePop();
-        }
+        }*/
         // Constraints under this bone
         TArray<int32> Constraints;
         PhysicsAsset->BodyFindConstraints(BoneIndex, Constraints);
@@ -313,6 +421,12 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, HighlightColor);
             }
 
+            ID3D11ShaderResourceView* ConstIconTextureSRV = UAssetManager::Get().Get<UTexture>(TEXT("Constraint_16x"))->TextureSRV;
+            const ImTextureID ConstIcon = reinterpret_cast<ImTextureID>(ConstIconTextureSRV); // 실제 사용되는 텍스처 SRV
+
+            ImGui::Image(ConstIcon, ImVec2(16, 16));
+            ImGui::SameLine();
+            
             ImGui::TreeNodeEx(CLabel.c_str(), ConstraintFlags);
 
             if (isSelected) {
@@ -323,6 +437,23 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
             {
                 SelectedType = EPhysicsNodeType::Constraint;
                 SelectedConstraintIndex = Ci;
+            }
+
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Delete")) {
+                    // 실제로 삭제 수행!
+                    PhysicsAsset->ConstraintSetup.RemoveAt(Ci);
+
+                    // 삭제 후 인덱스 재조정 (선택 해제 등)
+                    SelectedType = EPhysicsNodeType::None;
+                    SelectedPrimIndex = -1;
+
+                    // for문 중단 (삭제 후 배열 크기 변경되니까)
+                    ImGui::EndPopup();
+                    ImGui::TreePop();
+                    break;
+                }
+                ImGui::EndPopup();
             }
             ImGui::TreePop();
         }
@@ -340,6 +471,3 @@ void PhysicsTreePreviewEditorPanel::DrawBoneNodeRecursive(FRefSkeletal& RefSkele
         ImGui::TreePop();
     }
 }
-
-
-
