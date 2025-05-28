@@ -34,13 +34,13 @@ public:
     void Initialize(UPrimitiveComponent* InOwnerComponent, physx::PxPhysics* InPxPhysicsSDK);
    //UPROPERTY(VisibleAnywhere, USceneComponent*, RootComponent, = nullptr)
     bool CreatePhysicsState(const FTransform& InitialTransform, EPhysBodyType BodyType);
-   
+    void InitConstraint(FBodyInstance InBody1, FBodyInstance InBody2);
     void ReleasePhysicsState();
     void AddObject(FPhysScene* PhysScene);
     physx::PxShape* AddBoxGeometry(const FVector& HalfExtents, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
     physx::PxShape* AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
     physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
-    physx::PxShape* AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& Transform);
+    physx::PxShape* AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& Transform, const FVector& Scale);
     // 물리 속성 설정 및 조회
     void SetBodyType(EPhysBodyType NewType);
     EPhysBodyType GetBodyType() const { return CurrentBodyType; }
@@ -77,12 +77,12 @@ public:
     UPrimitiveComponent* GetOwnerComponent() const { return OwnerComponent; }
 
     bool IsPhysicsStateCreated() const { return PxActor != nullptr; }
-
+    FName AssociatedBoneName;
 private:
     UPrimitiveComponent* OwnerComponent;   // 이 FBodyInstance를 소유하는 UPrimitiveComponent
     physx::PxPhysics* PxPhysicsSDK;
     physx::PxRigidActor* PxActor;
     EPhysBodyType CurrentBodyType;
-
+    physx::PxMaterial* DefaultPhysicalMaterial;
     void ReleaseShapes();
 };

@@ -407,6 +407,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
                         MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
                         MeshComp->ShapeType = EPhysBodyShapeType::Box;
+                        MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<UBoxShapeComponent>(EComponentOrigin::Editor);
                         SpawnedActor = TempActor;
                         break;
@@ -461,6 +462,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     {
                         SpawnedActor = World->SpawnActor<ASkeletalMeshActor>();
                         SpawnedActor->SetActorLabel("SkeletalMesh");
+                        SpawnedActor->GetComponentByClass<USkeletalMeshComponent>()->CreatePhysicsState();
                         break;
                     }
                     case OBJ_CHARACTER:

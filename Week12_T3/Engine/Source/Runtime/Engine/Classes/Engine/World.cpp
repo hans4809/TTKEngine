@@ -185,7 +185,7 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 
         FGameManager::Get().EditorTick(deltaSeconds);
     }
-    if (CurrentPhysicsScene && (tickType == ELevelTick::LEVELTICK_All))
+    if (CurrentPhysicsScene )//&& (tickType == ELevelTick::LEVELTICK_All))
     {
         CurrentPhysicsScene->Simulate(deltaSeconds); //내부에서 FetchResult 호출
         SyncPhysicsActors();

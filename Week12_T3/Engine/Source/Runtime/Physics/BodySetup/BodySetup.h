@@ -5,7 +5,7 @@
 //class UPhysicalMaterial;
 
 class UPrimitiveComponent;
-
+class UPhysicalMaterial;
 class UBodySetup : public UBodySetupCore
 {
     DECLARE_CLASS(UBodySetup, UBodySetupCore)
@@ -225,4 +225,6 @@ public:
     //     TArray<FPhysicsShapeHandle>* NewShapes = NULL);
     //  
     // friend struct FIterateBodySetupHelper;
+    UPhysicalMaterial* GetDefaultMaterial();
+    UPhysicalMaterial* DefaultPhysicalMaterial;
 };

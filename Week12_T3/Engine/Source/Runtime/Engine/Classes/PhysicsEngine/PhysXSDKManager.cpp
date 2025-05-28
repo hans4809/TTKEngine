@@ -94,17 +94,6 @@ void FPhysXSDKManager::Shutdown()
     bIsInitialized = false;
 }
 
-UPhysicalMaterial* FPhysXSDKManager::GetDefaultMaterial()
-{
-    if (DefaultPhysicalMaterial == nullptr)
-    {
-        DefaultPhysicalMaterial = FObjectFactory::ConstructObject<UPhysicalMaterial>(nullptr);
-        DefaultPhysicalMaterial->SetStaticFriction(0.5f);
-        DefaultPhysicalMaterial->SetRestitution(0.5f);
-        DefaultPhysicalMaterial->SetDynamicFriction(1.0f);
-    }
-    return DefaultPhysicalMaterial;
-}
 physx::PxPhysics* FPhysXSDKManager::GetPhysicsSDK()
 {
     return PxSDKInstance;

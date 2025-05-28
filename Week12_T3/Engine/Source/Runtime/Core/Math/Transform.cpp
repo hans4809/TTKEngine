@@ -125,12 +125,36 @@ void FTransform::RemoveScaling()
     Rotation.Normalize();
 }
 
+FTransform FTransform::Inverse() const
+{
+    // 1) 회전의 역(역사원수)
+    FQuat InvRot = Rotation.Inverse();
+    InvRot.Normalize();
+
+    // 2) 스케일의 역(0 방지)
+    FVector InvScale(
+        Scale.X != 0.f ? 1.f / Scale.X : 0.f,
+        Scale.Y != 0.f ? 1.f / Scale.Y : 0.f,
+        Scale.Z != 0.f ? 1.f / Scale.Z : 0.f
+    );
+
+    // 3) 위치 역변환: -T, 스케일 적용, 회전 적용
+    FVector InvTrans = InvRot.RotateVector(-Location * InvScale);
+
+    return FTransform(InvRot, InvTrans, InvScale);
+}
+
 FString FTransform::ToString() const
 {
     return FString::Printf(TEXT("Translation=%s Rotation=%s Scale3D=%s"), 
                       *Location.ToString(), 
                       *Rotation.ToString(), 
                       *Scale.ToString());
+}
+
+FTransform FTransform::GetRelativeTransform(const FTransform& Base) const
+{
+    return (*this) * Base.Inverse();
 }
 
 FTransform FTransform::Blend(const FTransform& Atom1, const FTransform& Atom2, float Alpha)
@@ -280,7 +304,6 @@ void FTransform::Multiply(FTransform* OutTransform, const FTransform* A, const F
 {
     if (Private_AnyHasNegativeScale(A->Scale, B->Scale))
     {
-        // @note, if you have 0 scale with negative, you're going to lose rotation as it can't convert back to quat
         MultiplyUsingMatrixWithScale(OutTransform, A, B);
     }
     else
@@ -294,17 +317,19 @@ void FTransform::Multiply(FTransform* OutTransform, const FTransform* A, const F
         VectorRegister4Float ScaleA = SSE::VectorLoadFloat3_W0(&A->Scale.X);
         VectorRegister4Float ScaleB = SSE::VectorLoadFloat3_W0(&B->Scale.X);
 
-        // RotationResult = B.Rotation * A.Rotation
+        // Rotation
         VectorRegister4Float ResultRotation = SSE::VectorQuaternionMultiply2(QuatB, QuatA);
         SSE::VectorStoreFloat4(ResultRotation, &OutTransform->Rotation.X);
 
+        // Translation (3채널 저장)
         VectorRegister4Float ScaledTransA = SSE::VectorMultiply(TranslateA, ScaleB);
         VectorRegister4Float RotatedTranslate = SSE::VectorQuaternionRotateVector(QuatB, ScaledTransA);
         VectorRegister4Float ResultTranslation = SSE::VectorAdd(RotatedTranslate, TranslateB);
-        SSE::VectorStoreFloat4(ResultTranslation, &OutTransform->Location.X);
+        SSE::VectorStoreFloat3(ResultTranslation, &OutTransform->Location.X);
 
+        // Scale    (3채널 저장)
         VectorRegister4Float ResultScale = SSE::VectorMultiply(ScaleA, ScaleB);
-        SSE::VectorStoreFloat4(ResultScale, &OutTransform->Scale.X);
+        SSE::VectorStoreFloat3(ResultScale, &OutTransform->Scale.X);
     }
 }
 

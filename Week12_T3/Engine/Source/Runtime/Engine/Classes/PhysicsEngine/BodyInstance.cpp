@@ -17,6 +17,7 @@ FBodyInstance::FBodyInstance()
     : OwnerComponent(nullptr)
     , PxPhysicsSDK(nullptr)
     , PxActor(nullptr)
+    , DefaultPhysicalMaterial(nullptr)
     , CurrentBodyType(EPhysBodyType::Static)
 {
 }
@@ -71,6 +72,10 @@ bool FBodyInstance::CreatePhysicsState(const FTransform& InitialTransform, EPhys
     return true;
 }
 
+void FBodyInstance::InitConstraint(FBodyInstance InBody1, FBodyInstance InBody2)
+{
+}
+
 void FBodyInstance::ReleasePhysicsState()
 {
     if (PxActor)
@@ -88,7 +93,14 @@ physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysi
 {
     if (!PxActor || !PxPhysicsSDK || !Material || !Material->GetPxMaterial())
     {
-        UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxActor, SDK, Material, or PxMaterial."));
+        if (!PxActor)
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxActor."));
+        if (!PxPhysicsSDK)
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid SDK."));
+        if (!Material)
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid Material"));
+        if (!Material->GetPxMaterial())
+            UE_LOG(LogLevel::Warning, TEXT("FBodyInstance::AddBoxGeometry failed: Invalid PxMaterial."));
         return nullptr;
     }
 
@@ -161,20 +173,18 @@ physx::PxShape* FBodyInstance::AddCapsuleGeometry(float Radius, float HalfHeight
     if (NewShape)
     {
         FQuat PhysXCapsuleAxisAlignmentFix = FQuat(FVector::YAxisVector, FMath::DegreesToRadians(-90.0f));
-        FTransform FinalShapeLocalPose;
-        FinalShapeLocalPose.SetLocation(Transform.GetLocation());
-        FinalShapeLocalPose.SetRotation(Transform.GetRotation() * PhysXCapsuleAxisAlignmentFix);
-        FinalShapeLocalPose.SetScale(FVector::OneVector);
+        FTransform FinalShapeLocalPxPose = Transform;
+        FinalShapeLocalPxPose.SetRotation(Transform.GetRotation() * PhysXCapsuleAxisAlignmentFix);
+        physx::PxTransform ShapeGlobal = FinalShapeLocalPxPose.ToPxTransform();
 
-        NewShape->setLocalPose(FinalShapeLocalPose.ToPxTransform());
 
+        NewShape->setLocalPose(ShapeGlobal);
         physx::PxFilterData filterData;
         filterData.word0 = 1;   // 예: 그룹 1
-        filterData.word1 = 0xFFFFFFFF; // 모든 그룹과 충돌
+        filterData.word1 = 2;//0xFFFFFFFF; // 모든 그룹과 충돌
         NewShape->setSimulationFilterData(filterData);
         PxActor->attachShape(*NewShape);
         NewShape->release();
-        UpdateMassAndInertia(10);
     }
     else
     {
@@ -286,7 +296,19 @@ physx::PxFilterData FBodyInstance::GetSimulationFilterData() const
 
 FTransform FBodyInstance::GetGlobalPose() const
 {
-    return FTransform();
+    if (PxActor)
+    {
+        physx::PxTransform PxPose = PxActor->getGlobalPose();
+        
+        FQuat Rotation = FQuat::PToFQuat(PxPose.q); 
+        
+        Rotation.Normalize();
+        
+        return FTransform(Rotation, FVector::PToFVector(PxPose.p), FVector::OneVector);
+    }
+
+    return FTransform::Identity; // PxActor가 없으면 단위 행렬 반환
+
 }
 
 void FBodyInstance::SetGlobalPose(const FTransform& NewTransform, bool bAutoWake)

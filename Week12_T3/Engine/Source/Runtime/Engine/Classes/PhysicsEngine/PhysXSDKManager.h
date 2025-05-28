@@ -30,7 +30,6 @@ public:
         static FPhysXSDKManager Inst;
         return Inst;
     }
-    UPhysicalMaterial* GetDefaultMaterial();
     bool Initalize();
     void ConnectPVD();
     void Shutdown();

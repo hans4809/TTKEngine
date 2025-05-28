@@ -190,9 +190,6 @@ void UStaticMeshComponent::OnCreatePhysicsState()
     FTransform ComponentWorldTransform = GetWorldTransform();
     FTransform LocalTransform = FTransform::Identity;
  
-
-    UPhysicalMaterial* MyMaterial = new UPhysicalMaterial(FPhysXSDKManager::GetInstance().GetPhysicsSDK(), 1, 1, 1);
-
     bool bActorCreated = BodyInstance.CreatePhysicsState(GetWorldTransform(), BodyType);
 
     if (!bActorCreated || !BodyInstance.IsPhysicsStateCreated())
@@ -211,13 +208,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
     if (Setup)
     {
         UPhysicalMaterial* PhysMat = GetPhysicalMaterial();
-
-
-        physx::PxMaterial* PxMat = PhysMat->GetPxMaterial();
-
-        if (!PxMat)
-            PxMat = FPhysXSDKManager::GetInstance().GetDefaultMaterial()->GetPxMaterial();
-
+        UPhysicalMaterial* Mat = Setup->GetDefaultMaterial();
         switch (ShapeType)
         {
         case EPhysBodyShapeType::Sphere:
@@ -226,7 +217,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
             {
                 FVector Scale = ComponentWorldTransform.GetScale();
                 float ScaledRadius = Elem.Radius * Scale.Magnitude();
-                BodyInstance.AddSphereGeometry(ScaledRadius, MyMaterial, LocalTransform);
+                BodyInstance.AddSphereGeometry(ScaledRadius, Mat, LocalTransform);
             }
         }
         break;
@@ -239,7 +230,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
                 FVector Scale = ComponentWorldTransform.GetScale();
                 FVector ScaledHalfExtents = HalfExtents * Scale;
 
-                BodyInstance.AddBoxGeometry(ScaledHalfExtents, MyMaterial, LocalTransform);
+                BodyInstance.AddBoxGeometry(ScaledHalfExtents, Mat, LocalTransform);
             }
         }
         break;
@@ -252,7 +243,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
                 float Radius = Elem.Radius * Scale.Magnitude(); // Sphyl의 반지름
 
                 float HalfHeight = Elem.Length * 0.5f * Scale.Magnitude();
-                BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, MyMaterial, LocalTransform);
+                BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, Mat, LocalTransform);
             }
         }
         break;
@@ -261,7 +252,7 @@ void UStaticMeshComponent::OnCreatePhysicsState()
             for (const FKConvexElem& Elem : Setup->AggGeom.ConvexElems)
             {
 
-                BodyInstance.AddConvexGeometry(Elem.CookedPxConvexMesh, MyMaterial, LocalTransform, ComponentWorldTransform.GetScale());
+                BodyInstance.AddConvexGeometry(Elem.CookedPxConvexMesh, Mat, LocalTransform, ComponentWorldTransform.GetScale());
             }
         }
         break;
