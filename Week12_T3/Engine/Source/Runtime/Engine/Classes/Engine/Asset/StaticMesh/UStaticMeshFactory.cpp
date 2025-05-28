@@ -2,6 +2,8 @@
 
 #include "Components/Mesh/StaticMesh.h"
 
+#include "Physics/BodySetup/BodySetup.h"
+
 UStaticMeshFactory::UStaticMeshFactory()
 {
     SetSupportedExtensions({".obj"});
@@ -15,13 +17,12 @@ UStaticMeshFactory::~UStaticMeshFactory()
 
 UAsset* UStaticMeshFactory::ImportFromFile(const FString& InFilePath)
 {
-    UStaticMesh* NewSkeletalMesh = FObjectFactory::ConstructObject<UStaticMesh>(nullptr);
-    if (!NewSkeletalMesh->LoadFromFile(InFilePath))
+    UStaticMesh* NewStaticMesh = FObjectFactory::ConstructObject<UStaticMesh>(nullptr); 
+    if (!NewStaticMesh->LoadFromFile(InFilePath))
     {
         return nullptr;
     }
-
-    return NewSkeletalMesh;
+    return NewStaticMesh;
 }
 
 UAsset* UStaticMeshFactory::CreateNew(const FAssetDescriptor& desc)
