@@ -348,7 +348,7 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                 case DET_Mesh:
                     {
                         // StaticMesh 가져오기
-                        UStaticMesh* StaticMesh = static_cast<const FDynamicMeshEmitterData*>(ParticleRenderData)->Mesh;
+                        const UStaticMesh* StaticMesh = static_cast<const FDynamicMeshEmitterData*>(ParticleRenderData)->Mesh;
                         const FDynamicMeshEmitterReplayData& Source = static_cast<const FDynamicMeshEmitterReplayData&>(ParticleRenderData->GetSource());
 
 					    int32 VertexStride = sizeof(FMeshParticleInstanceVertex);
@@ -383,7 +383,7 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                                 InstanceVertices.Add(FillVertex);
                                 
                                 // VIBuffer Bind
-                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(StaticMesh->GetDescriptor().AssetName);
+                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(RenderData.DisplayName);
                                 VBIBTopMappingInfo->Bind();
 
                                 ID3D11InputLayout* MeshInputLayout = Renderer.GetResourceManager()->GetInputLayout(TEXT("MeshParticle"));
@@ -435,7 +435,7 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                                     InstanceVertices.Add(FillVertex);
                                 }
                                 // VIBuffer Bind
-                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(StaticMesh->GetDescriptor().AssetName);
+                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(RenderData.DisplayName);
                                 VBIBTopMappingInfo->Bind();
 
                                 ID3D11InputLayout* MeshInputLayout = Renderer.GetResourceManager()->GetInputLayout(TEXT("MeshParticle"));

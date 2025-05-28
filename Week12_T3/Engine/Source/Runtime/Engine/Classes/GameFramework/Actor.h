@@ -230,7 +230,8 @@ private:
     bool bTickInEditor = false;
     
     /** 본인이 소유하고 있는 컴포넌트들의 정보 */
-    TArray<UActorComponent*> OwnedComponents;
+    UPROPERTY(TArray<UActorComponent*>, OwnedComponents)
+    //TArray<UActorComponent*> OwnedComponents;
 
     /** UWorld에서 AddComponent로 추가된 본인이 소유하고 있는 컴포넌트들의 정보 */
     TArray<UActorComponent*> PendingOwnedComponentAdds;

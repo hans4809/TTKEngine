@@ -855,14 +855,14 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
         ImGui::Text("StaticMesh");
         ImGui::SameLine();
 
-        FString PreviewName = StaticMeshComponent->GetStaticMesh()->GetDescriptor().AssetName.ToString();
+        FString PreviewName = StaticMeshComponent->GetStaticMesh()->GetRenderData().DisplayName;
         TMap<FName, UAsset*> Assets = UAssetManager::Get().GetLoadedAssetsByType(UStaticMesh::StaticClass());
         if (ImGui::BeginCombo("##StaticMesh", GetData(PreviewName), ImGuiComboFlags_None))
         {
             for (const auto Asset : Assets)
             {
                 UStaticMesh* Mesh = Cast<UStaticMesh>(Asset.Value);
-                if (ImGui::Selectable(GetData(Mesh->GetDescriptor().AssetName.ToString()), false))
+                if (ImGui::Selectable(GetData(Mesh->GetRenderData().DisplayName), false))
                 {
                     StaticMeshComponent->SetStaticMesh(Mesh);
                 }
