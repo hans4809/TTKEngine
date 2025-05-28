@@ -171,7 +171,7 @@ FTransform FTransform::Blend(const FTransform& Atom1, const FTransform& Atom2, f
 FMatrix FTransform::ToMatrixWithScale() const
 {
     FMatrix M;
-    
+   
     // Quaternion을 회전 행렬로 변환 (열 우선)
     float x2 = Rotation.X * Rotation.X;
     float y2 = Rotation.Y * Rotation.Y;
@@ -268,6 +268,89 @@ FVector FTransform::GetUnitAxis(EAxis::Type Axis) const
     }
 }
 
+FMatrix FTransform::ToRowMatrixNoScale() const
+{
+    FMatrix M;
+
+    // Quaternion을 회전 행렬로 변환 (행 우선)
+    float x2 = Rotation.X * Rotation.X;
+    float y2 = Rotation.Y * Rotation.Y;
+    float z2 = Rotation.Z * Rotation.Z;
+    float xy = Rotation.X * Rotation.Y;
+    float xz = Rotation.X * Rotation.Z;
+    float yz = Rotation.Y * Rotation.Z;
+    float wx = Rotation.W * Rotation.X;
+    float wy = Rotation.W * Rotation.Y;
+    float wz = Rotation.W * Rotation.Z;
+
+    // 첫 번째 행 (X축 기저 벡터)
+    M.M[0][0] = 1.0f - 2.0f * (y2 + z2); // Xx
+    M.M[0][1] = 2.0f * (xy + wz);       // Xy
+    M.M[0][2] = 2.0f * (xz - wy);       // Xz
+    M.M[0][3] = 0.0f;
+
+    // 두 번째 행 (Y축 기저 벡터)
+    M.M[1][0] = 2.0f * (xy - wz);       // Yx
+    M.M[1][1] = 1.0f - 2.0f * (x2 + z2); // Yy
+    M.M[1][2] = 2.0f * (yz + wx);       // Yz
+    M.M[1][3] = 0.0f;
+
+    // 세 번째 행 (Z축 기저 벡터)
+    M.M[2][0] = 2.0f * (xz + wy);       // Zx
+    M.M[2][1] = 2.0f * (yz - wx);       // Zy
+    M.M[2][2] = 1.0f - 2.0f * (x2 + y2); // Zz
+    M.M[2][3] = 0.0f;
+
+    // 네 번째 행 (위치)
+    M.M[3][0] = Location.X;             // Tx
+    M.M[3][1] = Location.Y;             // Ty
+    M.M[3][2] = Location.Z;             // Tz
+    M.M[3][3] = 1.0f;
+
+    return M;
+}
+
+FMatrix FTransform::ToRowMatrixWithScale() const
+{
+    FMatrix M;
+
+    // Quaternion을 회전 행렬로 변환 및 스케일 적용 (행 우선)
+    float x2 = Rotation.X * Rotation.X;
+    float y2 = Rotation.Y * Rotation.Y;
+    float z2 = Rotation.Z * Rotation.Z;
+    float xy = Rotation.X * Rotation.Y;
+    float xz = Rotation.X * Rotation.Z;
+    float yz = Rotation.Y * Rotation.Z;
+    float wx = Rotation.W * Rotation.X;
+    float wy = Rotation.W * Rotation.Y;
+    float wz = Rotation.W * Rotation.Z;
+
+    // 첫 번째 행 (X축 기저 벡터), Scale.X 적용
+    M.M[0][0] = (1.0f - 2.0f * (y2 + z2)) * Scale.X;
+    M.M[0][1] = (2.0f * (xy + wz)) * Scale.X;
+    M.M[0][2] = (2.0f * (xz - wy)) * Scale.X;
+    M.M[0][3] = 0.0f;
+
+    // 두 번째 행 (Y축 기저 벡터), Scale.Y 적용
+    M.M[1][0] = (2.0f * (xy - wz)) * Scale.Y;
+    M.M[1][1] = (1.0f - 2.0f * (x2 + z2)) * Scale.Y;
+    M.M[1][2] = (2.0f * (yz + wx)) * Scale.Y;
+    M.M[1][3] = 0.0f;
+
+    // 세 번째 행 (Z축 기저 벡터), Scale.Z 적용
+    M.M[2][0] = (2.0f * (xz + wy)) * Scale.Z;
+    M.M[2][1] = (2.0f * (yz - wx)) * Scale.Z;
+    M.M[2][2] = (1.0f - 2.0f * (x2 + y2)) * Scale.Z;
+    M.M[2][3] = 0.0f;
+
+    // 네 번째 행 (위치) - 위치 자체는 스케일의 직접적인 영향을 받지 않음 (TRS 순서 가정)
+    M.M[3][0] = Location.X;
+    M.M[3][1] = Location.Y;
+    M.M[3][2] = Location.Z;
+    M.M[3][3] = 1.0f;
+
+    return M;
+}
 bool FTransform::Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D)
 {
     VectorRegister4Float InScale = SSE::VectorLoadFloat3_W0(&InScale3D.X);

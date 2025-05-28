@@ -41,6 +41,8 @@ public:
     physx::PxShape* AddSphereGeometry(float Radius, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
     physx::PxShape* AddCapsuleGeometry(float Radius, float HalfHeight, UPhysicalMaterial* Material, const FTransform& Transform = FTransform::Identity);
     physx::PxShape* AddConvexGeometry(physx::PxConvexMesh* CookedMesh, UPhysicalMaterial* Material, const FTransform& Transform, const FVector& Scale);
+    
+    void CacheSimulatedWorldTransform();
     // 물리 속성 설정 및 조회
     void SetBodyType(EPhysBodyType NewType);
     EPhysBodyType GetBodyType() const { return CurrentBodyType; }
@@ -49,6 +51,8 @@ public:
     void UpdateMassAndInertia(float DensityOrMass, const FVector* MassLocalPose = nullptr);
 
     void SetLinearVelocity(const FVector& Velocity);
+
+    void SetDamping(float linearDamping, float angularDamping);
     
     FVector GetLinearVelocity() const;
     
@@ -78,11 +82,14 @@ public:
 
     bool IsPhysicsStateCreated() const { return PxActor != nullptr; }
     FName AssociatedBoneName;
+    bool bHasSimulated = false;
+
 private:
     UPrimitiveComponent* OwnerComponent;   // 이 FBodyInstance를 소유하는 UPrimitiveComponent
     physx::PxPhysics* PxPhysicsSDK;
     physx::PxRigidActor* PxActor;
     EPhysBodyType CurrentBodyType;
     physx::PxMaterial* DefaultPhysicalMaterial;
+    FTransform LastSimulatedWorldTransform; // 물리 엔진 결과 저장용
     void ReleaseShapes();
 };

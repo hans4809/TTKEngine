@@ -1,4 +1,4 @@
-﻿#include "SkeletalMeshRenderPass.h"
+#include "SkeletalMeshRenderPass.h"
 
 #include "EditorEngine.h"
 #include "LaunchEngineLoop.h"

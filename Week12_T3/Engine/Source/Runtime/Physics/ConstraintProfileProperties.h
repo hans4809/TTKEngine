@@ -24,15 +24,15 @@ struct FConstraintProfileProperties
 
     // === 각도 제한 (Angular Limits) ===
     UPROPERTY(EditAnywhere, EConstraintMotion, AngularTwistMotion, = EConstraintMotion::Limited)
-    UPROPERTY(EditAnywhere, float, TwistLimitAngle, = 45.f)
+    UPROPERTY(EditAnywhere, float, TwistLimitAngle, = 120.f)
     UPROPERTY(EditAnywhere, bool, bTwistSoftConstraint, = true)
 
     UPROPERTY(EditAnywhere, EConstraintMotion, AngularSwing1Motion, = EConstraintMotion::Limited)
-    UPROPERTY(EditAnywhere, float, Swing1LimitAngle, = 45.f)
+    UPROPERTY(EditAnywhere, float, Swing1LimitAngle, = 120.f)
     UPROPERTY(EditAnywhere, bool, bSwing1SoftConstraint, = true)
 
     UPROPERTY(EditAnywhere, EConstraintMotion, AngularSwing2Motion, = EConstraintMotion::Limited)
-    UPROPERTY(EditAnywhere, float, Swing2LimitAngle, = 45.f)
+    UPROPERTY(EditAnywhere, float, Swing2LimitAngle, = 120.f)
     UPROPERTY(EditAnywhere, bool, bSwing2SoftConstraint, = true)
 
     // AngularStiffness, AngularDamping: (소프트 제한 및/또는 드라이브에 사용)

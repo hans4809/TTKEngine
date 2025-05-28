@@ -86,6 +86,8 @@ public:
         }
         return physx::PxTransform(Location.ToPxVec3(), pxRotation);
     }
+    FMatrix ToRowMatrixNoScale() const;
+    FMatrix ToRowMatrixWithScale() const;
 
     // 로컬 축을 월드 공간 단위 벡터로 반환
     FVector GetUnitAxis(EAxis::Type Axis) const;

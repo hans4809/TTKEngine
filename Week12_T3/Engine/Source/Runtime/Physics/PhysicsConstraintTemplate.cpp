@@ -7,8 +7,16 @@ UPhysicsConstraintTemplate::UPhysicsConstraintTemplate()
     DefaultProfile.LinearXMotion = EConstraintMotion::Locked;
     DefaultProfile.LinearYMotion = EConstraintMotion::Locked;
     DefaultProfile.LinearZMotion = EConstraintMotion::Locked;
-    DefaultProfile.TwistLimitAngle = 45.0f;
-    DefaultProfile.AngularStiffness = 50.0f;
+    DefaultProfile.TwistLimitAngle = 10.0f;
+    DefaultProfile.AngularStiffness = 100.0f;
+    DefaultProfile.LinearStiffness = 1.0f;
+    DefaultProfile.LinearDamping = 30.0f;
+    DefaultProfile.AngularDamping = 30.0f;
+
+    DefaultProfile.AngularTwistMotion= EConstraintMotion::Limited;
+    DefaultProfile.AngularSwing1Motion = EConstraintMotion::Limited;
+    DefaultProfile.AngularSwing2Motion = EConstraintMotion::Limited;
+
     DefaultProfile.RefFrame1 = FTransform::Identity; // 기본 로컬 프레임
     DefaultProfile.RefFrame2 = FTransform::Identity; // 기본 로컬 프레임
 }
