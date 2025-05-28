@@ -62,7 +62,7 @@ struct FConstraintProfileProperties
     UPROPERTY(EditAnywhere, float, AngularBreakThreshold, = 500.0f)
 
     // === 프로젝션 (기존 멤버) ===
-    UPROPERTY(EditAnywhere, bool, bEnableProjection, = true)
+    UPROPERTY(EditAnywhere, bool, bEnableProjection, = false)
     UPROPERTY(EditAnywhere, float, ProjectionLinearTolerance, = 1.0f)
     UPROPERTY(EditAnywhere, float, ProjectionAngularTolerance, = 1.0f)
 

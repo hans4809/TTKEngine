@@ -121,6 +121,8 @@ public:
 
     void ApplyPhysicsStateToBoneTransforms();
     void UpdateChildBoneTransformsFromPhysics(int32 ParentSkelBoneIndex);
+
+    void SyncComponentToRBPhysics();
 private:
 
     UPROPERTY(EditAnywhere, EAnimationMode, AnimationMode, = EAnimationMode::AnimationSingleNode)
