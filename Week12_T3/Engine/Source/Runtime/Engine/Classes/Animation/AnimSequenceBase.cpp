@@ -197,6 +197,28 @@ void UAnimSequenceBase::AddNotifyTrack(const FName& NotifyTrackName)
     NotifyTrack.TrackName = NotifyTrackName;
 }
 
+void UAnimSequenceBase::RemoveNotifyTrack(int32 TrackIndexToRemove)
+{
+    if (!AnimNotifyTracks.IsValidIndex(TrackIndexToRemove))
+    {
+        return;
+    }
+
+    // Remove all notifies associated with this track from the global Notifies array
+    // Also, adjust TrackIndex for notifies on tracks that are shifted
+    for (int32 NotifyIdx = Notifies.Num() - 1; NotifyIdx >= 0; --NotifyIdx)
+    {
+        if (Notifies[NotifyIdx].TrackIndex == TrackIndexToRemove)
+        {
+            Notifies.RemoveAt(NotifyIdx);
+        }
+        else if (Notifies[NotifyIdx].TrackIndex > TrackIndexToRemove)
+        {
+            Notifies[NotifyIdx].TrackIndex--;
+        }
+    }
+    AnimNotifyTracks.RemoveAt(TrackIndexToRemove);
+}
 void UAnimSequenceBase::RenameNotifyTrack(int32 TrackIndex, const FName& NewTrackName)
 {
     if (!AnimNotifyTracks.IsValidIndex(TrackIndex))
@@ -290,4 +312,19 @@ void UAnimSequenceBase::GetAnimationPose(FPoseContext& OutPose, const FAnimExtra
 
 void UAnimSequenceBase::EvaluateCurveData(FBlendedCurve& OutCurve, const FAnimExtractContext& ExtractionContext) const
 {
+}
+
+bool UAnimSequenceBase::LoadFromFile(const FString& filepath)
+{
+    return UAnimationAsset::LoadFromFile(filepath);
+}
+
+bool UAnimSequenceBase::SerializeToFile(std::ostream& Out)
+{
+    return UAnimationAsset::SerializeToFile(Out);
+}
+
+bool UAnimSequenceBase::DeserializeFromFile(std::istream& In)
+{
+    return UAnimationAsset::DeserializeFromFile(In);
 }

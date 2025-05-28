@@ -47,7 +47,7 @@ void ParticlesMenuBar::Render()
             if (ImGui::MenuItem("Open")) {}
             if (ImGui::MenuItem("Save")) 
             {
-                UAssetManager::Get().SaveAsset(UI->GetSelectedSystem(), TEXT("Contents/Particles/TestParticle.ttalkak"));
+                UAssetManager::Get().SaveAsset(UI->GetSelectedSystem(), TEXT("Contents/Particles/TestParticle_ParticleSystem.ttalkak"));
             }
             ImGui::EndMenu();
         }

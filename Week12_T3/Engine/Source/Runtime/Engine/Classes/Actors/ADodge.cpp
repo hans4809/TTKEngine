@@ -3,14 +3,17 @@
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/World.h"
 #include "Delegates/Delegate.impl.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Classes/Components/Mesh/StaticMesh.h"
 
 ADodge::ADodge()
     : Super()
 {
     // SetActorLabel(TEXT("OBJ_DODGE"));
     UStaticMeshComponent* MeshComp = GetStaticMeshComponent();
-    FManagerOBJ::CreateStaticMesh("Assets/Dodge/Dodge.obj");
-    MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Dodge.obj"));
+    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Dodge"));
+    //FManagerOBJ::CreateStaticMesh("Assets/Dodge/Dodge.obj");
+    MeshComp->SetStaticMesh(StaticMesh);
     FunctionRegistry()->RegisterMemberFunction<ThisClass>("TestRotate", &ADodge::TestRotate);
     FunctionRegistry()->RegisterMemberFunction<ThisClass>("TestTranslate", &ADodge::TestTranslate);
 }

@@ -54,7 +54,7 @@ private:
     void RenderShapeProperty(const AActor* PickedActor) const;
     void RenderDelegate(ULevel* Level) const;
     
-    void DrawSkeletalMeshPreviewButton(const FString& FilePath) const;
+    void DrawSkeletalMeshPreviewButton(const FString& AssetName) const;
     void DrawParticlesPreviewButton(UParticleSystem* ParticleSystem) const;
 	template<typename T>
 		requires std::derived_from<T, UActorComponent>
@@ -62,7 +62,7 @@ private:
 
     /* Physics Asset Settings */
     void RenderForPhysicsAsset(USkeletalMeshComponent* SkeletalMeshComponent) const;
-    void DrawPhysicsAssetPreviewButton(const FString& FilePath) const;
+    void DrawPhysicsAssetPreviewButton(const FString& FileName) const;
 
 private:
     float Width = 0, Height = 0;

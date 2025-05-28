@@ -15,11 +15,11 @@ class UStaticMesh;
 struct FStaticMeshComponentInfo : public FPrimitiveComponentInfo
 {
     DECLARE_ACTORCOMPONENT_INFO(FStaticMeshComponentInfo);
-    FWString StaticMeshPath;
+    FString StaticMeshPath;
 
     FStaticMeshComponentInfo()
         : FPrimitiveComponentInfo()
-        , StaticMeshPath(L"")
+        , StaticMeshPath("")
     {
         InfoType = TEXT("FStaticMeshComponentInfo");
         ComponentClass = TEXT("UStaticMeshComponent");

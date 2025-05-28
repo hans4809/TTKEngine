@@ -5,6 +5,9 @@
 #include "Components/PrimitiveComponents/Physics/USphereShapeComponent.h"
 #include "Components/PrimitiveComponents/Physics/UBoxShapeComponent.h"
 #include "Contents/AGPlayer.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Classes/Components/Mesh/StaticMesh.h"
+
 AGBullet::AGBullet()
     : Super()
     , Velocity(FVector::ZeroVector)
@@ -12,8 +15,9 @@ AGBullet::AGBullet()
     , DragCoefficient(0.02f)
 {
     UStaticMeshComponent* MeshComp = GetStaticMeshComponent();
-    FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
-    MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
+    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("apple_mid"));
+    //FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
+    MeshComp->SetStaticMesh(StaticMesh);
     AddComponent<USphereShapeComponent>(EComponentOrigin::Constructor);
 
 }

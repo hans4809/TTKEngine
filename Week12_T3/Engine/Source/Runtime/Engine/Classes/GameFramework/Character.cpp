@@ -6,12 +6,14 @@
 #include "Components/InputComponent.h"
 #include "Components/GameFramework/ProjectileMovementComponent.h"
 #include "Contents/GameManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "UObject/FunctionRegistry.h"
 
 ACharacter::ACharacter()
 {
     BodyMesh = AddComponent<USkeletalMeshComponent>(EComponentOrigin::Constructor);
-    BodyMesh->SetData("Contents/fbx/NyeongFBX.fbx");
+    USkeletalMesh* SkeletalMesh = UAssetManager::Get().Get<USkeletalMesh>("NyeongFBX");
+    BodyMesh->SetSkeletalMesh(SkeletalMesh);
     UTestAnimInstance* TestAnimInstance = FObjectFactory::ConstructObject<UTestAnimInstance>(BodyMesh);
     BodyMesh->SetAnimInstance(TestAnimInstance);
     RootComponent = BodyMesh;

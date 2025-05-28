@@ -188,8 +188,13 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Animation\UAnimationFactory.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Material\UMaterialFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\SkeletalMesh\USkeletalMeshFactory.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Skeleton\USkeletonFactory.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\StaticMesh\UStaticMeshFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.cpp" />
@@ -501,8 +506,13 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Editor\UnrealEd\Utils\EditorPreviewUtils.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Animation\UAnimationFactory.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Material\UMaterialFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\SkeletalMesh\USkeletalMeshFactory.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Skeleton\USkeletonFactory.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\StaticMesh\UStaticMeshFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesDetailsPanel.h" />

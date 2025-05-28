@@ -14,7 +14,7 @@ bool FFBXLoader::InitFBXManager()
     return true;
 }
 
-FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
+FSkeletalMeshRenderData FFBXLoader::ParseFBX(const FString& FilePath)
 {
     static bool bInitialized = false;
     if (bInitialized == false)
@@ -27,7 +27,7 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
     
     bool bResult = Importer->Initialize(GetData(FilePath), -1, FbxManager->GetIOSettings());
     if (!bResult)
-        return nullptr;
+        return {};
     
     Importer->Import(Scene);
     Importer->Destroy();
@@ -47,23 +47,23 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
     }
 
     ParsedAnimData.Empty();
-    FSkeletalMeshRenderData* NewMeshData = new FSkeletalMeshRenderData();
+    FSkeletalMeshRenderData NewMeshData;
     FRefSkeletal RefSkeletal;
     
-    NewMeshData->Name = FilePath;
+    NewMeshData.Name = FilePath;
     RefSkeletal.Name = FilePath;
     
     ExtractFBXMeshData(Scene, NewMeshData, RefSkeletal);
     ExtractFBXAnimData(Scene, FilePath);
 
-    for (const auto Vertex: NewMeshData->Vertices)
+    for (const auto Vertex: NewMeshData.Vertices)
     {
-        FSkeletalVertex RawVertex;
+        FSkeletalVertex RawVertex = FSkeletalVertex();
         RawVertex = Vertex;
         RefSkeletal.RawVertices.Add(RawVertex);
     }
 
-    for (const auto Bone : NewMeshData->Bones)
+    for (const auto Bone : NewMeshData.Bones)
     {
         FBone RawBone;
         RawBone = Bone;
@@ -79,7 +79,7 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
     FString binSaveFilePath = "Contents/FBX/" + fullpath.filename().string() + ".bin";
     FArchive ar;
     ar << FilePath;
-    ar << *NewMeshData << RefSkeletal;
+    ar << NewMeshData << RefSkeletal;
     ar << ParsedAnimData.Num();
     for (const auto& parsed: ParsedAnimData)
     {
@@ -91,9 +91,206 @@ FSkeletalMeshRenderData* FFBXLoader::ParseFBX(const FString& FilePath)
     return NewMeshData;
 }
 
-FSkeletalMeshRenderData* FFBXLoader::ParseBin(const FString FilePath)
+bool FFBXLoader::ParseSkeletalMeshAndSkeletonFromFBX(const FString& FilePath, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal)
 {
-    FSkeletalMeshRenderData* NewMeshData = new FSkeletalMeshRenderData();
+    // 에셋 식별자
+    const std::filesystem::path fullpath(FilePath);
+    // 파일명 뒤에 "_SkeletalMesh" 접미사를 붙입니다.
+    FString BaseName = FString(fullpath.stem().string());
+    
+    static bool bInitialized = false;
+    if (bInitialized == false)
+    {
+        InitFBXManager();
+        bInitialized = true;
+    }
+    FbxScene* Scene = FbxScene::Create(FbxManager, "myScene");
+    FbxImporter* Importer = FbxImporter::Create(FbxManager, "myImporter");
+    
+    bool bResult = Importer->Initialize(GetData(FilePath), -1, FbxManager->GetIOSettings());
+    if (!bResult)
+        return false;
+    
+    Importer->Import(Scene);
+    Importer->Destroy();
+
+    FbxAxisSystem UnrealAxisSystem(
+        FbxAxisSystem::eZAxis,
+        FbxAxisSystem::eParityEven, // TODO Check
+        FbxAxisSystem::eLeftHanded
+    );
+    if (Scene->GetGlobalSettings().GetAxisSystem() != UnrealAxisSystem)
+        UnrealAxisSystem.DeepConvertScene(Scene);
+    
+    FbxSystemUnit SceneSystemUnit = Scene->GetGlobalSettings().GetSystemUnit();
+    if( SceneSystemUnit.GetScaleFactor() != 1.0 )
+    {
+        FbxSystemUnit::cm.ConvertScene(Scene);
+    }
+
+    ExtractFBXMeshData(Scene, OutMeshData, OutRefSkeletal);
+
+    for (const auto Vertex: OutMeshData.Vertices)
+    {
+        FSkeletalVertex RawVertex = FSkeletalVertex();
+        RawVertex = Vertex;
+        OutRefSkeletal.RawVertices.Add(RawVertex);
+    }
+
+    for (const auto Bone : OutMeshData.Bones)
+    {
+        FBone RawBone;
+        RawBone = Bone;
+        OutRefSkeletal.RawBones.Add(RawBone);
+    }
+
+    const FName SkeletalMeshAssetName = FName(BaseName + TEXT("_SkeletalMesh"));
+    const FName SkeletonAssetName = FName(BaseName + TEXT("_Skeleton"));
+
+    OutMeshData.Name = SkeletalMeshAssetName.ToString();
+    OutRefSkeletal.Name = SkeletonAssetName.ToString();
+    
+    SkeletalMeshData.Add(SkeletalMeshAssetName, OutMeshData);
+    RefSkeletalData.Add(SkeletonAssetName, OutRefSkeletal);
+    
+    Scene->Destroy();
+
+    return true;
+}
+
+bool FFBXLoader::ParseSkeletalMeshFromFBX(const FString& FilePath, FSkeletalMeshRenderData& OutMeshData)
+{
+    // 에셋 식별자
+    const std::filesystem::path fullpath(FilePath);
+    // 파일명 뒤에 "_SkeletalMesh" 접미사를 붙입니다.
+    FString BaseName = FString(fullpath.stem().string());
+    const FName AssetName = FName(BaseName + TEXT("_USkeletalMesh"));
+    
+    if (SkeletalMeshData.Contains(AssetName))
+    {
+        OutMeshData = SkeletalMeshData[AssetName];
+        return true;
+    }
+
+    FRefSkeletal NewRefSkeletal;
+    return ParseSkeletalMeshAndSkeletonFromFBX(FilePath, OutMeshData, NewRefSkeletal);
+}
+
+bool FFBXLoader::ParseSkeletonFromFBX(const FString& FilePath, FRefSkeletal& OutRefSkeletal)
+{
+    // 에셋 식별자
+    const std::filesystem::path fullpath(FilePath);
+    // 파일명 뒤에 "_SkeletalMesh" 접미사를 붙입니다.
+    FString BaseName = FString(fullpath.stem().string());
+    const FName AssetName = FName(BaseName + TEXT("_Skeleton"));
+    if (RefSkeletalData.Contains(AssetName))
+    {
+        OutRefSkeletal = RefSkeletalData[AssetName];
+        return true;
+    }
+
+    FSkeletalMeshRenderData NewSkeletalMesh;
+    return ParseSkeletalMeshAndSkeletonFromFBX(FilePath, NewSkeletalMesh, OutRefSkeletal);
+}
+
+bool FFBXLoader::ParseAnimationFromFBX(const FString& FilePath, UAnimDataModel*& OutAnimDataModel)
+{
+    // 에셋 식별자
+    const std::filesystem::path fullpath(FilePath);
+    // 파일명 뒤에 "_SkeletalMesh" 접미사를 붙입니다.
+    FString BaseName = FString(fullpath.stem().string());
+    const FName AssetName = FName(* (BaseName + TEXT("_UAnimSequence")));
+    if (AnimDataMap.Contains(AssetName))
+    {
+        OutAnimDataModel = AnimDataMap[AssetName];
+        return true;
+    }
+    
+    static bool bInitialized = false;
+    if (bInitialized == false)
+    {
+        InitFBXManager();
+        bInitialized = true;
+    }
+    FbxScene* Scene = FbxScene::Create(FbxManager, "myScene");
+    FbxImporter* Importer = FbxImporter::Create(FbxManager, "myImporter");
+    
+    bool bResult = Importer->Initialize(GetData(FilePath), -1, FbxManager->GetIOSettings());
+    if (!bResult)
+        return false;
+    
+    Importer->Import(Scene);
+    Importer->Destroy();
+
+    FbxAxisSystem UnrealAxisSystem(
+        FbxAxisSystem::eZAxis,
+        FbxAxisSystem::eParityEven, // TODO Check
+        FbxAxisSystem::eLeftHanded
+    );
+    if (Scene->GetGlobalSettings().GetAxisSystem() != UnrealAxisSystem)
+        UnrealAxisSystem.DeepConvertScene(Scene);
+    
+    FbxSystemUnit SceneSystemUnit = Scene->GetGlobalSettings().GetSystemUnit();
+    if( SceneSystemUnit.GetScaleFactor() != 1.0 )
+    {
+        FbxSystemUnit::cm.ConvertScene(Scene);
+    }
+
+    ExtractFBXAnimData(Scene, FilePath, OutAnimDataModel);
+
+    return true;
+}
+
+bool FFBXLoader::ParseMaterialFromFBX(const FString& FilePath, TArray<FObjMaterialInfo>& OutMaterialInfos)
+{
+    static bool bInitialized = false;
+    if (bInitialized == false)
+    {
+        InitFBXManager();
+        bInitialized = true;
+    }
+    FbxScene* Scene = FbxScene::Create(FbxManager, "myScene");
+    FbxImporter* Importer = FbxImporter::Create(FbxManager, "myImporter");
+    
+    bool bResult = Importer->Initialize(GetData(FilePath), -1, FbxManager->GetIOSettings());
+    if (!bResult)
+        return {};
+    
+    Importer->Import(Scene);
+    Importer->Destroy();
+
+    FbxAxisSystem UnrealAxisSystem(
+        FbxAxisSystem::eZAxis,
+        FbxAxisSystem::eParityEven, // TODO Check
+        FbxAxisSystem::eLeftHanded
+    );
+    if (Scene->GetGlobalSettings().GetAxisSystem() != UnrealAxisSystem)
+        UnrealAxisSystem.DeepConvertScene(Scene);
+    
+    FbxSystemUnit SceneSystemUnit = Scene->GetGlobalSettings().GetSystemUnit();
+    if( SceneSystemUnit.GetScaleFactor() != 1.0 )
+    {
+        FbxSystemUnit::cm.ConvertScene(Scene);
+    }
+
+    FbxNode* RootNode = Scene->GetRootNode();
+    if (RootNode == nullptr)
+        return false;
+
+    // 3) 재귀 추출 (중복 방지용 Set)
+    TSet<FName> Processed;
+    ExtractMaterialFromNode(Scene->GetRootNode(), OutMaterialInfos, Processed);
+
+    // 4) 메시에서 머티리얼을 하나도 못 뽑았다면 기본 머티리얼 하나 추가
+    if (OutMaterialInfos.Num() == 0)
+    {
+        OutMaterialInfos.Add(FObjMaterialInfo());
+    }
+}
+
+FSkeletalMeshRenderData FFBXLoader::ParseBin(const FString FilePath)
+{
+    FSkeletalMeshRenderData NewMeshData;
     FRefSkeletal RefSkeletal;
     
     std::filesystem::path fullpath(FilePath);
@@ -101,7 +298,7 @@ FSkeletalMeshRenderData* FFBXLoader::ParseBin(const FString FilePath)
     FString originalFilePath;
     FWindowsBinHelper::LoadFromBin(FilePath, ar);
     ar >> originalFilePath;
-    ar >> *NewMeshData >> RefSkeletal;
+    ar >> NewMeshData >> RefSkeletal;
     
     int ParsedAnimCount;
     FName AnimKey;
@@ -120,17 +317,17 @@ FSkeletalMeshRenderData* FFBXLoader::ParseBin(const FString FilePath)
     return NewMeshData;
 }
 
-void FFBXLoader::ExtractFBXMeshData(const FbxScene* Scene, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
+void FFBXLoader::ExtractFBXMeshData(const FbxScene* Scene, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal)
 {
     FbxNode* RootNode = Scene->GetRootNode();
     if (RootNode == nullptr)
         return;
 
-    ExtractBoneFromNode(RootNode, MeshData, OutRefSkeletal);
-    ExtractMeshFromNode(RootNode, MeshData, OutRefSkeletal);
+    ExtractBoneFromNode(RootNode, OutMeshData, OutRefSkeletal);
+    ExtractMeshFromNode(RootNode, OutMeshData, OutRefSkeletal);
 }
 
-void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
+void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal)
 {
     // Clear existing bone tree data
     OutRefSkeletal.BoneTree.Empty();
@@ -188,7 +385,7 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
         }
         
         // Add bone to array and create mapping
-        int BoneIndex = MeshData->Bones.Add(NewBone);
+        int BoneIndex = OutMeshData.Bones.Add(NewBone);
         OutRefSkeletal.BoneNameToIndexMap.Add(BoneName, BoneIndex);
         
         // Create corresponding bone tree node
@@ -224,7 +421,7 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
                 int ParentIndex = OutRefSkeletal.BoneNameToIndexMap[ParentName];
                 
                 // Update parent index in the bone
-                MeshData->Bones[BoneIndex].ParentIndex = ParentIndex;
+                OutMeshData.Bones[BoneIndex].ParentIndex = ParentIndex;
                 
                 // Add this bone as a child of the parent in the tree structure
                 OutRefSkeletal.BoneTree[ParentIndex].ChildIndices.Add(BoneIndex);
@@ -233,9 +430,9 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
     }
 
     // Find and Save Root bone nodes
-    for (int i = 0; i < MeshData->Bones.Num(); ++i)
+    for (int i = 0; i < OutMeshData.Bones.Num(); ++i)
     {
-        if (MeshData->Bones[i].ParentIndex == -1)
+        if (OutMeshData.Bones[i].ParentIndex == -1)
         {
             OutRefSkeletal.RootBoneIndices.Add(i);
         }
@@ -243,7 +440,7 @@ void FFBXLoader::ExtractBoneFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
 }
 
 /* Extract할 때 FBX의 Mapping Mode와 Reference Mode에 따라 모두 다르게 파싱을 진행해야 함!! */
-void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
+void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal)
 {
     FbxMesh* Mesh = Node->GetMesh();
     if (Mesh)
@@ -255,8 +452,8 @@ void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
             Mesh = Node->GetMesh();
         }
         
-        int BaseVertexIndex = MeshData->Vertices.Num();
-        int BaseIndexOffset = MeshData->Indices.Num();
+        int BaseVertexIndex = OutMeshData.Vertices.Num();
+        int BaseIndexOffset = OutMeshData.Indices.Num();
         
         for (int d = 0; d < Mesh->GetDeformerCount(FbxDeformer::eSkin); ++d)
         {
@@ -264,34 +461,74 @@ void FFBXLoader::ExtractMeshFromNode(FbxNode* Node, FSkeletalMeshRenderData* Mes
             if (Skin)
             {
                 // BaseVertexIndex는 Vertex 추출 직후 오프셋을 위해 넘겨 줍니다.
-                ProcessSkinning(Skin, MeshData, OutRefSkeletal, BaseVertexIndex);
+                ProcessSkinning(Skin, OutMeshData, OutRefSkeletal, BaseVertexIndex);
                 // 보통 메시당 하나의 Skin만 쓰므로 break 해도 무방합니다.
                 break;
             }
         }
 
         // 버텍스 데이터 추출
-        ExtractVertices(Mesh, MeshData, OutRefSkeletal);
+        ExtractVertices(Mesh, OutMeshData, OutRefSkeletal);
         
         // 인덱스 데이터 추출.
         // 250510) ExtractVertices에서 같이 추출하도록 수정.
         // ExtractIndices(Mesh, MeshData, BaseVertexIndex);
         
         // 머테리얼 데이터 추출
-        ExtractMaterials(Node, Mesh, MeshData, OutRefSkeletal, BaseIndexOffset);
+        ExtractMaterials(Node, Mesh, OutMeshData, OutRefSkeletal, BaseIndexOffset);
         
         // 바운딩 박스 업데이트
-        UpdateBoundingBox(*MeshData);
+        UpdateBoundingBox(OutMeshData);
     }
 
     // 자식 노드들에 대해 재귀적으로 수행
     int childCount = Node->GetChildCount();
-    for (int i = 0; i < childCount; i++) {
-        ExtractMeshFromNode(Node->GetChild(i), MeshData, OutRefSkeletal);
+    for (int i = 0; i < childCount; i++)
+    {
+        ExtractMeshFromNode(Node->GetChild(i), OutMeshData, OutRefSkeletal);
     }
 }
 
-void FFBXLoader::ExtractVertices(FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal)
+void FFBXLoader::ExtractMaterialFromNode(FbxNode* Node, TArray<FObjMaterialInfo>& OutMaterialInfos, TSet<FName>& ProcessedMaterials)
+{
+    FbxMesh* Mesh = Node->GetMesh();
+    if (Mesh)
+    {
+        if (!IsTriangulated(Mesh))
+        {
+            FbxGeometryConverter Converter = FbxGeometryConverter(FbxManager);
+            Converter.Triangulate(Mesh, true);
+            Mesh = Node->GetMesh();
+        }
+
+        auto* MatElem = Mesh->GetElementMaterial();
+        int  MatCount = Node->GetMaterialCount();
+        for (int32 i = 0; i < MatCount; ++i)
+        {
+            FbxSurfaceMaterial* SrcMtl = Node->GetMaterial(i);
+            if (!SrcMtl) continue;
+
+            // 중복 검사: FbxSurfaceMaterial::GetName()을 FName으로 변환
+            FName MtlName = FName(FString(SrcMtl->GetName()));
+            if (ProcessedMaterials.Contains(MtlName))
+                continue;
+            ProcessedMaterials.Add(MtlName);
+
+            // 변환
+            FObjMaterialInfo Info = ConvertFbxToObjMaterialInfo(SrcMtl);
+            OutMaterialInfos.Add(MoveTemp(Info));
+        }
+    }
+
+    // 자식 노드들에 대해 재귀적으로 수행
+    int childCount = Node->GetChildCount();
+    for (int i = 0; i < childCount; i++)
+    {
+        ExtractMaterialFromNode(Node->GetChild(i), OutMaterialInfos, ProcessedMaterials);
+    }
+}
+
+void FFBXLoader::ExtractVertices(FbxMesh* Mesh, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal)
 {
     IndexMap.Empty();
     SkinWeightMap.Empty();
@@ -310,19 +547,15 @@ void FFBXLoader::ExtractVertices(FbxMesh* Mesh, FSkeletalMeshRenderData* MeshDat
             ExtractUV(Mesh, vertex, p, v);
             ExtractTangent(Mesh, vertex, p, v);
             StoreWeights(Mesh, vertex, p, v);
-            StoreVertex(vertex, MeshData);
+            StoreVertex(vertex, OutMeshData);
         }
     }
 }
 
-FSkeletalVertex& FFBXLoader::GetVertexFromControlPoint(
-    FbxMesh* Mesh,
-    int PolygonIndex,
-    int VertexIndex
-)
+FSkeletalVertex FFBXLoader::GetVertexFromControlPoint(FbxMesh* Mesh, int PolygonIndex, int VertexIndex)
 {
     auto* ControlPoints = Mesh->GetControlPoints();
-    FSkeletalVertex Vertex;
+    FSkeletalVertex Vertex = FSkeletalVertex();
 
     // 위치
     // auto& CP = ControlPoints[ControlPointIndex];
@@ -340,12 +573,7 @@ FSkeletalVertex& FFBXLoader::GetVertexFromControlPoint(
     return Vertex;
 }
 
-void FFBXLoader::ExtractNormal(
-    FbxMesh* Mesh,
-    FSkeletalVertex& Vertex,
-    int PolygonIndex,
-    int VertexIndex
-)
+void FFBXLoader::ExtractNormal(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex)
 {
     FbxLayerElementNormal* NormalElem = Mesh->GetElementNormal();
     if (!NormalElem) return;
@@ -384,12 +612,7 @@ void FFBXLoader::ExtractNormal(
 
 }
 
-void FFBXLoader::ExtractUV(
-    FbxMesh* Mesh,
-    FSkeletalVertex& Vertex,
-    int PolygonIndex,
-    int VertexIndex
-)
+void FFBXLoader::ExtractUV(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex)
 {
     FbxLayerElementUV* UVElem = Mesh->GetElementUV(0);
     if (!UVElem) return;
@@ -427,12 +650,7 @@ void FFBXLoader::ExtractUV(
 
 }
 
-void FFBXLoader::ExtractTangent(
-    FbxMesh* Mesh,
-    FSkeletalVertex& Vertex,
-    int PolygonIndex,
-    int VertexIndex
-)
+void FFBXLoader::ExtractTangent(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex)
 {
     auto* TanElem = Mesh->GetElementTangent(0);
     if (!TanElem || TanElem->GetDirectArray().GetCount() == 0)
@@ -510,23 +728,36 @@ void FFBXLoader::ExtractSkinningData(FbxMesh* Mesh, FRefSkeletal& OutRefSkeletal
     } 
 }
 
-void FFBXLoader::StoreWeights(
-    FbxMesh* Mesh,
-    FSkeletalVertex& Vertex,
-    int PolygonIndex,
-    int VertexIndex
-)
+void FFBXLoader::StoreWeights(FbxMesh* Mesh, FSkeletalVertex& Vertex, int PolygonIndex, int VertexIndex)
 {
     int ControlPointIndex = Mesh->GetPolygonVertex(PolygonIndex, VertexIndex);
     for (int i = 0; i < std::min(SkinWeightMap[ControlPointIndex].Num(), 4); ++i)
     {
         const FBoneWeightInfo& info = SkinWeightMap[ControlPointIndex][i];
-        Vertex.BoneIndices[i] = info.BoneIndex;
-        Vertex.BoneWeights[i] = info.BoneWeight;
+        if (i == 0)
+        {
+            Vertex.BoneIndices0 = info.BoneIndex;
+            Vertex.BoneWeights0 = info.BoneWeight;
+        }
+        else if (i == 1)
+        {
+            Vertex.BoneIndices1 = info.BoneIndex;
+            Vertex.BoneWeights1 = info.BoneWeight;
+        }
+        else if (i == 2)
+        {
+            Vertex.BoneIndices2 = info.BoneIndex;
+            Vertex.BoneWeights2 = info.BoneWeight;
+        }
+        else if (i == 3)
+        {
+            Vertex.BoneIndices3 = info.BoneIndex;
+            Vertex.BoneWeights3 = info.BoneWeight;
+        }
     }
 }
 
-void FFBXLoader::StoreVertex(FSkeletalVertex& vertex, FSkeletalMeshRenderData* MeshData)
+void FFBXLoader::StoreVertex(FSkeletalVertex& vertex, FSkeletalMeshRenderData& OutMeshData)
 {
     std::stringstream ss;
     ss << vertex.Position.X << "," << vertex.Position.Y << "," << vertex.Position.Z << ",";
@@ -536,17 +767,17 @@ void FFBXLoader::StoreVertex(FSkeletalVertex& vertex, FSkeletalMeshRenderData* M
     uint32 index;
     if (!IndexMap.Contains(key))
     {
-        index = MeshData->Vertices.Num();
-        MeshData->Vertices.Add(vertex);
+        index = OutMeshData.Vertices.Num();
+        OutMeshData.Vertices.Add(vertex);
         IndexMap[key] = index;
     } else
     {
         index = IndexMap[key];
     }
-    MeshData->Indices.Add(index);
+    OutMeshData.Indices.Add(index);
 }
 
-void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal, int BaseVertexIndex)
+void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal, int BaseVertexIndex)
 {
     int ClusterCount = Skin->GetClusterCount();
 
@@ -562,7 +793,7 @@ void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData* MeshDat
         int* ExistingBoneIndex = OutRefSkeletal.BoneNameToIndexMap.Find(BoneName);
         if (!ExistingBoneIndex)
             continue;
-        FBone& bone = MeshData->Bones[*ExistingBoneIndex];
+        FBone& bone = OutMeshData.Bones[*ExistingBoneIndex];
             
         // Get binding pose transformation
         // NewBone.InverseBindPoseMatrix = FMatrix::Inverse(NewBone.GlobalTransform);
@@ -605,27 +836,34 @@ void FFBXLoader::ProcessSkinning(FbxSkin* Skin, FSkeletalMeshRenderData* MeshDat
             float Weight = static_cast<float>(ControlPointWeights[i]);
             
             // Make sure vertex index is valid
-            if (VertexIndex >= 0 && VertexIndex < MeshData->Vertices.Num())
+            if (VertexIndex >= 0 && VertexIndex < OutMeshData.Vertices.Num())
             {
-                // Find first empty weight slot
-                for (int j = 0; j < 4; j++)
+                if (OutMeshData.Vertices[VertexIndex].BoneWeights0 == 0.0f)
                 {
-                    if (MeshData->Vertices[VertexIndex].BoneWeights[j] == 0.0f)
-                    {
-                        MeshData->Vertices[VertexIndex].BoneIndices[j] = BoneIndex;
-                        MeshData->Vertices[VertexIndex].BoneWeights[j] = Weight;
-                        break;
-                    }
+                    OutMeshData.Vertices[VertexIndex].BoneIndices0 = BoneIndex;
+                    OutMeshData.Vertices[VertexIndex].BoneWeights0 = Weight;
+                }
+                else if (OutMeshData.Vertices[VertexIndex].BoneWeights1 == 0.0f)
+                {
+                    OutMeshData.Vertices[VertexIndex].BoneIndices1 = BoneIndex;
+                    OutMeshData.Vertices[VertexIndex].BoneWeights1 = Weight;
+                }
+                else if (OutMeshData.Vertices[VertexIndex].BoneWeights2 == 0.0f)
+                {
+                    OutMeshData.Vertices[VertexIndex].BoneIndices2 = BoneIndex;
+                    OutMeshData.Vertices[VertexIndex].BoneWeights2 = Weight;
+                }
+                else if (OutMeshData.Vertices[VertexIndex].BoneWeights3 == 0.0f)
+                {
+                    OutMeshData.Vertices[VertexIndex].BoneIndices3 = BoneIndex;
+                    OutMeshData.Vertices[VertexIndex].BoneWeights3 = Weight;
                 }
             }
         }
     }
 }
 
-void FFBXLoader::ExtractIndices(
-    FbxMesh* Mesh,
-    FSkeletalMeshRenderData* MeshData,
-    int BaseVertexIndex)
+void FFBXLoader::ExtractIndices(FbxMesh* Mesh, FSkeletalMeshRenderData& OutMeshData, int BaseVertexIndex)
 {
     // 1) 정점 생성 때 쓴 매핑 모드 재확인
     auto* NormalElem = Mesh->GetElementNormal();
@@ -650,16 +888,16 @@ void FFBXLoader::ExtractIndices(
                 int c0 = Mesh->GetPolygonVertex(p, 0);
                 int c1 = Mesh->GetPolygonVertex(p, i - 1);
                 int c2 = Mesh->GetPolygonVertex(p, i);
-                MeshData->Indices.Add(BaseVertexIndex + c0);
-                MeshData->Indices.Add(BaseVertexIndex + c1);
-                MeshData->Indices.Add(BaseVertexIndex + c2);
+                OutMeshData.Indices.Add(BaseVertexIndex + c0);
+                OutMeshData.Indices.Add(BaseVertexIndex + c1);
+                OutMeshData.Indices.Add(BaseVertexIndex + c2);
             }
             else
             {
                 // 폴리곤-버텍스 기준 인덱스
-                MeshData->Indices.Add(BaseVertexIndex + pvStart + 0);
-                MeshData->Indices.Add(BaseVertexIndex + pvStart + (i - 1));
-                MeshData->Indices.Add(BaseVertexIndex + pvStart + i);
+                OutMeshData.Indices.Add(BaseVertexIndex + pvStart + 0);
+                OutMeshData.Indices.Add(BaseVertexIndex + pvStart + (i - 1));
+                OutMeshData.Indices.Add(BaseVertexIndex + pvStart + i);
             }
         }
 
@@ -667,8 +905,7 @@ void FFBXLoader::ExtractIndices(
     }
 }
 
-
-void FFBXLoader::ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRenderData* MeshData, FRefSkeletal& OutRefSkeletal, int BaseIndexOffset)
+void FFBXLoader::ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRenderData& OutMeshData, FRefSkeletal& OutRefSkeletal, int BaseIndexOffset)
 {
     auto* MatElem = Mesh->GetElementMaterial();
     int  matCount = Node->GetMaterialCount();
@@ -736,7 +973,7 @@ void FFBXLoader::ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRen
         // Subset 만들기
         // Material 생성 & 등록
         FbxSurfaceMaterial* srcMtl = Node->GetMaterial(matIdx);
-        FString            mtlName = srcMtl ? FString(srcMtl->GetName()) : TEXT("Mat") + FString::FromInt(matIdx);
+        FString             mtlName = srcMtl ? FString(srcMtl->GetName()) : TEXT("Mat") + FString::FromInt(matIdx);
         auto                newMtl = FManagerOBJ::CreateMaterial(ConvertFbxToObjMaterialInfo(srcMtl));
         int                 finalIdx = OutRefSkeletal.Materials.Add(newMtl);
 
@@ -760,7 +997,7 @@ void FFBXLoader::ExtractMaterials(FbxNode* Node, FbxMesh* Mesh, FSkeletalMeshRen
         Subset.MaterialName = DefaultMaterial->GetName();
         Subset.MaterialIndex = MaterialIndex;
         Subset.IndexStart = BaseIndexOffset;
-        Subset.IndexCount = MeshData->Indices.Num() - BaseIndexOffset;
+        Subset.IndexCount = OutMeshData.Indices.Num() - BaseIndexOffset;
         
         OutRefSkeletal.MaterialSubsets.Add(Subset);
     }
@@ -827,6 +1064,37 @@ void FFBXLoader::ExtractFBXAnimData(const FbxScene* scene, const FString& FilePa
     }
 }
 
+void FFBXLoader::ExtractFBXAnimData(const FbxScene* scene, const FString& FilePath, UAnimDataModel*& OutAnimDataModel)
+{
+    int AnimStackCount = scene->GetSrcObjectCount<FbxAnimStack>();
+
+    // Before - collect all bone nodes 
+    TArray<FbxNode*> BoneNodes;
+    std::function<void(FbxNode*)> FindBones = [&BoneNodes, &FindBones](FbxNode* node)
+    {
+        if (!node)
+            return;
+
+        FbxNodeAttribute* attr = node->GetNodeAttribute();
+        if (attr && attr->GetAttributeType() == FbxNodeAttribute::eSkeleton)
+            BoneNodes.Add(node);
+
+        for (int i = 0; i < node->GetChildCount(); ++i)
+            FindBones(node->GetChild(i));
+    };
+    FindBones(scene->GetRootNode());
+
+    // parse AnimClips (AnimLayers)
+    for (int i = 0; i < AnimStackCount; ++i)
+    {
+        FbxAnimStack* AnimStack = scene->GetSrcObject<FbxAnimStack>(i);
+        if (!AnimStack)
+            continue;
+
+        ExtractAnimClip(AnimStack, BoneNodes, FilePath, OutAnimDataModel);
+    }
+}
+
 void FFBXLoader::ExtractAnimClip(FbxAnimStack* AnimStack, const TArray<FbxNode*>& BoneNodes, const FString& FilePath)
 {
     UAnimDataModel* AnimData = FObjectFactory::ConstructObject<UAnimDataModel>(nullptr);
@@ -884,9 +1152,101 @@ void FFBXLoader::ExtractAnimClip(FbxAnimStack* AnimStack, const TArray<FbxNode*>
     ParsedAnimData.Add(key, AnimData);
 }
 
+void FFBXLoader::ExtractAnimClip(FbxAnimStack* AnimStack, const TArray<FbxNode*>& BoneNodes, const FString& FilePath,
+    UAnimDataModel*& OutAnimDataModel)
+{
+    FbxTime::EMode timeMode = AnimStack->GetScene()->GetGlobalSettings().GetTimeMode();
+    switch (timeMode)
+    {
+    case FbxTime::eFrames120:
+        OutAnimDataModel->FrameRate = FFrameRate(120, 1); break;
+    case FbxTime::eFrames100:
+        OutAnimDataModel->FrameRate = FFrameRate(100, 1); break;
+    case FbxTime::eFrames60:
+        OutAnimDataModel->FrameRate = FFrameRate(60, 1); break;
+    case FbxTime::eFrames50:
+        OutAnimDataModel->FrameRate = FFrameRate(50, 1); break;
+    case FbxTime::eFrames48:
+        OutAnimDataModel->FrameRate = FFrameRate(48, 1); break;
+    case FbxTime::eFrames30:
+        OutAnimDataModel->FrameRate = FFrameRate(30, 1); break;
+    case FbxTime::eFrames24:
+        OutAnimDataModel->FrameRate = FFrameRate(24, 1); break;
+    }
+
+    OutAnimDataModel->PlayLength = static_cast<float>(AnimStack->GetLocalTimeSpan().GetDuration().GetSecondDouble());
+    OutAnimDataModel->NumberOfFrames = FMath::Floor( OutAnimDataModel->PlayLength / OutAnimDataModel->FrameRate.AsInterval() + 0.5f );
+    OutAnimDataModel->NumberOfKeys = OutAnimDataModel->NumberOfFrames + 1;
+    
+    int layerCount = AnimStack->GetMemberCount<FbxAnimLayer>();
+    for (int i = 0; i < BoneNodes.Num(); ++i)
+    {
+        FbxNode* BoneNode = BoneNodes[i];
+        if (!BoneNode)
+            continue;
+        FBoneAnimationTrack AnimTrack;
+        AnimTrack.Name = BoneNode->GetName();
+        
+        FRawAnimSequenceTrack AnimTrackData;
+        for (int j = 0; j < layerCount; ++j)
+        {
+            FbxAnimLayer* AnimLayer = AnimStack->GetMember<FbxAnimLayer>(j);
+            if (!AnimLayer)
+                continue;
+
+            ExtractAnimTrack(BoneNode, AnimTrackData, OutAnimDataModel);
+            // ExtractAnimCurve(AnimLayer, BoneNode, AnimTrackData);
+        }
+        AnimTrack.InternalTrackData = AnimTrackData;
+
+        OutAnimDataModel->BoneAnimationTracks.Add(AnimTrack);
+    }
+    // 에셋 식별자
+    const std::filesystem::path fullpath(FilePath);
+    // 파일명 뒤에 "_SkeletalMesh" 접미사를 붙입니다.
+    FString BaseName = FString(fullpath.stem().string());
+    const FName AssetName = FName(* (BaseName + TEXT("_Animation")));
+
+    AnimDataMap.Add(AssetName, OutAnimDataModel);
+    ParsedAnimData.Add(AssetName, OutAnimDataModel);
+}
+
 void FFBXLoader::ExtractAnimTrack(FbxNode* BoneNode, FRawAnimSequenceTrack& AnimTrack, const UAnimDataModel* AnimData)
 {
     for (int i = 0; i < AnimData->NumberOfKeys; ++i)
+    {
+        FbxTime t;
+        t.SetTime(0, 0, 0, i);
+        FbxAMatrix tf = BoneNode->EvaluateLocalTransform(t);
+        FbxVector4 translation = tf.GetT();
+        FbxQuaternion rotation = tf.GetQ();
+        FbxVector4 scaling = tf.GetS();
+        
+        AnimTrack.PosKeys.Add(FVector(
+            translation[0],
+            translation[1],
+            translation[2]
+        ));
+
+        // quaternion 순서 맞추기 (xyzw -> wxyz)
+        AnimTrack.RotKeys.Add(FQuat(
+            rotation[3],
+            rotation[0],
+            rotation[1],
+            rotation[2]
+        ));
+
+        AnimTrack.ScaleKeys.Add(FVector(
+            scaling[0],
+            scaling[1],
+            scaling[2]
+        ));
+    }
+}
+
+void FFBXLoader::ExtractAnimTrack(FbxNode* BoneNode, FRawAnimSequenceTrack& AnimTrack, UAnimDataModel*& OutAnimDataModel)
+{
+    for (int i = 0; i < OutAnimDataModel->NumberOfKeys; ++i)
     {
         FbxTime t;
         t.SetTime(0, 0, 0, i);
@@ -1007,7 +1367,7 @@ void FFBXLoader::ExtractAnimCurve(FbxAnimLayer* AnimLayer, FbxNode* BoneNode, FR
     AnimTrack.InterpMode = EAnimInterpolationType::Cubic;
 }
 
-FSkeletalMeshRenderData* FFBXLoader::GetSkeletalRenderData(const FString& FilePath)
+FSkeletalMeshRenderData FFBXLoader::GetSkeletalRenderData(const FString& FilePath)
 {
     // TODO: 폴더에서 가져올 수 있으면 가져오기
     if (SkeletalMeshData.Contains(FilePath))
@@ -1015,7 +1375,7 @@ FSkeletalMeshRenderData* FFBXLoader::GetSkeletalRenderData(const FString& FilePa
         return SkeletalMeshData[FilePath];
     }
     
-    return nullptr;
+    return {};
 }
 
 UAnimDataModel* FFBXLoader::GetAnimData(const FString& FilePath)
@@ -1111,81 +1471,63 @@ FObjMaterialInfo FFBXLoader::ConvertFbxToObjMaterialInfo(FbxSurfaceMaterial* Fbx
     };
 
     // map_Kd
-    ReadFirstTexture(FbxSurfaceMaterial::sDiffuse,
-                     OutInfo.DiffuseTextureName,
-                     OutInfo.DiffuseTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sDiffuse,OutInfo.DiffuseTextureName,OutInfo.DiffuseTexturePath);
     // map_Ka
-    ReadFirstTexture(FbxSurfaceMaterial::sAmbient,
-                     OutInfo.AmbientTextureName,
-                     OutInfo.AmbientTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sAmbient,OutInfo.AmbientTextureName, OutInfo.AmbientTexturePath);
     // map_Ks
-    ReadFirstTexture(FbxSurfaceMaterial::sSpecular,
-                     OutInfo.SpecularTextureName,
-                     OutInfo.SpecularTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sSpecular,OutInfo.SpecularTextureName,OutInfo.SpecularTexturePath);
     // map_Bump 또는 map_Ns
-    ReadFirstTexture(FbxSurfaceMaterial::sBump,
-                     OutInfo.BumpTextureName,
-                     OutInfo.BumpTexturePath);
-    ReadFirstTexture(FbxSurfaceMaterial::sNormalMap,
-                     OutInfo.NormalTextureName,
-                     OutInfo.NormalTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sBump,OutInfo.BumpTextureName,OutInfo.BumpTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sNormalMap,OutInfo.NormalTextureName,OutInfo.NormalTexturePath);
     // map_d (Alpha)
-    ReadFirstTexture(FbxSurfaceMaterial::sTransparentColor,
-                     OutInfo.AlphaTextureName,
-                     OutInfo.AlphaTexturePath);
+    ReadFirstTexture(FbxSurfaceMaterial::sTransparentColor,OutInfo.AlphaTextureName,OutInfo.AlphaTexturePath);
 
     return OutInfo;
 }
 
-USkeletalMesh* FFBXLoader::CreateSkeletalMesh(const FString& FilePath)
-{
-    // USkeletalMesh가 있으면 return
-    USkeletalMesh* SkeletalMesh = GetSkeletalMesh(FilePath);
-    if (SkeletalMesh != nullptr)
-    {
-        return SkeletalMesh;
-    }
-
-
-    // Contents/FBX/ 폴더 내에 대응되는 bin 파일 있는지 확인하고.
-    // 있으면 bin 파싱, 없으면 fbx 직접 파싱.
-    std::filesystem::path path(FilePath);
-    std::filesystem::path binPath("Contents/FBX/" + path.filename().string() + ".bin");
-    FSkeletalMeshRenderData* MeshData;
-    if (std::filesystem::exists(binPath))
-    {
-        MeshData = ParseBin(binPath.string());
-    }
-    else
-    {
-        MeshData = ParseFBX(FilePath);
-    }
-
-    if (MeshData == nullptr)
-        return nullptr;
-
-    SkeletalMesh = FObjectFactory::ConstructObject<USkeletalMesh>(nullptr);
-    SkeletalMesh->SetData(FilePath);
-
-    SkeletalMeshMap.Add(FilePath, SkeletalMesh);
-    return SkeletalMesh;
-}
-
-USkeletalMesh* FFBXLoader::GetSkeletalMesh(const FString& FilePath)
-{
-    if (SkeletalMeshMap.Contains(FilePath))
-        return SkeletalMeshMap[FilePath];
-
-    return nullptr;
-}
+// USkeletalMesh* FFBXLoader::CreateSkeletalMesh(const FString& FilePath)
+// {
+//     // USkeletalMesh가 있으면 return
+//     USkeletalMesh* SkeletalMesh = GetSkeletalMesh(FilePath);
+//     if (SkeletalMesh != nullptr)
+//     {
+//         return SkeletalMesh;
+//     }
+//
+//     // Contents/FBX/ 폴더 내에 대응되는 bin 파일 있는지 확인하고.
+//     // 있으면 bin 파싱, 없으면 fbx 직접 파싱.
+//     std::filesystem::path path(FilePath);
+//     std::filesystem::path binPath("Contents/FBX/" + path.filename().string() + ".bin");
+//     FSkeletalMeshRenderData MeshData;
+//     if (std::filesystem::exists(binPath))
+//     {
+//         MeshData = ParseBin(binPath.string());
+//     }
+//     else
+//     {
+//         MeshData = ParseFBX(FilePath);
+//     }
+//
+//     SkeletalMesh = FObjectFactory::ConstructObject<USkeletalMesh>(nullptr);
+//     SkeletalMesh->SetData(FilePath);
+//
+//     SkeletalMeshMap.Add(FilePath, SkeletalMesh);
+//     return SkeletalMesh;
+// }
+//
+// USkeletalMesh* FFBXLoader::GetSkeletalMesh(const FString& FilePath)
+// {
+//     if (SkeletalMeshMap.Contains(FilePath))
+//         return SkeletalMeshMap[FilePath];
+//
+//     return nullptr;
+// }
 
 FSkeletalMeshRenderData FFBXLoader::GetCopiedSkeletalRenderData(const FString& FilePath)
 {
-    // 있으면 가져오고
-    FSkeletalMeshRenderData* OriginRenderData = SkeletalMeshData[FilePath];
-    if (OriginRenderData != nullptr)
+    if (SkeletalMeshData.Contains(FilePath))
     {
-        return *OriginRenderData;
+        return SkeletalMeshData[FilePath];
     }
     // 없으면 기본 생성자
     return {};

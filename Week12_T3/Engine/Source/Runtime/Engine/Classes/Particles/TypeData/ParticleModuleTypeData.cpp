@@ -4,6 +4,7 @@
 #include "Engine/Classes/Particles/ParticleLODLevel.h"
 #include "Particles/Modules/ParticleModuleRequired.h"
 #include "Engine/FLoaderOBJ.h"
+#include "Engine/Asset/AssetManager.h"
 
 FParticleEmitterInstance* UParticleModuleTypeDataBase::CreateInstance(UParticleEmitter* InEmitterParent, UParticleSystemComponent* InComponent)
 {
@@ -31,7 +32,10 @@ void UParticleModuleTypeDataMesh::Spawn(FParticleEmitterInstance* Owner, int32 O
 {
     if (!MeshPath.IsEmpty())
     {
-        Owner->RequiredModule->Mesh = FManagerOBJ::CreateStaticMesh(MeshPath.ToWideString());
+        std::filesystem::path Path = MeshPath;
+        FString MeshName = Path.stem().string();
+        Owner->RequiredModule->Mesh = UAssetManager::Get().Get<UStaticMesh>(MeshName);
+        //Owner->RequiredModule->Mesh = FManagerOBJ::CreateStaticMesh(MeshPath.ToWideString());
     }
 }
 

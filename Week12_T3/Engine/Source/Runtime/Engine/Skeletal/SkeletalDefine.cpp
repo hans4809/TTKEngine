@@ -8,9 +8,29 @@ FVector FSkeletalVertex::SkinVertexPosition(const TArray<FBone>& bones) const
 
     for (int i = 0; i < 4; ++i)
     {
-        int boneIndex = BoneIndices[i];
-        float weight = BoneWeights[i];
-
+        int boneIndex;
+        float weight;
+        if (i == 0)
+        {
+            boneIndex = BoneIndices0;
+            weight = BoneWeights0;
+        }
+        else if (i == 1)
+        {
+            boneIndex = BoneIndices1;
+            weight = BoneWeights1;
+        }
+        else if (i == 2)
+        {
+            boneIndex = BoneIndices2;
+            weight = BoneWeights2;
+        }
+        else if (i == 3)
+        {
+            boneIndex = BoneIndices3;
+            weight = BoneWeights3;
+        }
+        
         if (weight > 0.0f && boneIndex >= 0 && boneIndex < bones.Num())
         {
             const FMatrix& SkinMat = bones[boneIndex].SkinningMatrix;

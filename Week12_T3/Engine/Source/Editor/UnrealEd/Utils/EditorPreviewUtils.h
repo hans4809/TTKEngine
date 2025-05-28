@@ -16,7 +16,7 @@ namespace PhysicsPreviewUtils
     * @param OutWorld           생성된 World 반환
     * @param OutSkeletalActor   생성된 SkeletalMeshActor 반환
     */
-    void SetupPhysicsAssetPreview(const FString& FilePath)
+    void SetupPhysicsAssetPreview(const FString& FileName)
     {
         {
             UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
@@ -37,7 +37,7 @@ namespace PhysicsPreviewUtils
             ASkeletalMeshActor* SkeletalMeshActor = NewWorld->SpawnActor<ASkeletalMeshActor>();
             USkeletalMeshComponent* SkeletalMeshComp = SkeletalMeshActor->GetSkeletalMeshComponent();
             
-            SkeletalMeshComp->LoadSkeletalMesh(FilePath);
+            SkeletalMeshComp->LoadSkeletalMesh(FileName);
             
             UPhysicsAsset* NewPhysicsAsset = FObjectFactory::ConstructObject<UPhysicsAsset>(nullptr);
 

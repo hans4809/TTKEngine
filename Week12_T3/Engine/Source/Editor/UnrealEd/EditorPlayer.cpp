@@ -147,44 +147,83 @@ void UEditorPlayer::PickActor(UWorld* World, const FVector& PickPosition) const
     int MaxIntersect = 0;
     float MinDistance = FLT_MAX;
 
-    for (const auto iter : TObjectRange<UPrimitiveComponent>())
+    for (AActor* Actor : World->GetLevel()->GetActors())
     {
-        if (iter->GetWorld() != World)
+        for (UActorComponent* Component : Actor->GetComponents())
         {
-            continue;
-        }
-
-        UPrimitiveComponent* pObj;
-
-        if (iter->IsA<UPrimitiveComponent>() || iter->IsA<ULightComponentBase>())
-        {
-            pObj = static_cast<UPrimitiveComponent*>(iter);
-        }
-        else
-        {
-            continue;
-        }
-
-        if (pObj && !pObj->IsA<UGizmoBaseComponent>())
-        {
-            float Distance = 0.0f;
-            int CurrentIntersectCount = 0;
-            if (RayIntersectsObject(PickPosition, pObj, Distance, CurrentIntersectCount))
+            // 1) UPrimitiveComponent 또는 ULightComponentBase 로 캐스팅
+            UPrimitiveComponent* PrimComp = nullptr;
+            
+            if (Component->IsA<UPrimitiveComponent>())
             {
-                if (Distance < MinDistance)
+                PrimComp = static_cast<UPrimitiveComponent*>(Component);
+            }
+            else if (Component->IsA<ULightComponentBase>())
+            {
+                PrimComp = static_cast<UPrimitiveComponent*>(Component);
+            }
+            if (!PrimComp) 
+                continue;
+
+            // 2) UGizmoBaseComponent 는 제외
+            if (PrimComp->IsA<UGizmoBaseComponent>()) 
+                continue;
+
+            // 3) 레이 교차 검사
+            float Distance = 0.0f;
+            int   CurrentIntersectCount = 0;
+            if (RayIntersectsObject(PickPosition, PrimComp, Distance, CurrentIntersectCount))
+            {
+                // 거리 우선, 같은 거리면 교차 횟수 우선
+                if (Distance < MinDistance ||
+                   (FMath::IsNearlyEqual(Distance, MinDistance) && CurrentIntersectCount > MaxIntersect))
                 {
-                    MinDistance = Distance;
+                    MinDistance  = Distance;
                     MaxIntersect = CurrentIntersectCount;
-                    Possible = pObj;
-                }
-                else if (abs(Distance - MinDistance) < FLT_EPSILON && CurrentIntersectCount > MaxIntersect)
-                {
-                    MaxIntersect = CurrentIntersectCount;
-                    Possible = pObj;
+                    Possible     = PrimComp;
                 }
             }
         }
     }
+
+    // for (const auto iter : TObjectRange<UPrimitiveComponent>())
+    // {
+    //     if (iter->GetWorld() != World)
+    //     {
+    //         continue;
+    //     }
+    //
+    //     UPrimitiveComponent* pObj;
+    //
+    //     if (iter->IsA<UPrimitiveComponent>() || iter->IsA<ULightComponentBase>())
+    //     {
+    //         pObj = static_cast<UPrimitiveComponent*>(iter);
+    //     }
+    //     else
+    //     {
+    //         continue;
+    //     }
+    //
+    //     if (pObj && !pObj->IsA<UGizmoBaseComponent>())
+    //     {
+    //         float Distance = 0.0f;
+    //         int CurrentIntersectCount = 0;
+    //         if (RayIntersectsObject(PickPosition, pObj, Distance, CurrentIntersectCount))
+    //         {
+    //             if (Distance < MinDistance)
+    //             {
+    //                 MinDistance = Distance;
+    //                 MaxIntersect = CurrentIntersectCount;
+    //                 Possible = pObj;
+    //             }
+    //             else if (abs(Distance - MinDistance) < FLT_EPSILON && CurrentIntersectCount > MaxIntersect)
+    //             {
+    //                 MaxIntersect = CurrentIntersectCount;
+    //                 Possible = pObj;
+    //             }
+    //         }
+    //     }
+    // }
 
     if (Possible != nullptr)
     {
