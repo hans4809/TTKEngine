@@ -145,12 +145,11 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
     namespace fs = std::filesystem;
     fs::path     fsPath(Path.ToWideString());
     FString      BaseName = fsPath.stem().string();
-    const FString AssetName = BaseName + "_" + ClassType->GetName();
 
     // 1) 캐시 조회
     {
         std::lock_guard<std::mutex> lock(Mutex);
-        if (UAsset** Cached = LoadedAssets.Find(AssetName))
+        if (UAsset** Cached = LoadedAssets.Find(BaseName))
         {
             return *Cached;
         }
@@ -182,7 +181,7 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
                 if (ClassType != UTexture::StaticClass())
                 {
                     // 5) 새 파일명 + 확장자 조합
-                    const FString NewFilename = AssetName + TEXT(".ttalkak");
+                    const FString NewFilename = BaseName + TEXT(".ttalkak");
                     // 6) 디렉터리 + 새 파일명 연결
                     const std::filesystem::path NewPath = (fsPath.parent_path() / NewFilename).generic_wstring();
                     Serializer::SaveToFile(Asset, NewPath);
@@ -196,11 +195,11 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
     if (Asset)
     {
         std::lock_guard<std::mutex> lock(Mutex);
-        LoadedAssets.Add(AssetName, Asset);
+        LoadedAssets.Add(BaseName, Asset);
         
         FAssetDescriptor desc;
-        Registry->GetDescriptor(AssetName, desc);
-        Asset->GetDescriptor() = desc;
+        Registry->GetDescriptor(BaseName, desc);
+        Asset->SetAssetDescriptor(desc);
     }
     
     return Asset;
