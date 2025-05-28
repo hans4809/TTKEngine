@@ -4,6 +4,8 @@
 #include "Vector.h"
 #include "Rotator.h"
 #include <PxTransform.h>
+
+
 class FTransform
 {
 public:
@@ -84,6 +86,10 @@ public:
         }
         return physx::PxTransform(Location.ToPxVec3(), pxRotation);
     }
+
+    // 로컬 축을 월드 공간 단위 벡터로 반환
+    FVector GetUnitAxis(EAxis::Type Axis) const;
+    
 
 private:
     static bool Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D);
