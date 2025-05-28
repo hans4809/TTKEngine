@@ -110,7 +110,9 @@ physx::PxShape* FBodyInstance::AddBoxGeometry(const FVector& HalfExtents, UPhysi
 
     if (NewShape)
     {
-        NewShape->setLocalPose(Transform.ToPxTransform());
+        FTransform NOScaleTF = Transform;
+        NOScaleTF.SetScale(FVector::OneVector);
+        NewShape->setLocalPose(NOScaleTF.ToPxTransform());
         physx::PxFilterData filterData;
         filterData.word0 = 1;   // 예: 그룹 1
         filterData.word1 = 0xFFFFFFFF; // 모든 그룹과 충돌
@@ -269,6 +271,7 @@ void FBodyInstance::SetDamping(float linearDamping, float angularDamping)
         {
             DynActor->setLinearDamping(linearDamping);
             DynActor->setAngularDamping(angularDamping);
+            DynActor->setMaxDepenetrationVelocity(2);
         }
     }
 }

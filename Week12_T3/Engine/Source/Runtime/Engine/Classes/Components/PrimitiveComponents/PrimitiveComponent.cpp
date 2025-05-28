@@ -165,8 +165,7 @@ bool UPrimitiveComponent::MoveComponent(const FVector& Delta)
 
 void UPrimitiveComponent::RecreatePhysicsState()
 {
-    DestroyPhysicsState();
-    OnCreatePhysicsState();
+
 }
 
 void UPrimitiveComponent::DestroyPhysicsState()
