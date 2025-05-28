@@ -260,7 +260,18 @@ void FBodyInstance::UpdateMassAndInertia(float DensityOrMass, const FVector* Mas
 void FBodyInstance::SetLinearVelocity(const FVector& Velocity)
 {
 }
-
+void FBodyInstance::SetDamping(float linearDamping, float angularDamping)
+{
+    if (PxActor && CurrentBodyType == EPhysBodyType::Dynamic)
+    {
+        physx::PxRigidDynamic* DynActor = static_cast<physx::PxRigidDynamic*>(PxActor);
+        if (DynActor)
+        {
+            DynActor->setLinearDamping(linearDamping);
+            DynActor->setAngularDamping(angularDamping);
+        }
+    }
+}
 FVector FBodyInstance::GetLinearVelocity() const
 {
     return FVector();

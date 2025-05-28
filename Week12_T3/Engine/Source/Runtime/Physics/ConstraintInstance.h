@@ -68,11 +68,11 @@ struct FConstraintInstance
 
     bool bLinearBreakable = false;
 
-    float LinearBreakThreshold = 300.0f;
+    float LinearBreakThreshold = 1000.0f;
 
     bool bAngularBreakable = false;
 
-    float AngularBreakThreshold = 500.0f;
+    float AngularBreakThreshold = 1000.0f;
 
     bool bDisableCollision = false; // 연결된 두 바디 간의 충돌을 비활성화할지 여부
 
