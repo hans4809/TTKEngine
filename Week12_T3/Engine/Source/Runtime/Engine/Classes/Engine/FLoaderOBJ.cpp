@@ -7,8 +7,6 @@
 #include "Components/Material/Material.h"
 #include "Components/Mesh/StaticMesh.h"
 
-#include "Physics/BodySetup/BodySetup.h"
-
 bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
 {
     std::ifstream OBJ(ObjFilePath.ToWideString());
@@ -781,63 +779,6 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
     {
         return staticMesh;
     }
-
-    staticMesh = FObjectFactory::ConstructObject<UStaticMesh>(nullptr);
-
-    UBodySetup* newBodySetup = FObjectFactory::ConstructObject<UBodySetup>(staticMesh);
-
-    staticMesh->SetBodySetup(newBodySetup);
-    const FVector Min = staticMeshRenderData.BoundingBoxMin;
-    const FVector Max = staticMeshRenderData.BoundingBoxMax;
-    const FVector Center = (Min + Max) * 0.5f; // 메시 로컬 공간에서의 AABB 중심
-    const FVector Extents = (Max - Min) * 0.5f; // AABB의 half-extents
-
-    // (A) AABB 기반 박스 추가
-    {
-        FKBoxElem BoxElem;
-        BoxElem.Center = Center; // 또는 FVector::ZeroVector 만약 BoxElem.Transform으로 위치 관리
-        BoxElem.Rotation = FQuat::Identity;
-        BoxElem.X = Extents.X * 2.0f; // 전체 크기
-        BoxElem.Y = Extents.Y * 2.0f;
-        BoxElem.Z = Extents.Z * 2.0f;
-        newBodySetup->AggGeom.BoxElems.Add(BoxElem);
-    }
-
-    // (B) AABB 기반 스피어 추가
-    {
-        FKSphereElem SphereElem;
-        SphereElem.Center = Center;
-        SphereElem.Radius = Extents.X;
-        newBodySetup->AggGeom.SphereElems.Add(SphereElem);
-    }
-
-    // (C) AABB 기반 캡슐 추가 (예시: Z축이 긴 캡슐)
-    {
-        FKSphylElem SphylElem;
-        SphylElem.Center = Center;
-        SphylElem.Radius = FMath::Max(Extents.X, Extents.Y);
-        SphylElem.Length = Extents.Z;
-        SphylElem.Rotation = FQuat(FVector::XAxisVector, FMath::DegreesToRadians(-90.0f));
-        newBodySetup->AggGeom.SphylElems.Add(SphylElem);
-    }
-
-    {
-        FKConvexElem ConvexElem;
-
-        for (const FVertexSimple& vert : staticMeshRenderData.Vertices)
-        {
-            ConvexElem.VertexData.Add(FVector(vert.x, vert.y, vert.z));
-        }
-
-        ConvexElem.SetTransform(FTransform::Identity);
-        ConvexElem.UpdateElemBox();
-        newBodySetup->AggGeom.ConvexElems.Add(ConvexElem);
-    }
-
-    // (4) PhysicsCooking: PhysX SDK를 위해 물리 메쉬 생성
-    newBodySetup->InvalidatePhysicsData();   // 내부 데이터 초기화 플래그
-    newBodySetup->CreatePhysicsMeshes();     // Cook(PhysX Collision Data) 호출
-
 
     staticMesh->SetData(staticMeshRenderData);
 

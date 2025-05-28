@@ -249,7 +249,7 @@ void UPhysicsAsset::AutoGenerateConstraints()
 
     const FRefSkeletal& RefSkeletal = PreviewSkeletalMesh->GetSkeleton()->GetRefSkeletal();
 
-    for (int32 RootIndex : RefSkeletal.RootBoneIndices)
+    for (int32 RootIndex : RefSkeletal.RootBoneIndices) 
     {
         GenerateConstraintRecursive(RefSkeletal, RootIndex);
     }

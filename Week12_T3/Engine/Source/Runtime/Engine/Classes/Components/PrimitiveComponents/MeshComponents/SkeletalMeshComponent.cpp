@@ -137,7 +137,8 @@ void USkeletalMeshComponent::SetSkeletalMesh(USkeletalMesh* value)
     ResetToOriginPos();
 
     //value->UpdateBoneHierarchy();
-    
+
+    OverrideMaterials.SetNum(value->GetMaterials().Num());
     AABB = SkeletalMesh->GetRenderData().BoundingBox;
 
     // CreateBoneComponents();
@@ -356,6 +357,7 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     }
 
 }
+
 
 void USkeletalMesh::ResetToOriginalPose()
 {

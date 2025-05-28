@@ -551,6 +551,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Dodge"));
                         //FManagerOBJ::CreateStaticMesh("Assets/Dodge/Dodge.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
+                        MeshComp->OnCreatePhysicsState();
                         SpawnedActor = TempActor;
                         break;
                     }
