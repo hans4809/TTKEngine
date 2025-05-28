@@ -1,13 +1,14 @@
 #pragma once
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
+#include "Physics/ConstraintProfileProperties.h"
 
 class UPhysicsConstraintTemplate : public UObject
 {
     DECLARE_CLASS(UPhysicsConstraintTemplate, UObject);
 
 public:
-    UPhysicsConstraintTemplate() = default;
+    UPhysicsConstraintTemplate();
     
 public:
     // 각 Constraint 이름
@@ -48,7 +49,7 @@ public:
     //// 기본 Profile (Profile이 지정되지 않았을 때 사용)
     //UPROPERTY(transient)
     //FConstraintProfileProperties DefaultProfile;
-
+    FConstraintProfileProperties DefaultProfile;
 public:
     // 특정 Profile 존재 여부 확인
     //bool ContainsConstraintProfile(FName ProfileName) const

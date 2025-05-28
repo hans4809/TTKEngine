@@ -50,6 +50,8 @@ public:
     using FRigidBodyIndexPairToboolMapType = TMap<FRigidBodyIndexPair, bool>;
     UPROPERTY(EditAnywhere, FRigidBodyIndexPairToboolMapType, CollisionDisableTable, = {})
 
+    UPROPERTY(EditAnywhere, TArray<UBodySetup*>, BodySetups, = {})
+
 public: 
     void Initialize();
     
@@ -140,6 +142,5 @@ public:
     bool DeserializeFromFile(std::istream& In) override;
     void PostLoad() override;
 
-private:
-    UPROPERTY(EditAnywhere, TArray<UBodySetup*>, BodySetups, = {})
+    void GetBodySetups(TArray<class UBodySetup*>& OutBodySetup) const;
 };
