@@ -188,6 +188,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\APhysicsVehicleActor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Animation\UAnimationFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Material\UMaterialFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.cpp" />
@@ -515,6 +516,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Editor\UnrealEd\Utils\EditorPreviewUtils.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\APhysicsVehicleActor.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Animation\UAnimationFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Material\UMaterialFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.h" />

@@ -136,7 +136,7 @@ PxRigidDynamic* createVehicleActor
 	for(PxU32 i = 0; i < numWheels; i++)
 	{
 		PxConvexMeshGeometry geom(wheelConvexMeshes[i]);
-		PxShape* wheelShape = PxRigidActorExt::createExclusiveShape(*vehActor, geom, *wheelMaterials[i]);
+		PxShape* wheelShape=PxRigidActorExt::createExclusiveShape(*vehActor, geom, *wheelMaterials[i]);
 		wheelShape->setQueryFilterData(wheelQryFilterData);
 		wheelShape->setSimulationFilterData(wheelSimFilterData);
 		wheelShape->setLocalPose(PxTransform(PxIdentity));

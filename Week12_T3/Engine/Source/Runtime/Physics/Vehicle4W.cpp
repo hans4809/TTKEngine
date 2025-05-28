@@ -14,159 +14,164 @@ extern PxBatchQuery* BatchQuery;
 PxF32 AutoDriveInterval = 3.0f;  // 예: 3초마다 모드 전환
 PxF32 AutoDriveTimer    = 0.0f;
 
-void ComputeWheelCenterActorOffsets4W(const PxF32 wheelFrontZ, const PxF32 wheelRearZ, const PxVec3& chassisDims, const PxF32 wheelWidth, const PxF32 wheelRadius, const PxU32 numWheels, PxVec3* wheelCentreOffsets)
+void ComputeWheelCenterActorOffsets4W(const PxF32 wheelFrontX, const PxF32 wheelRearX, const PxVec3& chassisDims, const PxF32 wheelWidth, const PxF32 wheelRadius, const PxU32 numWheels, PxVec3* wheelCentreOffsets)
 {
-    //chassisDims.z is the distance from the rear of the chassis to the front of the chassis.
-    //The front has z = 0.5*chassisDims.z and the rear has z = -0.5*chassisDims.z.
-    //Compute a position for the front wheel and the rear wheel along the z-axis.
-    //Compute the separation between each wheel along the z-axis.
+    // 앞쪽 바퀴 개수 (전체 휠 2개가 좌우 한 쌍)
     const PxF32 numLeftWheels = numWheels / 2.0f;
-    const PxF32 deltaZ = (wheelFrontZ - wheelRearZ)/(numLeftWheels-1.0f);
-    //Set the outside of the left and right wheels to be flush with the chassis.
-    //Set the top of the wheel to be just touching the underside of the chassis.
-    //Begin by setting the rear-left/rear-right/front-left,front-right wheels.
-    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eREAR_LEFT] = PxVec3((-chassisDims.x + wheelWidth)*0.5f, -(chassisDims.y/2 + wheelRadius), wheelRearZ + 0*deltaZ*0.5f);
-    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eREAR_RIGHT] = PxVec3((+chassisDims.x - wheelWidth)*0.5f, -(chassisDims.y/2 + wheelRadius), wheelRearZ + 0*deltaZ*0.5f);
-    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eFRONT_LEFT] = PxVec3((-chassisDims.x + wheelWidth)*0.5f, -(chassisDims.y/2 + wheelRadius), wheelRearZ + (numLeftWheels-1)*deltaZ);
-    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eFRONT_RIGHT] = PxVec3((+chassisDims.x - wheelWidth)*0.5f, -(chassisDims.y/2 + wheelRadius), wheelRearZ + (numLeftWheels-1)*deltaZ);
-    //Set the remaining wheels.
-    for(PxU32 i = 2, wheelCount = 4; i < numWheels - 2; i += 2, wheelCount += 2)
+    // X축(앞뒤) 간격
+    const PxF32 deltaX = (wheelFrontX - wheelRearX) / (numLeftWheels - 1.0f);
+
+    // Y축(좌우) 오프셋: 차체 반폭 - 휠 반폭
+    const PxF32 lateralOffset = (chassisDims.y - wheelWidth) * 0.5f;
+    // Z축(높이) 오프셋: 차체 반높이 + 휠 반경 (휠이 바닥에 닿도록 아래 방향)
+    const PxF32 verticalOffset = -(chassisDims.z * 0.5f + wheelRadius);
+
+    // Rear Left / Rear Right
+    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eREAR_LEFT] = PxVec3(
+        wheelRearX,
+        -lateralOffset,
+        verticalOffset);
+    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eREAR_RIGHT] = PxVec3(
+        wheelRearX,
+         lateralOffset,
+        verticalOffset);
+
+    // Front Left / Front Right
+    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eFRONT_LEFT] = PxVec3(
+        wheelRearX + (numLeftWheels - 1) * deltaX,
+        -lateralOffset,
+        verticalOffset);
+    wheelCentreOffsets[PxVehicleDrive4WWheelOrder::eFRONT_RIGHT] = PxVec3(
+        wheelRearX + (numLeftWheels - 1) * deltaX,
+         lateralOffset,
+        verticalOffset);
+
+    // 중간 바퀴 (6륜 이상)
+    PxU32 idx = 4;
+    for (PxU32 i = 2; i < numWheels - 2; i += 2)
     {
-        wheelCentreOffsets[wheelCount + 0] = PxVec3((-chassisDims.x + wheelWidth)*0.5f, -(chassisDims.y/2 + wheelRadius), wheelRearZ + i*deltaZ*0.5f);
-        wheelCentreOffsets[wheelCount + 1] = PxVec3((+chassisDims.x - wheelWidth)*0.5f, -(chassisDims.y/2 + wheelRadius), wheelRearZ + i*deltaZ*0.5f);
+        const PxF32 posX = wheelRearX + i * deltaX * 0.5f;
+        wheelCentreOffsets[idx++] = PxVec3(posX, -lateralOffset, verticalOffset);
+        wheelCentreOffsets[idx++] = PxVec3(posX,  lateralOffset, verticalOffset);
     }
 }
 
-void SetupWheelsSimulationData
-(const PxF32 wheelMass, const PxF32 wheelMOI, const PxF32 wheelRadius, const PxF32 wheelWidth, 
- const PxU32 numWheels, const PxVec3* wheelCenterActorOffsets,
- const PxVec3& chassisCMOffset, const PxF32 chassisMass,
- PxVehicleWheelsSimData* wheelsSimData)
+void SetupWheelsSimulationData(
+    const PxF32 wheelMass,
+    const PxF32 wheelMOI,
+    const PxF32 wheelRadius,
+    const PxF32 wheelWidth,
+    const PxU32 numWheels,
+    const PxVec3* wheelCenterActorOffsets,
+    const PxVec3& chassisCMOffset,
+    const PxF32 chassisMass,
+    PxVehicleWheelsSimData* wheelsSimData)
 {
-	//Set up the wheels.
-	PxVehicleWheelData wheels[PX_MAX_NB_WHEELS];
-	{
-		//Set up the wheel data structures with mass, moi, radius, width.
-		for(PxU32 i = 0; i < numWheels; i++)
-		{
-			wheels[i].mMass = wheelMass;
-			wheels[i].mMOI = wheelMOI;
-			wheels[i].mRadius = wheelRadius;
-			wheels[i].mWidth = wheelWidth;
-		}
+    // 1) Wheel data
+    PxVehicleWheelData wheels[PX_MAX_NB_WHEELS];
+    for(PxU32 i = 0; i < numWheels; i++)
+    {
+        wheels[i].mMass   = wheelMass;
+        wheels[i].mMOI    = wheelMOI;
+        wheels[i].mRadius = wheelRadius;
+        wheels[i].mWidth  = wheelWidth;
+    }
+    // Handbrake only on rear
+    wheels[PxVehicleDrive4WWheelOrder::eREAR_LEFT ].mMaxHandBrakeTorque = 4000.0f;
+    wheels[PxVehicleDrive4WWheelOrder::eREAR_RIGHT].mMaxHandBrakeTorque = 4000.0f;
+    // Steering only on front
+    wheels[PxVehicleDrive4WWheelOrder::eFRONT_LEFT ].mMaxSteer = PxPi*0.3333f;
+    wheels[PxVehicleDrive4WWheelOrder::eFRONT_RIGHT].mMaxSteer = PxPi*0.3333f;
 
-		//Enable the handbrake for the rear wheels only.
-		wheels[PxVehicleDrive4WWheelOrder::eREAR_LEFT].mMaxHandBrakeTorque=4000.0f;
-		wheels[PxVehicleDrive4WWheelOrder::eREAR_RIGHT].mMaxHandBrakeTorque=4000.0f;
-		//Enable steering for the front wheels only.
-		wheels[PxVehicleDrive4WWheelOrder::eFRONT_LEFT].mMaxSteer=PxPi*0.3333f;
-		wheels[PxVehicleDrive4WWheelOrder::eFRONT_RIGHT].mMaxSteer=PxPi*0.3333f;
-	}
+    // 2) Tire data
+    PxVehicleTireData tires[PX_MAX_NB_WHEELS];
+    for(PxU32 i = 0; i < numWheels; i++)
+        tires[i].mType = TIRE_TYPE_NORMAL;
 
-	//Set up the tires.
-	PxVehicleTireData tires[PX_MAX_NB_WHEELS];
-	{
-		//Set up the tires.
-		for(PxU32 i = 0; i < numWheels; i++)
-		{
-			tires[i].mType = TIRE_TYPE_NORMAL;
-		}
-	}
+    // 3) Suspension data
+    PxF32 suspSprungMasses[PX_MAX_NB_WHEELS];
+    PxVehicleComputeSprungMasses(
+        numWheels,
+        wheelCenterActorOffsets,
+        chassisCMOffset,
+        chassisMass,
+        1,
+        suspSprungMasses);
 
-	//Set up the suspensions
-	PxVehicleSuspensionData suspensions[PX_MAX_NB_WHEELS];
-	{
-		//Compute the mass supported by each suspension spring.
-		PxF32 suspSprungMasses[PX_MAX_NB_WHEELS];
-		PxVehicleComputeSprungMasses
-			(numWheels, wheelCenterActorOffsets, 
-			 chassisCMOffset, chassisMass, 1, suspSprungMasses);
+    PxVehicleSuspensionData suspensions[PX_MAX_NB_WHEELS];
+    for(PxU32 i = 0; i < numWheels; i++)
+    {
+        suspensions[i].mMaxCompression     = 0.3f;
+        suspensions[i].mMaxDroop           = 0.1f;
+        suspensions[i].mSpringStrength     = 35000.0f;
+        suspensions[i].mSpringDamperRate   = 4500.0f;
+        suspensions[i].mSprungMass         = suspSprungMasses[i];
+    }
+    // Camber
+    const PxF32 camberRest = 0.0f;
+    const PxF32 camberDroop = 0.01f;
+    const PxF32 camberComp = -0.01f;
+    for(PxU32 i = 0; i < numWheels; i += 2)
+    {
+        suspensions[i+0].mCamberAtRest           =  camberRest;
+        suspensions[i+1].mCamberAtRest           = -camberRest;
+        suspensions[i+0].mCamberAtMaxDroop       =  camberDroop;
+        suspensions[i+1].mCamberAtMaxDroop       = -camberDroop;
+        suspensions[i+0].mCamberAtMaxCompression =  camberComp;
+        suspensions[i+1].mCamberAtMaxCompression = -camberComp;
+    }
 
-		//Set the suspension data.
-		for(PxU32 i = 0; i < numWheels; i++)
-		{
-			suspensions[i].mMaxCompression = 0.3f;
-			suspensions[i].mMaxDroop = 0.1f;
-			suspensions[i].mSpringStrength = 35000.0f;	
-			suspensions[i].mSpringDamperRate = 4500.0f;
-			suspensions[i].mSprungMass = suspSprungMasses[i];
-		}
+    // 4) Geometry offsets
+    PxVec3 suspTravelDirections[PX_MAX_NB_WHEELS];
+    PxVec3 wheelCentreCMOffsets[PX_MAX_NB_WHEELS];
+    PxVec3 suspForceAppCMOffsets[PX_MAX_NB_WHEELS];
+    PxVec3 tireForceAppCMOffsets[PX_MAX_NB_WHEELS];
+    for(PxU32 i = 0; i < numWheels; i++)
+    {
+        // Z-up coordinate: suspension travel downwards along negative Z
+        suspTravelDirections[i] = PxVec3(0, 0, -1);
+        
+        // Offset from chassis CM
+        wheelCentreCMOffsets[i] = wheelCenterActorOffsets[i] - chassisCMOffset;
+        
+        // Force application points 0.3m below chassis CM along Z
+        PxF32 drop = 0.3f;
+        suspForceAppCMOffsets[i] = PxVec3(
+            wheelCentreCMOffsets[i].x,
+            wheelCentreCMOffsets[i].y,
+            wheelCentreCMOffsets[i].z - drop);
+        tireForceAppCMOffsets[i] = suspForceAppCMOffsets[i];
+    }
 
-		//Set the camber angles.
-		const PxF32 camberAngleAtRest=0.0;
-		const PxF32 camberAngleAtMaxDroop=0.01f;
-		const PxF32 camberAngleAtMaxCompression=-0.01f;
-		for(PxU32 i = 0; i < numWheels; i+=2)
-		{
-			suspensions[i + 0].mCamberAtRest =  camberAngleAtRest;
-			suspensions[i + 1].mCamberAtRest =  -camberAngleAtRest;
-			suspensions[i + 0].mCamberAtMaxDroop = camberAngleAtMaxDroop;
-			suspensions[i + 1].mCamberAtMaxDroop = -camberAngleAtMaxDroop;
-			suspensions[i + 0].mCamberAtMaxCompression = camberAngleAtMaxCompression;
-			suspensions[i + 1].mCamberAtMaxCompression = -camberAngleAtMaxCompression;
-		}
-	}
+    // 5) Scene query filter
+    PxFilterData qryFilterData;
+    setupNonDrivableSurface(qryFilterData);
 
-	//Set up the wheel geometry.
-	PxVec3 suspTravelDirections[PX_MAX_NB_WHEELS];
-	PxVec3 wheelCentreCMOffsets[PX_MAX_NB_WHEELS];
-	PxVec3 suspForceAppCMOffsets[PX_MAX_NB_WHEELS];
-	PxVec3 tireForceAppCMOffsets[PX_MAX_NB_WHEELS];
-	{
-		//Set the geometry data.
-		for(PxU32 i = 0; i < numWheels; i++)
-		{
-			//Vertical suspension travel.
-			suspTravelDirections[i] = PxVec3(0,-1,0);
+    // 6) Assign to sim data
+    for(PxU32 i = 0; i < numWheels; i++)
+    {
+        wheelsSimData->setWheelData         (i, wheels[i]);
+        wheelsSimData->setTireData          (i, tires[i]);
+        wheelsSimData->setSuspensionData    (i, suspensions[i]);
+        wheelsSimData->setSuspTravelDirection(i, suspTravelDirections[i]);
+        wheelsSimData->setWheelCentreOffset(i, wheelCentreCMOffsets[i]);
+        wheelsSimData->setSuspForceAppPointOffset(i, suspForceAppCMOffsets[i]);
+        wheelsSimData->setTireForceAppPointOffset(i, tireForceAppCMOffsets[i]);
+        wheelsSimData->setSceneQueryFilterData(i, qryFilterData);
+        wheelsSimData->setWheelShapeMapping(i, PxI32(i));
+    }
 
-			//Wheel center offset is offset from rigid body center of mass.
-			wheelCentreCMOffsets[i] = 
-				wheelCenterActorOffsets[i] - chassisCMOffset;
-
-			//Suspension force application point 0.3 metres below 
-			//rigid body center of mass.
-			suspForceAppCMOffsets[i] =
-				PxVec3(wheelCentreCMOffsets[i].x,-0.3f,wheelCentreCMOffsets[i].z);
-
-			//Tire force application point 0.3 metres below 
-			//rigid body center of mass.
-			tireForceAppCMOffsets[i] =
-				PxVec3(wheelCentreCMOffsets[i].x,-0.3f,wheelCentreCMOffsets[i].z);
-		}
-	}
-
-	//Set up the filter data of the raycast that will be issued by each suspension.
-	PxFilterData qryFilterData;
-	setupNonDrivableSurface(qryFilterData);
-
-	//Set the wheel, tire and suspension data.
-	//Set the geometry data.
-	//Set the query filter data
-	for(PxU32 i = 0; i < numWheels; i++)
-	{
-		wheelsSimData->setWheelData(i, wheels[i]);
-		wheelsSimData->setTireData(i, tires[i]);
-		wheelsSimData->setSuspensionData(i, suspensions[i]);
-		wheelsSimData->setSuspTravelDirection(i, suspTravelDirections[i]);
-		wheelsSimData->setWheelCentreOffset(i, wheelCentreCMOffsets[i]);
-		wheelsSimData->setSuspForceAppPointOffset(i, suspForceAppCMOffsets[i]);
-		wheelsSimData->setTireForceAppPointOffset(i, tireForceAppCMOffsets[i]);
-		wheelsSimData->setSceneQueryFilterData(i, qryFilterData);
-		wheelsSimData->setWheelShapeMapping(i, PxI32(i)); 
-	}
-
-	//Add a front and rear anti-roll bar
-	PxVehicleAntiRollBarData barFront;
-	barFront.mWheel0 = PxVehicleDrive4WWheelOrder::eFRONT_LEFT;
-	barFront.mWheel1 = PxVehicleDrive4WWheelOrder::eFRONT_RIGHT;
-	barFront.mStiffness = 10000.0f;
-	wheelsSimData->addAntiRollBarData(barFront);
-	PxVehicleAntiRollBarData barRear;
-	barRear.mWheel0 = PxVehicleDrive4WWheelOrder::eREAR_LEFT;
-	barRear.mWheel1 = PxVehicleDrive4WWheelOrder::eREAR_RIGHT;
-	barRear.mStiffness = 10000.0f;
-	wheelsSimData->addAntiRollBarData(barRear);
+    // 7) Anti-roll bars front & rear
+    PxVehicleAntiRollBarData bar;
+    bar.mWheel0    = PxVehicleDrive4WWheelOrder::eFRONT_LEFT;
+    bar.mWheel1    = PxVehicleDrive4WWheelOrder::eFRONT_RIGHT;
+    bar.mStiffness = 10000.0f;
+    wheelsSimData->addAntiRollBarData(bar);
+    bar.mWheel0    = PxVehicleDrive4WWheelOrder::eREAR_LEFT;
+    bar.mWheel1    = PxVehicleDrive4WWheelOrder::eREAR_RIGHT;
+    wheelsSimData->addAntiRollBarData(bar);
 }
+
 
 FVehicle4W::FVehicle4W()
 {
@@ -174,20 +179,26 @@ FVehicle4W::FVehicle4W()
 
 FVehicle4W::~FVehicle4W()
 {
-    Vehicle->getRigidDynamicActor()->release();
-    Vehicle->free();
+    if (Vehicle)
+    {
+        Vehicle->getRigidDynamicActor()->release();
+        Vehicle->free();
+    }
 }
 
 void FVehicle4W::Initialize(const VehicleDesc& vehicle4WDesc, PxPhysics* physics, PxCooking* cooking, const physx::PxTransform& startPose)
 {
     CreateVehicle4W(vehicle4WDesc, physics, cooking);
 
-    PxTransform startTransform(PxVec3(0, (vehicle4WDesc.chassisDims.y * 0.5f + vehicle4WDesc.wheelRadius + 1.0f), 0), PxQuat(PxIdentity));
+    // Z-up 기준 높이 설정 (chassisDims.z 반 + wheelRadius + margin)
+    PxF32 height = vehicle4WDesc.chassisDims.z * 0.5f + vehicle4WDesc.wheelRadius + 1.0f;
+    PxTransform startTransform(PxVec3(0.f, 0.f, height), PxQuat(PxIdentity));
     Vehicle->getRigidDynamicActor()->setGlobalPose(startTransform);
 }
 
 PxVehicleDrive4W* FVehicle4W::CreateVehicle4W(const VehicleDesc& vehicle4WDesc, PxPhysics* physics, PxCooking* cooking)
 {
+    // X=앞뒤, Y=좌우, Z=높이
     const PxVec3 chassisDims = vehicle4WDesc.chassisDims;
 	const PxF32 wheelWidth = vehicle4WDesc.wheelWidth;
 	const PxF32 wheelRadius = vehicle4WDesc.wheelRadius;
@@ -198,7 +209,7 @@ PxVehicleDrive4W* FVehicle4W::CreateVehicle4W(const VehicleDesc& vehicle4WDesc, 
 
 	//Construct a physx actor with shapes for the chassis and wheels.
 	//Set the rigid body mass, moment of inertia, and center of mass offset.
-	PxRigidDynamic* veh4WActor = NULL;
+	PxRigidDynamic* veh4WActor = nullptr;
 	{
 		//Construct a convex mesh for a cylindrical wheel.
 		PxConvexMesh* wheelMesh = createWheelMesh(wheelWidth, wheelRadius, *physics, *cooking);
@@ -242,9 +253,11 @@ PxVehicleDrive4W* FVehicle4W::CreateVehicle4W(const VehicleDesc& vehicle4WDesc, 
 	{
 		//Compute the wheel center offsets from the origin.
 		PxVec3 wheelCenterActorOffsets[PX_MAX_NB_WHEELS];
-		const PxF32 frontZ = chassisDims.z*0.3f;
-		const PxF32 rearZ = -chassisDims.z*0.3f;
-		ComputeWheelCenterActorOffsets4W(frontZ, rearZ, chassisDims, wheelWidth, wheelRadius, numWheels, wheelCenterActorOffsets);
+        // X축 front/back 오프셋 계산
+        // 앞뒤 휠을 차체 끝에 딱 붙이려면
+        const PxF32 frontX =  chassisDims.x * 0.5f - wheelRadius;
+        const PxF32 rearX  = -frontX;
+		ComputeWheelCenterActorOffsets4W(frontX, rearX, chassisDims, wheelWidth, wheelRadius, numWheels, wheelCenterActorOffsets);
 
 		//Set up the simulation data for all wheels.
 		SetupWheelsSimulationData
@@ -264,33 +277,35 @@ PxVehicleDrive4W* FVehicle4W::CreateVehicle4W(const VehicleDesc& vehicle4WDesc, 
 
 		//Engine
 		PxVehicleEngineData engine;
-		engine.mPeakTorque=500.0f;
-		engine.mMaxOmega=600.0f;//approx 6000 rpm
+		engine.mPeakTorque = 500.0f;
+		engine.mMaxOmega = 600.0f;//approx 6000 rpm
 		driveSimData.setEngineData(engine);
 
 		//Gears
 		PxVehicleGearsData gears;
-		gears.mSwitchTime=0.5f;
+		gears.mSwitchTime = 0.5f;
 		driveSimData.setGearsData(gears);
 
 		//Clutch
 		PxVehicleClutchData clutch;
-		clutch.mStrength=10.0f;
+		clutch.mStrength = 10.0f;
 		driveSimData.setClutchData(clutch);
 
-		//Ackermann steer accuracy
-		PxVehicleAckermannGeometryData ackermann;
-		ackermann.mAccuracy=1.0f;
-		ackermann.mAxleSeparation=
-			wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eFRONT_LEFT).z-
-			wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eREAR_LEFT).z;
-		ackermann.mFrontWidth=
-			wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eFRONT_RIGHT).x-
-			wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eFRONT_LEFT).x;
-		ackermann.mRearWidth=
-			wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eREAR_RIGHT).x -
-			wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eREAR_LEFT).x;
-		driveSimData.setAckermannGeometryData(ackermann);
+        // Ackermann (X-front, Y-track)
+        PxVehicleAckermannGeometryData ack;
+        ack.mAccuracy = 1.0f;
+        ack.mAxleSeparation =
+            wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eFRONT_LEFT).x
+          - wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eREAR_LEFT ).x;
+        ack.mFrontWidth = PxAbs(
+            wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eFRONT_RIGHT).y
+          - wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eFRONT_LEFT ).y
+        );
+        ack.mRearWidth = PxAbs(
+            wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eREAR_RIGHT).y
+          - wheelsSimData->getWheelCentreOffset(PxVehicleDrive4WWheelOrder::eREAR_LEFT ).y
+        );
+        driveSimData.setAckermannGeometryData(ack);
 	}
 
 	//Create a vehicle from the wheels and drive sim data.
