@@ -54,7 +54,7 @@ public:
     UnrealEd* GetUnrealEditor() const { return UnrealEditor; } // 메인 에디터
     FSkeletalPreviewUI* GetSkeletalPreviewUI() const { return SkeletalPreviewUI; } // 스켈레탈 + 애니메이션 에디터
     FParticlePreviewUI* GetParticlePreviewUI() const { return ParticlePreviewUI; } // 파티클 에디터
-    FPhysicsPreviewUI* GetPhysicsPreviewUI() const { return PhysicsPreviewUI; }
+    FPhysicsPreviewUI*  GetPhysicsPreviewUI() const { return PhysicsPreviewUI; }
     
     float testBlurStrength;
 

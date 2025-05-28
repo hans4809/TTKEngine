@@ -888,7 +888,7 @@ void PropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComponent* Skeletal
     {
         ImGui::Text("Skeletal Mesh Asset");
 
-        FString PreviewName = SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptor().AssetName.ToString();
+        FString PreviewName = SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptorCopy().AssetName.ToString();
         if (ImGui::BeginCombo("##", GetData(PreviewName), ImGuiComboFlags_None))
         {
             for (const auto& [key, mesh]: UAssetManager::Get().GetLoadedAssetsByType(USkeletalMesh::StaticClass()))
@@ -906,7 +906,7 @@ void PropertyEditorPanel::RenderForSkeletalMesh(USkeletalMeshComponent* Skeletal
             ImGui::EndCombo();
         }
 
-        DrawSkeletalMeshPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptor().AssetName.ToString());
+        DrawSkeletalMeshPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptorCopy().AssetName.ToString());
         
         ImGui::TreePop();
     }
@@ -1362,7 +1362,7 @@ void PropertyEditorPanel::RenderForParticleSystem(UParticleSystemComponent* Part
 
         UParticleSystem* ParticleSystem = ParticleSystemComp->Template;
 
-        FName PreviewName = ParticleSystem ? ParticleSystemComp->Template->GetDescriptor().AssetName : FName("None");
+        FName PreviewName = ParticleSystem ? ParticleSystemComp->Template->GetDescriptorCopy().AssetName : FName("None");
         //TMap<FName, UParticleSystem*> Systems = UAssetManager::Get().GetLoadedAssetsByType<UParticleSystem>();
 
         TMap<FName, UParticleSystem*> Systems;
@@ -1846,7 +1846,7 @@ void PropertyEditorPanel::RenderForPhysicsAsset(USkeletalMeshComponent* Skeletal
     if (ImGui::TreeNodeEx("Physics", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::Text("Physics Asset");
-        DrawPhysicsAssetPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptor().AssetName.ToString());
+        DrawPhysicsAssetPreviewButton(SkeletalMeshComponent->GetSkeletalMesh()->GetDescriptorCopy().AssetName.ToString());
         ImGui::TreePop();
     }
     ImGui::PopStyleColor();
