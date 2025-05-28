@@ -306,11 +306,16 @@ struct FLine
 
 struct FCapsule
 {
-    FVector Center;
+    FVector Center;       // 12
+    FVector UpVector;     // 12
+    FVector4 Color;       // 16
+    float Radius;         // 4
+    float HalfHeight;     // 4
+   /* FVector Center;
     float Radius;
     FVector UpVector;
     float HalfHeight;
-    FVector4 Color;
+    FVector4 Color;*/
 };
 
 struct FPlane

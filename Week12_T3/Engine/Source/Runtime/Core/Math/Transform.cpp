@@ -102,7 +102,7 @@ void FTransform::ScaleTranslation(const FVector InScale3D)
     const VectorRegister4Float Translation = SSE::VectorLoadFloat3_W1(&Location.X);
     const VectorRegister4Float ScaledTranslation = SSE::VectorMultiply( Translation, VectorInScale3D );
 
-    SSE::VectorStoreFloat4(ScaledTranslation, &Location.X);
+    SSE::VectorStoreFloat3(ScaledTranslation, &Location.X);
 }
 
 FVector FTransform::GetScaledAxis(EAxis::Type InAxis)
@@ -228,6 +228,22 @@ FMatrix FTransform::ToMatrixNoScale() const
     return M;
 }
 
+FVector FTransform::GetUnitAxis(EAxis::Type Axis) const
+{
+    {
+        // 로컬 축 벡터
+        static const FVector LocalAxes[3] = {
+            {1,0,0}, // X
+            {0,1,0}, // Y
+            {0,0,1}  // Z
+        };
+
+        FVector Local = LocalAxes[static_cast<int>(Axis)-1];
+        // 회전만 적용한 후 정규화
+        return Rotation.RotateVector(Local).GetSafeNormal();
+    }
+}
+
 bool FTransform::Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D)
 {
     VectorRegister4Float InScale = SSE::VectorLoadFloat3_W0(&InScale3D.X);
@@ -296,15 +312,15 @@ void FTransform::Multiply(FTransform* OutTransform, const FTransform* A, const F
 
         // RotationResult = B.Rotation * A.Rotation
         VectorRegister4Float ResultRotation = SSE::VectorQuaternionMultiply2(QuatB, QuatA);
-        SSE::VectorStoreFloat4(ResultRotation, &OutTransform->Rotation.X);
+        SSE::VectorStoreFloat3(ResultRotation, &OutTransform->Rotation.X);
 
         VectorRegister4Float ScaledTransA = SSE::VectorMultiply(TranslateA, ScaleB);
         VectorRegister4Float RotatedTranslate = SSE::VectorQuaternionRotateVector(QuatB, ScaledTransA);
         VectorRegister4Float ResultTranslation = SSE::VectorAdd(RotatedTranslate, TranslateB);
-        SSE::VectorStoreFloat4(ResultTranslation, &OutTransform->Location.X);
+        SSE::VectorStoreFloat3(ResultTranslation, &OutTransform->Location.X);
 
         VectorRegister4Float ResultScale = SSE::VectorMultiply(ScaleA, ScaleB);
-        SSE::VectorStoreFloat4(ResultScale, &OutTransform->Scale.X);
+        SSE::VectorStoreFloat3(ResultScale, &OutTransform->Scale.X);
     }
 }
 
