@@ -104,8 +104,8 @@ void FEngineLoop::Render() const
 
     const uint32 OriginalIndex = LevelEditor->GetCurrentViewportClientIndex();
     const HWND OriginalWindow = LevelEditor->GetCurrentViewportWindow();
-    // TArray<HWND> CopiedAppWindows = AppWindows; -- Why are you copy this?
-    for (const auto& AppWindow : AppWindows)
+    TArray<HWND> CopiedAppWindows = AppWindows;
+    for (const auto& AppWindow : CopiedAppWindows)
     {
         LevelEditor->FocusViewportClient(AppWindow, 0);
         TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients = LevelEditor->GetViewportClients(AppWindow);

@@ -430,6 +430,10 @@ void FGraphicsDevice::Release()
 
 void FGraphicsDevice::SwapBuffer(HWND AppWnd) const
 {
+    if (!SwapChains.Contains(AppWnd))
+    {
+        return;
+    }
     SwapChains[AppWnd].SwapChain->Present(0, 0);
     // PingPong 버퍼 교체 - 다음 프레임에서는 이전 프레임의 결과를 입력으로 사용할 수 있음
 }

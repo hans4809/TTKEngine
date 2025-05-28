@@ -879,7 +879,7 @@ void FFBXLoader::ExtractAnimClip(FbxAnimStack* AnimStack, const TArray<FbxNode*>
         AnimData->BoneAnimationTracks.Add(AnimTrack);
     }
 
-    FName key(FilePath + "\\" + AnimData->Name);
+    FName key(FilePath + "/" + AnimData->Name);
     AnimDataMap.Add(key, AnimData);
     ParsedAnimData.Add(key, AnimData);
 }
