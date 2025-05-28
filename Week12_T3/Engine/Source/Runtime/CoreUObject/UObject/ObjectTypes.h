@@ -28,6 +28,7 @@ enum EObjects : uint8
     OBJ_POSTPROCESS,
 
     OBJ_CAR,
+    OBJ_ROAD,
     OBJ_VEHICLE,
     OBJ_FISH,
     OBJ_PLATFORM,

@@ -3,6 +3,8 @@
 #include "HitResult.h"
 #include <PxScene.h>    
 #include <PxQueryFiltering.h> 
+class FVehicle4W;
+
 namespace physx
 {
     class PxVehicleDrive4W;
@@ -29,7 +31,7 @@ public:
     virtual physx::PxU32 GetNbActors(physx::PxActorTypeFlags Flags) const = 0;
     virtual void GetActors(physx::PxActorTypeFlags Flags, physx::PxActor** OutActors, physx::PxU32 MaxCount) const = 0;
 
-    virtual void AddVehicle(physx::PxVehicleDrive4W* InVehicle4W) = 0;
+    virtual void AddVehicle(FVehicle4W* InVehicle4W) = 0;
     virtual void AddActor(physx::PxActor* InRigidActor) = 0;
     // virtual void FetchResults(bool bBlock) = 0; // Simulate에 통합될 수도 있음
     

@@ -11,7 +11,7 @@ extern VehicleSceneQueryData*	vehicleSceneQueryData;
 extern PxBatchQuery* BatchQuery;
 
 // 전역 변수 정의 (VehicleGlobals.cpp 등)
-PxF32 AutoDriveInterval = 3.0f;  // 예: 3초마다 모드 전환
+PxF32 AutoDriveInterval = 2.0f;  // 예: 3초마다 모드 전환
 PxF32 AutoDriveTimer    = 0.0f;
 
 void ComputeWheelCenterActorOffsets4W(const PxF32 wheelFrontX, const PxF32 wheelRearX, const PxVec3& chassisDims, const PxF32 wheelWidth, const PxF32 wheelRadius, const PxU32 numWheels, PxVec3* wheelCentreOffsets)
@@ -191,7 +191,7 @@ void FVehicle4W::Initialize(const VehicleDesc& vehicle4WDesc, PxPhysics* physics
     CreateVehicle4W(vehicle4WDesc, physics, cooking);
 
     // Z-up 기준 높이 설정 (chassisDims.z 반 + wheelRadius + margin)
-    PxF32 height = vehicle4WDesc.chassisDims.z * 0.5f + vehicle4WDesc.wheelRadius + 1.0f;
+    PxF32 height = vehicle4WDesc.chassisDims.z * 0.5f + vehicle4WDesc.wheelRadius + 1.0f + 30.f;
     PxTransform startTransform(PxVec3(0.f, 0.f, height), PxQuat(PxIdentity));
     Vehicle->getRigidDynamicActor()->setGlobalPose(startTransform);
 }
@@ -530,6 +530,13 @@ void FVehicle4W::Update(float deltaTime)
         VehicleOrderProgress = (VehicleOrderProgress + 1) % DriveModeCount;
         ReleaseAllControls();
 
+        //If we are at the end of the list of driving modes then start again.
+        if (EDriveMode::eDRIVE_MODE_NONE == DriveModeOrder[VehicleOrderProgress])
+        {
+            VehicleOrderProgress = 0;
+            VehicleOrderComplete = true;
+        }
+
         // 새 모드 시작
         switch (DriveModeOrder[VehicleOrderProgress])
         {
@@ -550,14 +557,24 @@ void FVehicle4W::Update(float deltaTime)
         }
     }
 
-    // 2) 자동으로 세팅된 gVehicleInputData 를 기반으로 스무딩 & 아날로그 입력 설정
-    PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(
-        PadSmoothingData,
-        SteerVsForwardSpeedTable,
-        VehicleInputData,
-        deltaTime,
-        IsVehicleInAir,
-        *Vehicle
-    );
+    //Update the control inputs for the vehicle.
+    if (MimicKeyInputs)
+    {
+        PxVehicleDrive4WSmoothDigitalRawInputsAndSetAnalogInputs(KeySmoothingData, SteerVsForwardSpeedTable, VehicleInputData, deltaTime, IsVehicleInAir, *Vehicle);
+    }
+    else
+    {
+        PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(PadSmoothingData, SteerVsForwardSpeedTable, VehicleInputData, deltaTime, IsVehicleInAir, *Vehicle);
+    }
+    
+    // // 2) 자동으로 세팅된 gVehicleInputData 를 기반으로 스무딩 & 아날로그 입력 설정
+    // PxVehicleDrive4WSmoothAnalogRawInputsAndSetAnalogInputs(
+    //     PadSmoothingData,
+    //     SteerVsForwardSpeedTable,
+    //     VehicleInputData,
+    //     deltaTime,
+    //     IsVehicleInAir,
+    //     *Vehicle
+    // );
 }
 

@@ -150,11 +150,6 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 
         FGameManager::Get().EditorTick(deltaSeconds);
     }
-    if (CurrentPhysicsScene)// && (tickType == ELevelTick::LEVELTICK_All))
-    {
-        CurrentPhysicsScene->Simulate(deltaSeconds); //내부에서 FetchResult 호출
-        SyncPhysicsActors();
-    }
 
     // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
     //if (tickType == LEVELTICK_All)
@@ -174,6 +169,12 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
         }
 
         FGameManager::Get().Tick(deltaSeconds);
+    }
+
+    if (CurrentPhysicsScene)// && (tickType == ELevelTick::LEVELTICK_All))
+    {
+        CurrentPhysicsScene->Simulate(deltaSeconds); //내부에서 FetchResult 호출
+        SyncPhysicsActors();
     }
 
     FParticleSystemWorldManager::Get(this)->Tick(deltaSeconds, tickType);

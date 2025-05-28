@@ -29,7 +29,7 @@ public:
     // FPhysScene 인터페이스 구현
     virtual void AddObject(FBodyInstance* BodyInstance) override;
 
-    void AddVehicle(physx::PxVehicleDrive4W* InVehicle4W) override;
+    void AddVehicle(FVehicle4W* InVehicle4W) override;
     void AddActor(physx::PxActor* InRigidActor) override;
 
     virtual void RemoveObject(FBodyInstance* BodyInstance) override;

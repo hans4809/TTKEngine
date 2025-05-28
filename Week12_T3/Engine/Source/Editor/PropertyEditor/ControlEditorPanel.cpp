@@ -15,6 +15,7 @@
 
 #include "LaunchEngineLoop.h"
 #include "ShowFlags.h"
+#include "Actors/APhysicsRoadActor.h"
 #include "Actors/APhysicsVehicleActor.h"
 #include "Actors/APostProcessVolume.h"
 #include "Engine/FBXLoader.h"
@@ -41,6 +42,7 @@
 #include "Font/IconDefs.h"
 #include "Physics/Vehicle4W.h"
 #include "PhysicsCore/PhysScene.h"
+#include "snippets/snippetvehiclecommon/SnippetVehicleFilterShader.h"
 
 void ControlEditorPanel::Initialize(SLevelEditor* LevelEditor, float Width, float Height)
 {
@@ -345,7 +347,8 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
             { "Shapes", "Sphere",          OBJ_SPHERE },
             { "Shapes", "Capsule",         OBJ_CAPSULE },
             { "Shapes", "Car (Dodge)",     OBJ_CAR },
-            {"Shapes", "Vehicle", OBJ_VEHICLE },
+            { "Shapes", "Vehicle", OBJ_VEHICLE },
+            { "Shapes", "Road", OBJ_ROAD },
             { "Shapes", "SkySphere",       OBJ_SKYSPHERE},
             { "Shapes", "SkeletalMesh",    OBJ_SKELETAL},
             {"Shapes", "Character",           OBJ_CHARACTER},
@@ -417,7 +420,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Cube.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
                         MeshComp->ShapeType = EPhysBodyShapeType::Box;
-                        //MeshComp->OnCreatePhysicsState();
+                        MeshComp->OnCreatePhysicsState();
                         TempActor->AddComponent<UBoxShapeComponent>(EComponentOrigin::Editor);
                         SpawnedActor = TempActor;
                         break;
@@ -428,6 +431,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                         TempActor->SetActorLabel(TEXT("Sphere"));
                         UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
                         UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Sphere"));
+                        MeshComp->OnCreatePhysicsState();
                         //FManagerOBJ::CreateStaticMesh("Assets/Primitives/Sphere.obj");
                         MeshComp->SetStaticMesh(StaticMesh);
                         MeshComp->ShapeType = EPhysBodyShapeType::Sphere;
@@ -562,9 +566,18 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     case OBJ_VEHICLE:
                     {
                         APhysicsVehicleActor* TempActor = World->SpawnActor<APhysicsVehicleActor>();
+                        TempActor->SetActorLocation(FVector(0.0f, 0.0f, 30.0f));
                         TempActor->Init();
-                        TempActor->GetWorld()->GetPhysicsScene()->AddVehicle(TempActor->GetVehicle4W()->GetVehicle());
+                        TempActor->GetWorld()->GetPhysicsScene()->AddVehicle(TempActor->GetVehicle4W());
                         TempActor->SetActorLabel(TEXT("OBJ_VEHICLE"));
+                        break;
+                    }
+                    case OBJ_ROAD:
+                    {
+                        APhysicsRoadActor* TempActor = World->SpawnActor<APhysicsRoadActor>();
+                        TempActor->Init();
+                        TempActor->GetWorld()->GetPhysicsScene()->AddActor(TempActor->gGroundPlane);
+                        TempActor->SetActorLabel(TEXT("OBJ_ROAD"));
                         break;
                     }
                     case OBJ_POSTPROCESS:

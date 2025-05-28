@@ -104,7 +104,7 @@ void VehicleSetUpdateMode(PxVehicleUpdateMode::Enum vehicleUpdateMode)
 VehicleDesc FPhysXSDKManager::InitVehicleDesc(physx::PxMaterial* InMaterial, const FVector InChassisDims)
 {
     // 1) 차체 파라미터
-    const PxF32 chassisMass = 10.0f;
+    const PxF32 chassisMass = 60.0f;
     const PxF32 length      = InChassisDims.X;
     const PxF32 width       = InChassisDims.Y;
     const PxF32 height      = InChassisDims.Z;

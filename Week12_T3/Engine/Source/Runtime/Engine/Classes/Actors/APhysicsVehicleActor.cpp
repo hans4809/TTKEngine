@@ -28,7 +28,7 @@ void APhysicsVehicleActor::Init()
     FPhysXSDKManager* sdkManager = &FPhysXSDKManager::GetInstance();
     const snippetvehicle::VehicleDesc desc = FPhysXSDKManager::InitVehicleDesc(sdkManager->GetDefaultMaterial()->GetPxMaterial(), ChassisDims);
     Vehicle->Initialize(desc, sdkManager->GetPhysicsSDK(), sdkManager->GetCooking());
-
+    
     GetStaticMeshComponent()->InitializeBodyInstance();
     GetStaticMeshComponent()->GetBodyInstance().SetRigidActor(Vehicle->GetVehicle()->getRigidDynamicActor());
 }

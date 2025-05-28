@@ -18,6 +18,7 @@ namespace physx
     class PxFilterData;
     class PxConvexMesh;
 }
+
 class UPrimitiveComponent;
 class UPhysicalMaterial;
 

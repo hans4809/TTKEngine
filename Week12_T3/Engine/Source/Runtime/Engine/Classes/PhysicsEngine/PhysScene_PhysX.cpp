@@ -152,13 +152,14 @@ void FPhysScene_PhysX::AddObject(FBodyInstance* BodyInstance)
     }
 }
 
-void FPhysScene_PhysX::AddVehicle(physx::PxVehicleDrive4W* InVehicle4W)
+void FPhysScene_PhysX::AddVehicle(FVehicle4W* InVehicle4W)
 {
-    AddActor(InVehicle4W->getRigidDynamicActor());
+    Vehicle4W = InVehicle4W;
+    AddActor(Vehicle4W->GetVehicle()->getRigidDynamicActor());
     FVehicle4W::StartBrakeMode();
-    InVehicle4W->setToRestState();
-    InVehicle4W->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
-    InVehicle4W->mDriveDynData.setUseAutoGears(true);
+    Vehicle4W->GetVehicle()->setToRestState();
+    Vehicle4W->GetVehicle()->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
+    Vehicle4W->GetVehicle()->mDriveDynData.setUseAutoGears(true);
 }
 
 void FPhysScene_PhysX::AddActor(physx::PxActor* InRigidActor)
