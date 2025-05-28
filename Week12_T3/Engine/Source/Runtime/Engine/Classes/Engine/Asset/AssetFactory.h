@@ -20,9 +20,12 @@ public:
     // 높은 값일수록 우선순위 높음
     int GetPriority() const { return ImportPriority; }
     void SetPriority(int p) { ImportPriority = p; }
+ 
+    void SetSupportedClass(UClass* InSupportedClass) { SupportedClass = InSupportedClass; }
+    UClass* GetSupportedClass() const { return SupportedClass; }
 
     // 파일 임포트 가능 여부
-    virtual bool CanImport(const FString& filepath) const;
+    virtual bool CanImport(UClass* InClass, const FString& filepath) const;
     // 파일로부터 에셋 생성
     virtual UAsset* ImportFromFile(const FString& filepath) = 0;
     // 빈 에셋 생성(예: 신규 생성)
@@ -31,4 +34,6 @@ public:
 protected:
     TArray<FString> SupportedExtensions;
     int ImportPriority = 100;
+
+    UClass* SupportedClass;
 };

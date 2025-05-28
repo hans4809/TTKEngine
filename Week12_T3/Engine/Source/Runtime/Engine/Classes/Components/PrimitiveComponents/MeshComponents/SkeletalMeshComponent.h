@@ -27,8 +27,6 @@ public:
     virtual void BeginPlay() override;
     virtual void TickComponent(float DeltaTime) override;
 
-    void SetData(const FString& FilePath);
-
     virtual uint32 GetNumMaterials() const override;
     virtual UMaterial* GetMaterial(uint32 ElementIndex) const override;
     virtual uint32 GetMaterialIndex(FName MaterialSlotName) const override;
@@ -39,7 +37,7 @@ public:
     
     USkeletalMesh* GetSkeletalMesh() const { return SkeletalMesh; }
     void SetSkeletalMesh(USkeletalMesh* value);
-    USkeletalMesh* LoadSkeletalMesh(const FString& FilePath);
+    USkeletalMesh* LoadSkeletalMesh(const FString& FileName);
 
     UAnimInstance* GetAnimInstance() const { return AnimInstance; }
     void SetAnimInstance(UAnimInstance* InAnimInstance) { AnimInstance = InAnimInstance; }
@@ -117,7 +115,8 @@ public:
     void SetAnimationMode(EAnimationMode InAnimationMode);
 
     EAnimationMode GetAnimationMode() const { return AnimationMode; }
-
+    int32 FindBodyIndex(FName BoneName) const;
+    void CreatePhysicsState();
 private:
 
     UPROPERTY(EditAnywhere, EAnimationMode, AnimationMode, = EAnimationMode::AnimationSingleNode)
@@ -134,4 +133,10 @@ protected:
     UPROPERTY(EditAnywhere, UAnimInstance*, AnimInstance, = nullptr)
     
     float animTime = 0.f;
+
+    /** Array of FBodyInstance objects, storing per-instance state about about each body. */
+    TArray<struct FBodyInstance*> Bodies;
+
+    /** Array of FConstraintInstance structs, storing per-instance state about each constraint. */
+    TArray<struct FConstraintInstance*> Constraints;
 };

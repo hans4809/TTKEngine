@@ -14,40 +14,65 @@
 #include "UObject/ObjectMacros.h"
 
 class FArchive;
+class UMaterial;
 
 struct FVertexSimple
 {
-    float x, y, z, w;    // Position
-    float r, g, b, a; // Color
-    float nx, ny, nz;
-    float Tangentnx, Tangentny, Tangentnz;
-    float u=0, v=0;
-    uint32 MaterialIndex;
+    DECLARE_STRUCT(FVertexSimple)
+    
+    UPROPERTY(float, x)
+    UPROPERTY(float, y)
+    UPROPERTY(float, z)
+    UPROPERTY(float, w)
+
+    UPROPERTY(float, r)
+    UPROPERTY(float, g)
+    UPROPERTY(float, b)
+    UPROPERTY(float, a)
+
+    UPROPERTY(float, nx)
+    UPROPERTY(float, ny)
+    UPROPERTY(float, nz)
+
+    UPROPERTY(float, Tangentnx)
+    UPROPERTY(float, Tangentny)
+    UPROPERTY(float, Tangentnz)
+
+    UPROPERTY(float, u, = 0.0f)
+    UPROPERTY(float, v, = 0.0f)
+
+    UPROPERTY(uint32, MaterialIndex)
 };
 
 // Material Subset
 struct FMaterialSubset
 {
-    uint32 IndexStart; // Index Buffer Start pos
-    uint32 IndexCount; // Index Count
-    uint32 MaterialIndex; // Material Index
-    FString MaterialName; // Material Name
+    DECLARE_STRUCT(FMaterialSubset)
+
+    UPROPERTY(uint32, IndexStart)
+    UPROPERTY(uint32, IndexCount)
+    UPROPERTY(uint32, MaterialIndex)
+    UPROPERTY(FString, MaterialName)
+    
     void Serialize(FArchive& ar) const;
     void Deserialize(FArchive& ar);
 };
 
 struct FMaterialSlot
 {
-    class UMaterial* Material;
-    FName MaterialSlotName;
+    DECLARE_STRUCT(FMaterialSlot)
+    ~FMaterialSlot();
+    
+    UPROPERTY(VisibleAnywhere | DuplicateTransient, UMaterial*, Material, = nullptr)
+    UPROPERTY(VisibleAnywhere, FName, MaterialSlotName, = TEXT("None"))
     //FMeshUVChannelInfo UVChannelData;
 };
 
 // OBJ File Raw Data
 struct FObjInfo
 {
-    FWString ObjectName; // OBJ File Name
-    FWString PathName; // OBJ File Paths
+    FString ObjectName; // OBJ File Name
+    FString PathName; // OBJ File Paths
     FString DisplayName; // Display Name
     FString MatName; // OBJ MTL File Name
     
@@ -74,83 +99,88 @@ struct FObjInfo
 
 struct FObjMaterialInfo
 {
-    FString MTLName;  // newmtl : Material Name.
+    DECLARE_STRUCT(FObjMaterialInfo)
 
-    bool bHasTexture = false;  // Has Texture?
-    bool bTransparent = false; // Has alpha channel?
+    UPROPERTY(EditAnywhere, FString, MTLName, = TEXT("None"))
+
+    UPROPERTY(EditAnywhere, bool, bHasTexture, = false)
+    UPROPERTY(EditAnywhere, bool, bTransparent, = false)
 
     // Diffuse (Kd) : 일반적으로 흰색, 완전 불투명한 색상
-    FVector Diffuse = FVector(1.0f, 1.0f, 1.0f);
+    UPROPERTY(EditAnywhere, FVector, Diffuse, = FVector(1.0f, 1.0f, 1.0f))
     
     // Specular (Ks) : 반사광 기본값, 흰색으로 표기하는 경우가 많음
-    FVector Specular = FVector(1.0f, 1.0f, 1.0f);
+    UPROPERTY(EditAnywhere, FVector, Specular, = FVector(1.0f, 1.0f, 1.0f))
     
     // Ambient (Ka) : 주변광 기본값, 너무 강하지 않은 낮은 값으로
-    FVector Ambient = FVector(0.1f, 0.1f, 0.1f);
-    
+    UPROPERTY(EditAnywhere, FVector, Ambient, = FVector(0.1f, 0.1f, 0.1f))
+
     // Emissive (Ke) : 자체 발광 없음
-    FVector Emissive = FVector(0.0f, 0.0f, 0.0f);
+    UPROPERTY(EditAnywhere, FVector, Emissive, = FVector(0.0f, 0.0f, 0.0f))
     
     // SpecularScalar (Ns) : 스페큘러 파워 (보통 1.0 이상, 필요에 따라 조정)
-    float SpecularScalar = 1.0f;
+    UPROPERTY(EditAnywhere, float, SpecularScalar, = 1.0f)
     
     // DensityScalar (Ni) : 광학적 밀도(굴절률 등), 기본적으로 1.0
-    float DensityScalar = 1.0f;
+    UPROPERTY(EditAnywhere, float, DensityScalar, = 1.0f)
     
     // TransparencyScalar : 투명도, 1.0이면 불투명, 0.0이면 완전 투명
-    float TransparencyScalar = 1.0f;
+    UPROPERTY(EditAnywhere, float, TransparencyScalar, = 1.0f)
 
-    uint32 IlluminanceModel; // illum: illumination Model between 0 and 10. (UINT)
+    UPROPERTY(EditAnywhere, uint32, IlluminanceModel, = 0)
 
     /* Texture */
-    FString DiffuseTextureName;  // map_Kd : Diffuse texture
-    FString DiffuseTexturePath;
+    UPROPERTY(EditAnywhere, FString, DiffuseTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, DiffuseTexturePath, = TEXT("None"))
     
-    FString AmbientTextureName;  // map_Ka : Ambient texture
-    FString AmbientTexturePath;
-    
-    FString SpecularTextureName; // map_Ks : Specular texture
-    FString SpecularTexturePath;
-    
-    FString BumpTextureName;     // map_Bump : Bump texture
-    FString BumpTexturePath;
-    
-    FString AlphaTextureName;    // map_d : Alpha texture
-    FString AlphaTexturePath;
+    // map_Ka : Ambient texture
+    UPROPERTY(EditAnywhere, FString, AmbientTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, AmbientTexturePath, = TEXT("None"))
 
-    FString NormalTextureName;  // map_Ns : Normal Texture
-    FString NormalTexturePath;
+    // map_Ks : Specular texture
+    UPROPERTY(EditAnywhere, FString, SpecularTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, SpecularTexturePath, = TEXT("None"))
 
-    float NormalScale = 1.0f;
+    // map_Bump : Bump texture
+    UPROPERTY(EditAnywhere, FString, BumpTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, BumpTexturePath, = TEXT("None"))
 
+    // map_d : Alpha texture
+    UPROPERTY(EditAnywhere, FString, AlphaTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, AlphaTexturePath, = TEXT("None"))
+
+    // map_Ns : Normal Texture
+    UPROPERTY(EditAnywhere, FString, NormalTextureName, = TEXT("None"))
+    UPROPERTY(EditAnywhere, FString, NormalTexturePath, = TEXT("None"))
+
+    UPROPERTY(EditAnywhere, float, NormalScale, = 1.0f)
+    
     void Serialize(FArchive& Ar) const;
     void Deserialize(FArchive& Ar);
 };
 
-// Cooked Data
-namespace OBJ
+struct FStaticMeshRenderData
 {
-    struct FStaticMeshRenderData
-    {
-        FWString ObjectName;
-        FWString PathName;
-        FString DisplayName;
-        
-        TArray<FVertexSimple> Vertices;
-        TArray<UINT> Indices;
+    DECLARE_STRUCT(FStaticMeshRenderData)
+    
+    UPROPERTY(VisibleAnywhere, FString, ObjectName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, FString, PathName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, FString, DisplayName, = TEXT("None"))
 
-        FString VBName;
-        FString IBName;
-        // ID3D11Buffer* VertexBuffer;
-        // ID3D11Buffer* IndexBuffer;
-        
-        TArray<FObjMaterialInfo> Materials;
-        TArray<FMaterialSubset> MaterialSubsets;
+    UPROPERTY(VisibleAnywhere, TArray<FVertexSimple>, Vertices, = {})
+    UPROPERTY(VisibleAnywhere, TArray<uint32>, Indices, = {})
 
-        FVector BoundingBoxMin;
-        FVector BoundingBoxMax;
-    };
-}
+    UPROPERTY(VisibleAnywhere, FString, VBName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, FString, IBName, = TEXT("None"))
+    // ID3D11Buffer* VertexBuffer;
+    // ID3D11Buffer* IndexBuffer;
+
+    UPROPERTY(VisibleAnywhere, TArray<FObjMaterialInfo>, Materials, = {})
+    UPROPERTY(VisibleAnywhere, TArray<FMaterialSubset>, MaterialSubsets, = {})
+
+    UPROPERTY(VisibleAnywhere, FVector, BoundingBoxMin, = FVector::ZeroVector)
+    UPROPERTY(VisibleAnywhere, FVector, BoundingBoxMax, = FVector::ZeroVector)
+};
 
 enum class EShaderStage
 {
@@ -306,11 +336,16 @@ struct FLine
 
 struct FCapsule
 {
-    FVector Center;
+    FVector Center;       // 12
+    FVector UpVector;     // 12
+    FVector4 Color;       // 16
+    float Radius;         // 4
+    float HalfHeight;     // 4
+   /* FVector Center;
     float Radius;
     FVector UpVector;
     float HalfHeight;
-    FVector4 Color;
+    FVector4 Color;*/
 };
 
 struct FPlane

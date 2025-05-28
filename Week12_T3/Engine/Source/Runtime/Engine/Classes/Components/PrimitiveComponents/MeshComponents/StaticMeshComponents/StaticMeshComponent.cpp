@@ -17,6 +17,8 @@
 #include <PxRigidActor.h>
 #include <PxScene.h>
 
+#include "Engine/Asset/AssetManager.h"
+
 
 uint32 UStaticMeshComponent::GetNumMaterials() const
 {
@@ -36,7 +38,7 @@ UMaterial* UStaticMeshComponent::GetMaterial(uint32 ElementIndex) const
 
         if (staticMesh->GetMaterials().IsValidIndex(ElementIndex))
         {
-            return staticMesh->GetMaterials()[ElementIndex]->Material;
+            return staticMesh->GetMaterials()[ElementIndex].Material;
         }
     }
     return nullptr;
@@ -54,9 +56,9 @@ TArray<FName> UStaticMeshComponent::GetMaterialSlotNames() const
     TArray<FName> MaterialNames;
     if (staticMesh == nullptr) return MaterialNames;
 
-    for (const FMaterialSlot* Material : staticMesh->GetMaterials())
+    for (FMaterialSlot Material : staticMesh->GetMaterials())
     {
-        MaterialNames.Emplace(Material->MaterialSlotName);
+        MaterialNames.Emplace(Material.MaterialSlotName);
     }
 
     return MaterialNames;
@@ -81,15 +83,15 @@ int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayD
     int nIntersections = 0;
     if (staticMesh == nullptr) return 0;
 
-    OBJ::FStaticMeshRenderData* renderData = staticMesh->GetRenderData();
+    FStaticMeshRenderData renderData = staticMesh->GetRenderData();
 
-    FVertexSimple* vertices = renderData->Vertices.GetData();
-    int vCount = renderData->Vertices.Num();
-    UINT* indices = renderData->Indices.GetData();
-    int iCount = renderData->Indices.Num();
+    FVertexSimple* vertices = renderData.Vertices.GetData();
+    int vCount = renderData.Vertices.Num();
+    UINT* indices = renderData.Indices.GetData();
+    int iCount = renderData.Indices.Num();
 
     if (!vertices) return 0;
-    BYTE* pbPositions = reinterpret_cast<BYTE*>(renderData->Vertices.GetData());
+    BYTE* pbPositions = reinterpret_cast<BYTE*>(renderData.Vertices.GetData());
 
     int nPrimitives = (!indices) ? (vCount / 3) : (iCount / 3);
     float fNearHitDistance = FLT_MAX;
@@ -129,8 +131,8 @@ void UStaticMeshComponent::SetStaticMesh(UStaticMesh* value)
 {
     staticMesh = value;
     OverrideMaterials.SetNum(value->GetMaterials().Num());
-    AABB = FBoundingBox(staticMesh->GetRenderData()->BoundingBoxMin, staticMesh->GetRenderData()->BoundingBoxMax);
-    VBIBTopologyMappingName = staticMesh->GetRenderData()->DisplayName;
+    AABB = FBoundingBox(staticMesh->GetRenderData().BoundingBoxMin, staticMesh->GetRenderData().BoundingBoxMax);
+    VBIBTopologyMappingName = staticMesh->GetRenderData().DisplayName;
 }
 
 std::unique_ptr<FActorComponentInfo> UStaticMeshComponent::GetComponentInfo()
@@ -146,19 +148,25 @@ void UStaticMeshComponent::SaveComponentInfo(FActorComponentInfo& OutInfo)
     FStaticMeshComponentInfo* Info = static_cast<FStaticMeshComponentInfo*>(&OutInfo);
     Super::SaveComponentInfo(*Info);
 
-    Info->StaticMeshPath = staticMesh->GetRenderData()->PathName;
+    Info->StaticMeshPath = staticMesh->GetRenderData().PathName;
 }
 void UStaticMeshComponent::LoadAndConstruct(const FActorComponentInfo& Info)
 {
     Super::LoadAndConstruct(Info);
 
     const FStaticMeshComponentInfo& StaticMeshInfo = static_cast<const FStaticMeshComponentInfo&>(Info);
-    UStaticMesh* Mesh = FManagerOBJ::CreateStaticMesh(FString::ToFString(StaticMeshInfo.StaticMeshPath));
-    SetStaticMesh(Mesh);
+    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(StaticMeshInfo.VBIBTopologyMappingName.ToString());
+
+    SetStaticMesh(StaticMesh);
+    //UStaticMesh* Mesh = FManagerOBJ::CreateStaticMesh(StaticMeshInfo.StaticMeshPath);
+    //SetStaticMesh(Mesh);
 
 }
 
-void UStaticMeshComponent::PostDuplicate() {}
+void UStaticMeshComponent::PostDuplicate()
+{
+    OnCreatePhysicsState();
+}
 
 void UStaticMeshComponent::TickComponent(float DeltaTime)
 {
@@ -168,26 +176,25 @@ void UStaticMeshComponent::TickComponent(float DeltaTime)
 
 void UStaticMeshComponent::DestroyPhysicsState()
 {
-    physx::PxScene* CurrentScene = BodyInstance.GetPxRigidActor()->getScene();
-    if (CurrentScene)
+    if (BodyInstance.GetPxRigidActor())
     {
-        physx::PxRigidActor* RigidActor = BodyInstance.GetPxRigidActor();
-        CurrentScene->removeActor(*RigidActor);
+        physx::PxScene* CurrentScene = BodyInstance.GetPxRigidActor()->getScene();
+        if (CurrentScene)
+        {
+            physx::PxRigidActor* RigidActor = BodyInstance.GetPxRigidActor();
+            CurrentScene->removeActor(*RigidActor);
+        }
     }
     BodyInstance.ReleasePhysicsState();
 }
 void UStaticMeshComponent::OnCreatePhysicsState()
 {
-    //임시 테스트 용 ---
-    FTransform ShapeLocalPose = FTransform::Identity;
 
     BodyInstance.Initialize(this, FPhysXSDKManager::GetInstance().GetPhysicsSDK());
 
     FTransform ComponentWorldTransform = GetWorldTransform();
-
-
-    UPhysicalMaterial* MyMaterial = new UPhysicalMaterial(FPhysXSDKManager::GetInstance().GetPhysicsSDK(), 1, 1, 1);
-
+    FTransform LocalTransform = FTransform::Identity;
+ 
     bool bActorCreated = BodyInstance.CreatePhysicsState(GetWorldTransform(), BodyType);
 
     if (!bActorCreated || !BodyInstance.IsPhysicsStateCreated())
@@ -206,20 +213,16 @@ void UStaticMeshComponent::OnCreatePhysicsState()
     if (Setup)
     {
         UPhysicalMaterial* PhysMat = GetPhysicalMaterial();
-
-
-        physx::PxMaterial* PxMat = PhysMat->GetPxMaterial();
-
-        if (!PxMat)
-            PxMat = FPhysXSDKManager::GetInstance().GetDefaultMaterial()->GetPxMaterial();
-
+        UPhysicalMaterial* Mat = Setup->GetDefaultMaterial();
         switch (ShapeType)
         {
-        case EPhysBodyShapeType::Sphere :
+        case EPhysBodyShapeType::Sphere:
         {
             for (const FKSphereElem& Elem : Setup->AggGeom.SphereElems)
             {
-                BodyInstance.AddSphereGeometry(Elem.Radius, MyMaterial, ShapeLocalPose);
+                FVector Scale = ComponentWorldTransform.GetScale();
+                float ScaledRadius = Elem.Radius * Scale.Magnitude();
+                BodyInstance.AddSphereGeometry(ScaledRadius, Mat, LocalTransform);
             }
         }
         break;
@@ -228,7 +231,11 @@ void UStaticMeshComponent::OnCreatePhysicsState()
             for (const FKBoxElem& Elem : Setup->AggGeom.BoxElems)
             {
                 FVector HalfExtents(Elem.X * 0.5f, Elem.Y * 0.5f, Elem.Z * 0.5f);
-                BodyInstance.AddBoxGeometry(HalfExtents, MyMaterial, ShapeLocalPose);
+
+                FVector Scale = ComponentWorldTransform.GetScale();
+                FVector ScaledHalfExtents = HalfExtents * Scale;
+
+                BodyInstance.AddBoxGeometry(ScaledHalfExtents, Mat, LocalTransform);
             }
         }
         break;
@@ -236,9 +243,12 @@ void UStaticMeshComponent::OnCreatePhysicsState()
         {
             for (const FKSphylElem& Elem : Setup->AggGeom.SphylElems)
             {
-                float Radius = Elem.Radius; // Sphyl의 반지름
-                float HalfHeight = Elem.Length * 0.5f;
-                BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, MyMaterial, ShapeLocalPose);
+                FVector Scale = ComponentWorldTransform.GetScale();
+
+                float Radius = Elem.Radius * Scale.Magnitude(); // Sphyl의 반지름
+
+                float HalfHeight = Elem.Length * 0.5f * Scale.Magnitude();
+                BodyInstance.AddCapsuleGeometry(Radius, HalfHeight, Mat, LocalTransform);
             }
         }
         break;
@@ -246,8 +256,8 @@ void UStaticMeshComponent::OnCreatePhysicsState()
         {
             for (const FKConvexElem& Elem : Setup->AggGeom.ConvexElems)
             {
-              
-                BodyInstance.AddConvexGeometry(Elem.CookedPxConvexMesh, MyMaterial, ShapeLocalPose);
+
+                BodyInstance.AddConvexGeometry(Elem.CookedPxConvexMesh, Mat, LocalTransform, ComponentWorldTransform.GetScale());
             }
         }
         break;

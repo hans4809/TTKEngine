@@ -34,7 +34,7 @@ bool FPhysXSDKManager::Initalize()
     Pvd = PxCreatePvd(*PxFoundationInstance);
     Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
 
-    bool bPvdConnected = Pvd->connect(*Transport, physx::PxPvdInstrumentationFlag::eDEBUG);
+    ConnectPVD();
 
     PxSDKInstance = PxCreatePhysics(PX_PHYSICS_VERSION, *PxFoundationInstance, Scale, true, Pvd);
     if (!PxSDKInstance)
@@ -52,6 +52,12 @@ bool FPhysXSDKManager::Initalize()
 
     bIsInitialized = true;
     return true;
+
+}
+
+void FPhysXSDKManager::ConnectPVD()
+{
+    bool bPvdConnected = Pvd->connect(*Transport, physx::PxPvdInstrumentationFlag::eDEBUG);
 
 }
 
@@ -88,17 +94,6 @@ void FPhysXSDKManager::Shutdown()
     bIsInitialized = false;
 }
 
-UPhysicalMaterial* FPhysXSDKManager::GetDefaultMaterial()
-{
-    if (DefaultPhysicalMaterial == nullptr)
-    {
-        DefaultPhysicalMaterial = FObjectFactory::ConstructObject<UPhysicalMaterial>(nullptr);
-        DefaultPhysicalMaterial->SetStaticFriction(0.5f);
-        DefaultPhysicalMaterial->SetRestitution(0.5f);
-        DefaultPhysicalMaterial->SetDynamicFriction(1.0f);
-    }
-    return DefaultPhysicalMaterial;
-}
 physx::PxPhysics* FPhysXSDKManager::GetPhysicsSDK()
 {
     return PxSDKInstance;

@@ -2,13 +2,16 @@
 
 #include "Particles/ParticleSystem.h"
 
-UParticleSystemFactory::~UParticleSystemFactory()
+UParticleSystemFactory::UParticleSystemFactory()
 {
+    // .uparticles 파일을 파티클 시스템 에셋으로 인식
+    SetSupportedExtensions({".uparticles"});
+    SetSupportedClass(UParticleSystem::StaticClass());
+    SetPriority(50);
 }
 
-bool UParticleSystemFactory::CanImport(const FString& filepath) const
+UParticleSystemFactory::~UParticleSystemFactory()
 {
-    return Super::CanImport(filepath);
 }
 
 UAsset* UParticleSystemFactory::ImportFromFile(const FString& InFilePath)
@@ -18,10 +21,6 @@ UAsset* UParticleSystemFactory::ImportFromFile(const FString& InFilePath)
     {
         return nullptr;
     }
-    
-    std::filesystem::path filePath(InFilePath);
-    NewParticleSystem->GetDescriptor().AbsolutePath = FString(filePath.generic_wstring().c_str());
-    NewParticleSystem->GetDescriptor().RelativePath = std::filesystem::relative(filePath, std::filesystem::current_path()).string();
 
     return NewParticleSystem;
 }

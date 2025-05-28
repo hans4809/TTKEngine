@@ -5,16 +5,20 @@
 #include "Components/Material/Material.h"
 #include "Components/PrimitiveComponents/MeshComponents/StaticMeshComponents/StaticMeshComponent.h"
 #include "Engine/FLoaderOBJ.h"
+#include "Engine/Asset/AssetManager.h"
 
 AGEnemy::AGEnemy()
 {
     MeshComp = AddComponent<UStaticMeshComponent>(EComponentOrigin::Constructor);
-    FManagerOBJ::CreateStaticMesh("Assets/Primitives/Capsule.obj");
-    MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Capsule.obj"));
+    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Capsule"));
+    //FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
+    MeshComp->SetStaticMesh(StaticMesh);
+    // FManagerOBJ::CreateStaticMesh("Assets/Primitives/Capsule.obj");
+    // MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Capsule.obj"));
     
     Capsule = AddComponent<UCapsuleShapeComponent>(EComponentOrigin::Constructor);
 
-    UMaterial* Material = new UMaterial();
+    UMaterial* Material = FObjectFactory::ConstructObject<UMaterial>(nullptr);
     FObjMaterialInfo MaterialInfo;
     Material->SetMaterialInfo(MaterialInfo);
     MeshComp->SetMaterial(0, Material);

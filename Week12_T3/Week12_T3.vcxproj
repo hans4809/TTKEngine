@@ -188,8 +188,13 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Animation\UAnimationFactory.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Material\UMaterialFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\SkeletalMesh\USkeletalMeshFactory.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Skeleton\USkeletonFactory.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\StaticMesh\UStaticMeshFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.cpp" />
@@ -305,7 +310,10 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Physics\AggregateGeom.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\BodySetup\BodySetupCore.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ConstraintInstance.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\ConstraintProfileProperties.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\PhysicsAsset.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Physics\PhysicsConstraintTemplate.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\RigidBodyIndexPair.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.cpp" />
@@ -501,8 +509,13 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Editor\UnrealEd\Utils\EditorPreviewUtils.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Animation\UAnimationFactory.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Material\UMaterialFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Physics\PhysicsSystemFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\SkeletalMesh\USkeletalMeshFactory.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Skeleton\USkeletonFactory.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\StaticMesh\UStaticMeshFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesDetailsPanel.h" />
@@ -634,6 +647,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Launch\ShowFlags.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\PlayerCameraManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\AssetManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysicsAssetTypes.h" />
     <ClInclude Include="Engine\Source\Runtime\PhysicsCore\PhysicsFilterData.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\AggregateGeom.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\BodySetup\BodySetup.h" />
@@ -643,6 +657,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Physics\ConstraintProfileProperties.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\PhysicsAsset.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\PhysicsConstraintTemplate.h" />
+    <ClInclude Include="Engine\Source\Runtime\Physics\PhysicsEnumDefinitions.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\RigidBodyIndexPair.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\BoxElem.h" />
     <ClInclude Include="Engine\Source\Runtime\Physics\ShapeElems\ConvexElem.h" />

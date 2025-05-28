@@ -1,7 +1,7 @@
 #include "BodySetup.h"
 #include "PhysicsEngine/PhysXSDKManager.h"
-
-UBodySetup::UBodySetup()
+#include "PhysicsEngine/PhysicsMaterial.h"
+UBodySetup::UBodySetup() :DefaultPhysicalMaterial(nullptr)
 {
 }
 
@@ -47,7 +47,7 @@ void UBodySetup::AddCollisionFrom(const FKAggregateGeom& FromAggGeom)
         FKConvexElem& ConvexElem = AggGeom.ConvexElems[i];
         //ConvexElem.ResetChaosConvexMesh();
     }
-    
+
 }
 
 template <typename TElem>
@@ -102,7 +102,7 @@ void UBodySetup::CreatePhysicsMeshes()
         UE_LOG(LogLevel::Error, TEXT("UBodySetup::CreatePhysicsMeshes: Cooking API or Physics SDK is not available."));
         return;
     }
-    
+
     for (int32 i = 0; i < AggGeom.ConvexElems.Num(); ++i) // 인덱스 기반 루프
     {
         FKConvexElem& ConvexElemInstance = AggGeom.ConvexElems[i]; // 명시적으로 참조 가져오기
@@ -178,7 +178,7 @@ void UBodySetup::UpdateTriMeshVertices(const TArray<FVector>& NewPositions)
 {
 
 
-    
+
 }
 template <bool bPositionAndNormal, bool bUseConvexShapes>
 float GetClosestPointAndNormalImpl(const UBodySetup* BodySetup, const FVector& WorldPosition, const FTransform& LocalToWorld, FVector* ClosestWorldPosition, FVector* FeatureNormal)
@@ -188,99 +188,99 @@ float GetClosestPointAndNormalImpl(const UBodySetup* BodySetup, const FVector& W
     int32 NumShapeTested = 0;
 
     //Note that this function is optimized for BodySetup with few elements. This is more common. If we want to optimize the case with many elements we should really return the element during the distance check to avoid pointless iteration
-	for (const FKSphereElem& SphereElem : BodySetup->AggGeom.SphereElems)
-	{
-		NumShapeTested++;
-		if constexpr (bPositionAndNormal)
-		{
-			const float Dist = SphereElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
+    for (const FKSphereElem& SphereElem : BodySetup->AggGeom.SphereElems)
+    {
+        NumShapeTested++;
+        if constexpr (bPositionAndNormal)
+        {
+            const float Dist = SphereElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
 
-			if(Dist < ClosestDist)
-			{
-				*ClosestWorldPosition = TmpPosition;
-				*FeatureNormal = TmpNormal;
-				ClosestDist = Dist;
-			}
-		}
-		else
-		{
-			const float Dist = SphereElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
-			ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
-		}
-	}
+            if (Dist < ClosestDist)
+            {
+                *ClosestWorldPosition = TmpPosition;
+                *FeatureNormal = TmpNormal;
+                ClosestDist = Dist;
+            }
+        }
+        else
+        {
+            const float Dist = SphereElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
+            ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
+        }
+    }
 
-	for (const FKSphylElem& SphylElem : BodySetup->AggGeom.SphylElems)
-	{
-		NumShapeTested++;
-		if constexpr (bPositionAndNormal)
-		{
-			const float Dist = SphylElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
+    for (const FKSphylElem& SphylElem : BodySetup->AggGeom.SphylElems)
+    {
+        NumShapeTested++;
+        if constexpr (bPositionAndNormal)
+        {
+            const float Dist = SphylElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
 
-			if (Dist < ClosestDist)
-			{
-				*ClosestWorldPosition = TmpPosition;
-				*FeatureNormal = TmpNormal;
-				ClosestDist = Dist;
-			}
-		}
-		else
-		{
-			const float Dist = SphylElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
-			ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
-		}
-	}
+            if (Dist < ClosestDist)
+            {
+                *ClosestWorldPosition = TmpPosition;
+                *FeatureNormal = TmpNormal;
+                ClosestDist = Dist;
+            }
+        }
+        else
+        {
+            const float Dist = SphylElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
+            ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
+        }
+    }
 
-	for (const FKBoxElem& BoxElem : BodySetup->AggGeom.BoxElems)
-	{
-		NumShapeTested++;
-		if constexpr (bPositionAndNormal)
-		{
-			const float Dist = BoxElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
+    for (const FKBoxElem& BoxElem : BodySetup->AggGeom.BoxElems)
+    {
+        NumShapeTested++;
+        if constexpr (bPositionAndNormal)
+        {
+            const float Dist = BoxElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
 
-			if (Dist < ClosestDist)
-			{
-				*ClosestWorldPosition = TmpPosition;
-				*FeatureNormal = TmpNormal;
-				ClosestDist = Dist;
-			}
-		}
-		else
-		{
-			const float Dist =  BoxElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
-			ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
-		}
-	}
+            if (Dist < ClosestDist)
+            {
+                *ClosestWorldPosition = TmpPosition;
+                *FeatureNormal = TmpNormal;
+                ClosestDist = Dist;
+            }
+        }
+        else
+        {
+            const float Dist = BoxElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
+            ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
+        }
+    }
 
-	if constexpr (bUseConvexShapes)
-	{
-		NumShapeTested++;
-		for (const FKConvexElem& ConvexElem : BodySetup->AggGeom.ConvexElems)
-		{
-			if constexpr (bPositionAndNormal)
-			{
-				const float Dist = ConvexElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
+    if constexpr (bUseConvexShapes)
+    {
+        NumShapeTested++;
+        for (const FKConvexElem& ConvexElem : BodySetup->AggGeom.ConvexElems)
+        {
+            if constexpr (bPositionAndNormal)
+            {
+                const float Dist = ConvexElem.GetClosestPointAndNormal(WorldPosition, LocalToWorld, TmpPosition, TmpNormal);
 
-				if (Dist < ClosestDist)
-				{
-					*ClosestWorldPosition = TmpPosition;
-					*FeatureNormal = TmpNormal;
-					ClosestDist = Dist;
-				}
-			}
-			else
-			{
-				const float Dist = ConvexElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
-				ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
-			}
-		}
-	}
+                if (Dist < ClosestDist)
+                {
+                    *ClosestWorldPosition = TmpPosition;
+                    *FeatureNormal = TmpNormal;
+                    ClosestDist = Dist;
+                }
+            }
+            else
+            {
+                const float Dist = ConvexElem.GetShortestDistanceToPoint(WorldPosition, LocalToWorld);
+                ClosestDist = Dist < ClosestDist ? Dist : ClosestDist;
+            }
+        }
+    }
 
-	if (NumShapeTested > 0 && ClosestDist == FLT_MAX)
-	{
-		UE_LOG(LogLevel::Warning, TEXT("GetClosestPointAndNormalImpl ClosestDist for BodySetup %s is coming back as FLT_MAX. WorldPosition = %s, LocalToWorld = %s"), *BodySetup->GetName(), *WorldPosition.ToString(), *LocalToWorld.ToString());
-	}
+    if (NumShapeTested > 0 && ClosestDist == FLT_MAX)
+    {
+        UE_LOG(LogLevel::Warning, TEXT("GetClosestPointAndNormalImpl ClosestDist for BodySetup %s is coming back as FLT_MAX. WorldPosition = %s, LocalToWorld = %s"), *BodySetup->GetName(), *WorldPosition.ToString(), *LocalToWorld.ToString());
+    }
 
-	return ClosestDist;
+    return ClosestDist;
 }
 
 float UBodySetup::GetShortestDistanceToPoint(const FVector& WorldPosition, const FTransform& LocalToWorld, const bool bUseConvexShapes) const
@@ -323,6 +323,16 @@ void UBodySetup::CopyBodySetupProperty(const UBodySetup* Other)
     //CollisionTraceFlag = Other->CollisionTraceFlag;
     //DefaultInstance = Other->DefaultInstance
     BuildScale3D = Other->BuildScale3D;
+}
+
+UPhysicalMaterial* UBodySetup::GetDefaultMaterial()
+{
+    if (DefaultPhysicalMaterial == nullptr)
+    {
+        DefaultPhysicalMaterial = FObjectFactory::ConstructObject<UPhysicalMaterial>(nullptr);
+        DefaultPhysicalMaterial->Initialize(FPhysXSDKManager::GetInstance().GetPhysicsSDK(), 0.5, 0.5, 1.f);
+    }
+    return DefaultPhysicalMaterial;
 }
 
 

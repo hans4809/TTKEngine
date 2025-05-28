@@ -79,6 +79,8 @@ struct FQuat
     FString ToString() const;
 
     bool operator==(const FQuat& Other) const;
+
+    FQuat Inverse() const;
 };
 
 inline const FQuat FQuat::Identity = FQuat(1.0f, 0.0f, 0.0f, 0.0f);

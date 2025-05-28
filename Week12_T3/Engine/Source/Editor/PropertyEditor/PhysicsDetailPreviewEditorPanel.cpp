@@ -1,8 +1,13 @@
 #include "PhysicsDetailPreviewEditorPanel.h"
 #include "EditorEngine.h"
 #include "LevelEditor/SLevelEditor.h"
-
-
+#include "PhysicsCore/PhysicsAssetTypes.h"
+#include "PhysicsTreePreviewEditorPanel.h"
+#include <Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h>
+#include <Actors/SkeletalMeshActor.h>
+#include "Physics/PhysicsAsset.h"
+#include "Physics/PhysicsConstraintTemplate.h"
+#include "Animation/Skeleton.h"
 void PhysicsDetailPreviewEditorPanel::Initialize(SLevelEditor* levelEditor, float InWidth, float InHeight)
 {
     activeLevelEditor = levelEditor;
@@ -16,6 +21,52 @@ void PhysicsDetailPreviewEditorPanel::Render()
 
     if (EditorEngine == nullptr)
     {
+        return;
+    }
+
+    AActor* PickedActor = nullptr;
+
+    if (!World->GetSelectedActors().IsEmpty())
+    {
+        PickedActor = *World->GetSelectedActors().begin();
+    }
+
+   /* USkeletalMeshComponent* SkeletalMeshComp = nullptr;
+    ASkeletalMeshActor* SkeletalActor = Cast<ASkeletalMeshActor>(PickedActor);
+    UPhysicsAsset* PhysicsAsset = nullptr;
+    
+
+    if (SkeletalActor) {
+        SkeletalMeshComp = SkeletalActor->GetSkeletalMeshComponent();
+        PhysicsAsset = SkeletalMeshComp->GetSkeletalMesh()->GetPhysicsAsset();
+    }*/
+    
+    /*if (!SkeletalActor || !SkeletalMeshComp || !PhysicsAsset) {
+        UE_LOG(LogLevel::Warning, "[PhysicsDetailPreviewEditorPanel::Render()] Invalid Actor or Component or PhysicsAsset");
+        return;
+    }*/
+
+    ASkeletalMeshActor* SkeletalActor = Cast<ASkeletalMeshActor>(PickedActor);
+    if (!SkeletalActor)
+    {
+        ImGui::Text("No valid skeletal mesh actor selected.");
+        ImGui::End();
+        return;
+    }
+
+    USkeletalMeshComponent* SkeletalMeshComp = SkeletalActor->GetSkeletalMeshComponent();
+    if (!SkeletalMeshComp || !SkeletalMeshComp->GetSkeletalMesh())
+    {
+        ImGui::Text("No valid skeletal mesh component found.");
+        ImGui::End();
+        return;
+    }
+
+    UPhysicsAsset* PhysicsAsset = SkeletalMeshComp->GetSkeletalMesh()->GetPhysicsAsset();
+    if (!PhysicsAsset)
+    {
+        ImGui::Text("No physics asset assigned.");
+        ImGui::End();
         return;
     }
 
@@ -44,23 +95,38 @@ void PhysicsDetailPreviewEditorPanel::Render()
     /* Render Start */
     ImGui::Begin("Detail", nullptr, PanelFlags);
 
-    // 프리뷰 월드에서는 오로지 하나의 액터만 선택 가능 (스켈레탈 메쉬 프리뷰인 경우, 스켈레탈 메쉬 액터)
-    AActor* PickedActor = nullptr;
+    using EType = EPhysicsNodeType;
+    EType Type = PhysicsTreePreviewEditorPanel::SelectedType;
 
-    if (!World->GetSelectedActors().IsEmpty())
+    switch (PhysicsTreePreviewEditorPanel::SelectedType) {
+    case EType::Bone:
     {
-        PickedActor = *World->GetSelectedActors().begin();
+        DrawBoneDetails(PhysicsTreePreviewEditorPanel::SelectedBoneIndex, SkeletalMeshComp, PhysicsAsset);
+        break;
+    }
+    case EType::Constraint:
+    {
+        UPhysicsConstraintTemplate* Constraint = PhysicsAsset->ConstraintSetup[PhysicsTreePreviewEditorPanel::SelectedConstraintIndex];
+        DrawPropertiesForObject(Constraint);
+        break;
+    }
+    case EType::Body:
+    {
+        UBodySetup* Body = PhysicsAsset->BodySetups[PhysicsTreePreviewEditorPanel::SelectedBodyIndex];
+        DrawPropertiesForObject(Body);
+        break;
+    }
+    /*case EType::Primitive:
+        int BI = PhysicsTreePreviewEditorPanel::SelectedBodyIndex;
+        auto PrimType = PhysicsTreePreviewEditorPanel::SelectedPrimType;
+        int Pi = PhysicsTreePreviewEditorPanel::SelectedPrimIndex;
+        break;*/
+    default:
+        ImGui::Text("Select an element on the left to edit its properties.");
+        break;
     }
 
     ImGui::End();
-}
-
-void PhysicsDetailPreviewEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent)
-{
-}
-
-void PhysicsDetailPreviewEditorPanel::DrawActorComponent(UActorComponent* Component, UActorComponent*& PickedComponent)
-{
 }
 
 void PhysicsDetailPreviewEditorPanel::OnResize(HWND hWnd)
@@ -69,4 +135,70 @@ void PhysicsDetailPreviewEditorPanel::OnResize(HWND hWnd)
     GetClientRect(hWnd, &clientRect);
     Width = clientRect.right - clientRect.left;
     Height = clientRect.bottom - clientRect.top;
+}
+
+void PhysicsDetailPreviewEditorPanel::DrawBoneDetails(int32 BoneIndex, USkeletalMeshComponent* SkelComp, UPhysicsAsset* PhysicsAsset)
+{
+
+    // 본 이름 표시
+    const FRefSkeletal& RefSkel = SkelComp->GetSkeletalMesh()->GetSkeleton()->GetRefSkeletal();
+    FName BoneName1 = RefSkel.GetBoneName(BoneIndex);
+    ImGui::SeparatorText(*BoneName1.ToString());
+
+    // 타겟 Bone 선택 콤보
+    static int32 TargetBone = INDEX_NONE;
+    if (ImGui::BeginCombo("Target Bone",
+        TargetBone >= 0 ?
+        *(RefSkel.GetBoneName(TargetBone).ToString())
+        : "None"))
+    {
+        for (int32 i = 0; i < RefSkel.RawBones.Num(); ++i)
+        {
+            std::string BoneNameStr = RefSkel.GetBoneName(i).ToString().ToAnsiString();
+            const char* Name = BoneNameStr.c_str();
+            bool bSel = (i == TargetBone);
+            if (ImGui::Selectable(Name, bSel))
+            {
+                TargetBone = i;
+            }
+            if (bSel) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    if (TargetBone != INDEX_NONE && TargetBone != BoneIndex)
+    {
+        if (ImGui::Button("Add Constraint"))
+        {
+            UPhysicsConstraintTemplate* NewC = FObjectFactory::ConstructObject<UPhysicsConstraintTemplate>(PhysicsAsset);
+            NewC->ConstraintBone1 = BoneName1;
+            NewC->ConstraintBone2 = FName(*(BoneName1.ToString() + TEXT("_") + RefSkel.GetBoneName(TargetBone).ToString()));
+
+            NewC->TwistLimit = 45.f;
+            NewC->SwingLimit1 = 45.f;
+            NewC->SwingLimit2 = 45.f;
+
+            PhysicsAsset->ConstraintSetup.Add(NewC);
+            TargetBone = INDEX_NONE;
+        }
+    }
+}
+
+void PhysicsDetailPreviewEditorPanel::DrawPropertiesForObject(UObject* Obj)
+{
+    if(!Obj)
+    {
+        ImGui::Text("No object to display.");
+        return;
+    }
+
+    UClass* Class = Obj->GetClass();
+    ImGui::SeparatorText(*Class->GetName());
+
+    for (const FProperty* Prop : Class->GetProperties())
+    {        
+        Prop->DisplayInImGui(Obj);
+
+    }
+
 }

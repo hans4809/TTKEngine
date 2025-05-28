@@ -63,4 +63,8 @@ namespace Serializer
 
     // 파일에서 읽기
     UObject* LoadFromFile(const std::filesystem::path& FilePath);
+
+    // SaveToFile / LoadFromFile 호출 전후에 호출되는 훅
+    // (내부에서 캐시를 비워 주도록 수정)
+    static void ClearSerializationCache();
 };

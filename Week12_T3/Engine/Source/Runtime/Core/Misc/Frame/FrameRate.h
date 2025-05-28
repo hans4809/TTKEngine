@@ -2,9 +2,11 @@
 #include "FrameTime.h"
 #include "HAL/PlatformType.h"
 #include "Runtime/Serialization/Archive.h"
+#include "UObject/ObjectMacros.h"
 
 struct FFrameRate
 {
+    DECLARE_STRUCT(FFrameRate)
     /**
      * Default construction to a frame rate of 60000 frames per second (0.0166 ms)
      */
@@ -15,9 +17,9 @@ struct FFrameRate
     FFrameRate(uint32 InNumerator, uint32 InDenominator)
         : Numerator(InNumerator), Denominator(InDenominator)
     {}
-    
-    int32 Numerator; 
-    int32 Denominator;
+
+    UPROPERTY(VisibleAnywhere, int32, Numerator, = 6000)
+    UPROPERTY(VisibleAnywhere, int32, Denominator, = 1)
     
     // Verify that this frame rate is valid to use
     bool IsValid() const

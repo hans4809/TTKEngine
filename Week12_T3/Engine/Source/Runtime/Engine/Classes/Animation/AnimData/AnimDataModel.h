@@ -14,14 +14,19 @@ public:
     UAnimDataModel() = default;
     UAnimDataModel(const TArray<FBoneAnimationTrack>& InAnimation);
     UAnimDataModel(const FName& FilePath);
-    
-    FString Name;
-    TArray<FBoneAnimationTrack> BoneAnimationTracks;
-    float PlayLength;
-    FFrameRate FrameRate;
-    int32 NumberOfFrames;
-    int32 NumberOfKeys;
-    FAnimationCurveData CurveData;
+
+    UPROPERTY(EditAnywhere, FString, Name, = TEXT("None"))
+
+    UPROPERTY(VisibleAnywhere, TArray<FBoneAnimationTrack>, BoneAnimationTracks, ={})
+
+    UPROPERTY(VisibleAnywhere, float, PlayLength, = 0.0f)
+
+    UPROPERTY(VisibleAnywhere, FFrameRate, FrameRate, = FFrameRate())
+
+    UPROPERTY(VisibleAnywhere, int32, NumberOfFrames, = 0)
+    UPROPERTY(VisibleAnywhere, int32, NumberOfKeys, = 0)
+
+    UPROPERTY(VisibleAnywhere, FAnimationCurveData, CurveData, = {})
     // Notifier?
 
     double GetPlayLength() const override { return FrameRate.AsSeconds(NumberOfFrames); } // Total length of play-able animation data

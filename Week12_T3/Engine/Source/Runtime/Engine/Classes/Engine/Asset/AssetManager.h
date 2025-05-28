@@ -45,9 +45,7 @@ public:
     static UAssetManager* GetIfInitialized();
 
     void Initalize();
-    
-    void InitAssetManager();
-    
+
     // 팩토리 등록/해제
     void RegisterFactory(UAssetFactory* InFactory);
     void UnregisterFactory(UAssetFactory* InFactory);
@@ -76,9 +74,6 @@ public:
     // 루트 오브젝트를 디스크에 .uasset/.umap 형태로 저장
     bool SaveAsset(UObject* Root, const FString& Path);
 
-    // 디스크에서 읽어들여 해당 UClass 타입의 오브젝트를 반환
-    UObject* LoadAsset(const FString& Path, UClass* ClassType);
-
     TMap<FName, UAsset*> GetLoadedAssetsByType(UClass* InClass) const
     {
         TMap<FName, UAsset*> Result;
@@ -99,8 +94,7 @@ public:
 
     UAssetRegistry* GetRegistry() const { return Registry; }
 public:
-    void LoadObjFiles();
-    UAssetFactory* FindFactoryForFile(const FString& filepath);
+    UAssetFactory* FindFactoryForFile(UClass* InClass, const FString& filepath);
 
 private:
     UAssetRegistry* Registry;

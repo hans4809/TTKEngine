@@ -12,10 +12,10 @@ class UPhysicalMaterial : public UObject
     DECLARE_CLASS(UPhysicalMaterial, UObject)
 public:
     UPhysicalMaterial() {};
-    UPhysicalMaterial(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution);
+    void Initialize(physx::PxPhysics* InPxPhysicsSDK, float StaticFriction, float DynamicFriction, float Restitution);
     ~UPhysicalMaterial();
 
-    physx::PxMaterial* GetPxMaterial() const { return PxMaterialInstance; }
+    physx::PxMaterial* GetPxMaterial();
 
     // 재질 속성 접근자 (선택적, 필요시 추가)
     float GetStaticFriction() const;
