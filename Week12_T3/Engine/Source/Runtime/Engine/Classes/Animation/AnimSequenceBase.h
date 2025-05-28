@@ -51,33 +51,13 @@ public:
 
     void GetAnimationPose(struct FPoseContext& OutPose, const FAnimExtractContext& ExtractionContext) const;
     virtual void EvaluateCurveData(struct FBlendedCurve& OutCurve, const FAnimExtractContext& ExtractionContext) const;
+    bool LoadFromFile(const FString& filepath) override;
+    bool SerializeToFile(std::ostream& Out) override;
+    bool DeserializeFromFile(std::istream& In) override;
 
-    TArray<FAnimNotifyEvent> Notifies;
-    TArray<FAnimNotifyTrack> AnimNotifyTracks;
+    UPROPERTY(EditAnywhere, TArray<FAnimNotifyEvent>, Notifies, = {})
+    UPROPERTY(EditAnywhere, TArray<FAnimNotifyTrack>, AnimNotifyTracks, = {})
 protected:
     UPROPERTY(EditAnywhere | DuplicateTransient, UAnimDataModel*, DataModel, = nullptr)
 };
-
-inline void UAnimSequenceBase::RemoveNotifyTrack(int32 TrackIndexToRemove)
-{
-    if (!AnimNotifyTracks.IsValidIndex(TrackIndexToRemove))
-    {
-        return;
-    }
-
-    // Remove all notifies associated with this track from the global Notifies array
-    // Also, adjust TrackIndex for notifies on tracks that are shifted
-    for (int32 NotifyIdx = Notifies.Num() - 1; NotifyIdx >= 0; --NotifyIdx)
-    {
-        if (Notifies[NotifyIdx].TrackIndex == TrackIndexToRemove)
-        {
-            Notifies.RemoveAt(NotifyIdx);
-        }
-        else if (Notifies[NotifyIdx].TrackIndex > TrackIndexToRemove)
-        {
-            Notifies[NotifyIdx].TrackIndex--;
-        }
-    }
-    AnimNotifyTracks.RemoveAt(TrackIndexToRemove);
-}
 

@@ -4,6 +4,7 @@
 #include "Math/BoundingBox.h"
 #include "ShapeElems/ShapeElem.h"
 
+class UBodySetup;
 class USkeletalMeshComponent;
 struct FRefSkeletal;
 class USkeletalMesh;
@@ -46,9 +47,10 @@ public:
      * 어느 바디 쌍 사이의 충돌이 비활성화되었는지 나타내는 테이블입니다. 내부적으로 사용됩니다.
      * 물리 엔진 내부에서도 접근하므로 물리 연산 중에는 변경하면 안전하지 않습니다.
      */
-    TMap<FRigidBodyIndexPair, bool> CollisionDisableTable;
+    using FRigidBodyIndexPairToboolMapType = TMap<FRigidBodyIndexPair, bool>;
+    UPROPERTY(EditAnywhere, FRigidBodyIndexPairToboolMapType, CollisionDisableTable, = {})
 
-public:
+public: 
     void Initialize();
     
     const TArray<FName>& GetPhysicalAnimationProfileNames() const
@@ -133,7 +135,12 @@ public:
     
     /* Constraint 재귀 생성*/
     void GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal, int32 ParentBoneIndex);
+    bool LoadFromFile(const FString& filepath) override;
+    bool SerializeToFile(std::ostream& Out) override;
+    bool DeserializeFromFile(std::istream& In) override;
+    void PostLoad() override;
+
     void GetBodySetups(TArray<class UBodySetup*>& OutBodySetup) const;
 private:
-    TArray<class UBodySetup*> BodySetups;
+    UPROPERTY(EditAnywhere, TArray<UBodySetup*>, BodySetups, = {})
 };

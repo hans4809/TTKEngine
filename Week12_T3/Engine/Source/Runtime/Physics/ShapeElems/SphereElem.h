@@ -6,6 +6,7 @@ struct FBoundingBox;
 struct FKSphereElem : public FKShapeElem
 {
     DECLARE_STRUCT(FKSphereElem)
+    
     UPROPERTY(FMatrix, TM, = FMatrix())
 
     UPROPERTY(EditAnywhere, FVector, Center, = FVector::ZeroVector)

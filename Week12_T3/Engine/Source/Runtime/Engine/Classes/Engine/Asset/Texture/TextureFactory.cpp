@@ -2,13 +2,15 @@
 
 #include "Engine/Texture.h"
 
-UTextureFactory::~UTextureFactory()
+UTextureFactory::UTextureFactory()
 {
+    SetSupportedExtensions({".dds", ".png", "jpg", "jpeg"});
+    SetSupportedClass(UTexture::StaticClass());
+    SetPriority(100);
 }
 
-bool UTextureFactory::CanImport(const FString& filepath) const
+UTextureFactory::~UTextureFactory()
 {
-    return Super::CanImport(filepath);
 }
 
 UAsset* UTextureFactory::ImportFromFile(const FString& InFilePath)
@@ -18,10 +20,6 @@ UAsset* UTextureFactory::ImportFromFile(const FString& InFilePath)
     {
         return nullptr;
     }
-
-    std::filesystem::path filePath(InFilePath);
-    NewTexture->GetDescriptor().AbsolutePath = FString(filePath.generic_wstring().c_str());
-    NewTexture->GetDescriptor().RelativePath = std::filesystem::relative(filePath, std::filesystem::current_path()).string();
 
     return NewTexture;
 }

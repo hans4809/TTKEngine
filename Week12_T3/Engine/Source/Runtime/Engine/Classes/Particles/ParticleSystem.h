@@ -154,4 +154,5 @@ public:
     
     // 디버깅용 이름 반환
     FString GetDebugName() const;
+    void PostLoad() override;
 };

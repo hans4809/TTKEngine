@@ -28,9 +28,9 @@ UAssetImporter::~UAssetImporter()
 {
 }
 
-void UAssetImporter::Import(const FString& InFilepath, const ImportCallback& InCallback)
+void UAssetImporter::Import(UClass* InClass, const FString& InFilepath, const ImportCallback& InCallback)
 {
-    auto factory = FindFactory(InFilepath);
+    auto factory = FindFactory(InClass, InFilepath);
     if (!factory) return;
 
     // 디스크 읽기→Descriptor 생성
@@ -67,7 +67,7 @@ void UAssetImporter::Import(const FString& InFilepath, const ImportCallback& InC
 
     if (asset)
     {
-        asset->GetDescriptor() = desc;
+        asset->SetAssetDescriptor(desc);
         UAssetManager::Get().Store(desc.AssetName, asset);
     }
     
@@ -77,16 +77,16 @@ void UAssetImporter::Import(const FString& InFilepath, const ImportCallback& InC
     }
 }
 
-void UAssetImporter::ImportDirectory(const FString& InDir, const ImportCallback& InCallback)
+void UAssetImporter::ImportDirectory(UClass* InClass, const FString& InDir, const ImportCallback& InCallback)
 {
     for (auto& p : std::filesystem::recursive_directory_iterator(InDir))
     {
         if (!p.is_regular_file()) continue;
-        Import(p.path().string(), InCallback);
+        Import(InClass, p.path().string(), InCallback);
     }
 }
 
-UAssetFactory* UAssetImporter::FindFactory(const FString& filepath)
+UAssetFactory* UAssetImporter::FindFactory(UClass* InClass, const FString& filepath)
 {
-    return UAssetManager::Get().FindFactoryForFile(filepath);
+    return UAssetManager::Get().FindFactoryForFile(InClass, filepath);
 }

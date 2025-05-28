@@ -14,5 +14,5 @@ public:
     UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
 
 private:
-    UStaticMeshComponent* StaticMeshComponent = nullptr;
+    UPROPERTY(UStaticMeshComponent*, StaticMeshComponent)
 };

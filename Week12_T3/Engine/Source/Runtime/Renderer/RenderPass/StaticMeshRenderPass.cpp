@@ -39,14 +39,6 @@ FStaticMeshRenderPass::FStaticMeshRenderPass(const FName& InShaderName) : FBaseR
     Graphics.Device->CreateSamplerState(&desc, &ShadowMapSampler);
 
     CreateDummyTexture();
-
-    D3D11_BUFFER_DESC constdesc = {};
-    constdesc.ByteWidth = sizeof(FLightingConstants);
-  
-    constdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constdesc.Usage = D3D11_USAGE_DYNAMIC;
-    constdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    Graphics.Device->CreateBuffer(&constdesc, nullptr, &LightConstantBuffer);
 }
 
 void FStaticMeshRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
@@ -67,30 +59,9 @@ void FStaticMeshRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
             if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(Component))
             {
                 LightComponents.Add(LightComponent);
-                continue;
             }
         }
     }
-    // for (USceneComponent* SceneComponent : TObjectRange<USceneComponent>())
-    // {
-    //     if (SceneComponent->GetWorld() != World)
-    //     {
-    //         continue;
-    //     }
-    //             
-    //     if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(SceneComponent))
-    //     {
-    //         if (!Cast<UGizmoBaseComponent>(StaticMeshComponent))
-    //         {
-    //             StaticMeshComponents.Add(StaticMeshComponent);
-    //         }
-    //     }
-    //         
-    //     if (ULightComponentBase* LightComponent = Cast<ULightComponentBase>(SceneComponent))
-    //     {
-    //         LightComponents.Add(LightComponent);
-    //     }
-    // }
 }
 
 void FStaticMeshRenderPass::Prepare(const std::shared_ptr<FViewportClient> InViewportClient)
@@ -194,29 +165,28 @@ void FStaticMeshRenderPass::Execute(const std::shared_ptr<FViewportClient> InVie
 
         if (!StaticMeshComp->GetStaticMesh()) continue;
         
-        const OBJ::FStaticMeshRenderData* renderData = StaticMeshComp->GetStaticMesh()->GetRenderData();
-        if (renderData == nullptr) continue;
+        const FStaticMeshRenderData renderData = StaticMeshComp->GetStaticMesh()->GetRenderData();
 
         // VIBuffer Bind
         const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(StaticMeshComp->GetVBIBTopologyMappingName());
         VBIBTopMappingInfo->Bind();
 
         // If There's No Material Subset
-        if (renderData->MaterialSubsets.Num() == 0)
+        if (renderData.MaterialSubsets.Num() == 0)
         {
             Graphics.DeviceContext->DrawIndexed(VBIBTopMappingInfo->GetNumIndices(), 0,0);
         }
 
         // SubSet마다 Material Update 및 Draw
-        for (int subMeshIndex = 0; subMeshIndex < renderData->MaterialSubsets.Num(); ++subMeshIndex)
+        for (int subMeshIndex = 0; subMeshIndex < renderData.MaterialSubsets.Num(); ++subMeshIndex)
         {
-            const int materialIndex = renderData->MaterialSubsets[subMeshIndex].MaterialIndex;
+            const int materialIndex = renderData.MaterialSubsets[subMeshIndex].MaterialIndex;
             
             UpdateMaterialConstants(StaticMeshComp->GetMaterial(materialIndex)->GetMaterialInfo());
 
             // index draw
-            const uint64 startIndex = renderData->MaterialSubsets[subMeshIndex].IndexStart;
-            const uint64 indexCount = renderData->MaterialSubsets[subMeshIndex].IndexCount;
+            const uint64 startIndex = renderData.MaterialSubsets[subMeshIndex].IndexStart;
+            const uint64 indexCount = renderData.MaterialSubsets[subMeshIndex].IndexCount;
             Graphics.DeviceContext->DrawIndexed(indexCount, startIndex, 0);
         }
     }
@@ -412,10 +382,6 @@ void FStaticMeshRenderPass::UpdateLightConstants()
                 LightConstant.DirLight.Projection[i] = DirectionalLightComp->GetCascadeProjectionMatrix(i);
                 LightConstant.DirLight.CascadeSplit[i] = EditorEngine->GetLevelEditor()->GetActiveViewportClient()->GetCascadeSplit(i);
                 ID3D11ShaderResourceView* DirectionalLightSRV = DirectionalLightComp->GetShadowResource()[i].GetSRV();
-                //if (GEngineLoop.Renderer.GetShadowFilterMode() == EShadowFilterMode::VSM)
-                //{
-                //    DirectionalLightSRV = DirectionalLightComp->GetShadowResource()[i].GetVSMSRV();
-                //}
                 DirectionalShadowMaps.Add(DirectionalLightSRV);
             }
             Graphics.DeviceContext->PSSetShaderResources(11, 4, DirectionalShadowMaps.GetData());
@@ -459,13 +425,11 @@ void FStaticMeshRenderPass::UpdateLightConstants()
     }
 
     Graphics.DeviceContext->PSSetShaderResources(15, 8, ShadowCubeMap);
-    //Graphics.DeviceContext->PSSetShaderResources(3, 8, ShadowMaps);
-    // !NOTE : 아틀라스 텍스쳐는 이전 패스인 ShadowRenderPass에서 바인딩한다
-    //UE_LOG(LogLevel::Error, "Point : %d, Spot : %d Dir : %d", PointLightCount, SpotLightCount, DirectionalLightCount);
+    
     LightConstant.NumPointLights = PointLightCount;
     LightConstant.NumSpotLights = SpotLightCount;
     
-    renderResourceManager->UpdateConstantBuffer(LightConstantBuffer, &LightConstant);
+    renderResourceManager->UpdateConstantBuffer(TEXT("FLightingConstants"), &LightConstant);
 }
 
 // void FStaticMeshRenderPass::UpdateContstantBufferActor(const FVector4 UUID, int32 isSelected)

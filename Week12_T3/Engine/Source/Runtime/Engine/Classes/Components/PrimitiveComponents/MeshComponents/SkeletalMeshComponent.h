@@ -27,8 +27,6 @@ public:
     virtual void BeginPlay() override;
     virtual void TickComponent(float DeltaTime) override;
 
-    void SetData(const FString& FilePath);
-
     virtual uint32 GetNumMaterials() const override;
     virtual UMaterial* GetMaterial(uint32 ElementIndex) const override;
     virtual uint32 GetMaterialIndex(FName MaterialSlotName) const override;
@@ -39,7 +37,7 @@ public:
     
     USkeletalMesh* GetSkeletalMesh() const { return SkeletalMesh; }
     void SetSkeletalMesh(USkeletalMesh* value);
-    USkeletalMesh* LoadSkeletalMesh(const FString& FilePath);
+    USkeletalMesh* LoadSkeletalMesh(const FString& FileName);
 
     UAnimInstance* GetAnimInstance() const { return AnimInstance; }
     void SetAnimInstance(UAnimInstance* InAnimInstance) { AnimInstance = InAnimInstance; }

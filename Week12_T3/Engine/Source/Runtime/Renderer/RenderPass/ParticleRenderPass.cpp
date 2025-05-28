@@ -357,11 +357,10 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                         const uint8* ParticleData = Source.DataContainer.ParticleData;
                         const uint16* ParticleIndices = Source.DataContainer.ParticleIndices;
 					    
-					    const OBJ::FStaticMeshRenderData* RenderData = StaticMesh->GetRenderData();
-                        if (RenderData == nullptr) continue;
+					    const FStaticMeshRenderData RenderData = StaticMesh->GetRenderData();
 
                         // If There's No Material Subset
-                        if (RenderData->MaterialSubsets.Num() == 0)
+                        if (RenderData.MaterialSubsets.Num() == 0)
                         {
 
                             for (int i = 0; i < ParticleCount; ++i)
@@ -382,11 +381,9 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
 
                                 TArray<FMeshParticleInstanceVertex> InstanceVertices;
                                 InstanceVertices.Add(FillVertex);
-
-
-
+                                
                                 // VIBuffer Bind
-                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(RenderData->DisplayName);
+                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(RenderData.DisplayName);
                                 VBIBTopMappingInfo->Bind();
 
                                 ID3D11InputLayout* MeshInputLayout = Renderer.GetResourceManager()->GetInputLayout(TEXT("MeshParticle"));
@@ -404,7 +401,7 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                             }
 
                             //Graphics.DeviceContext->DrawIndexed(VBIBTopMappingInfo->GetNumIndices(), 0, 0);
-                            int32 IndexCount = StaticMesh->GetRenderData()->Indices.Num();
+                            int32 IndexCount = StaticMesh->GetRenderData().Indices.Num();
                             Graphics.DeviceContext->DrawIndexedInstanced(
                                 IndexCount,               // indexCount (쿼드 하나 = 2 tri = 6 index)
                                 ParticleRenderData->GetSource().ActiveParticleCount,   // instanceCount
@@ -416,7 +413,7 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                         else
                         {
                             // SubSet마다 Material Update 및 Draw
-                            for (int subMeshIndex = 0; subMeshIndex < RenderData->MaterialSubsets.Num(); ++subMeshIndex)
+                            for (int subMeshIndex = 0; subMeshIndex < RenderData.MaterialSubsets.Num(); ++subMeshIndex)
                             {
                                 TArray<FMeshParticleInstanceVertex> InstanceVertices;
                                 for (int i = 0; i < ParticleCount; ++i)
@@ -438,7 +435,7 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                                     InstanceVertices.Add(FillVertex);
                                 }
                                 // VIBuffer Bind
-                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(RenderData->DisplayName);
+                                const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(RenderData.DisplayName);
                                 VBIBTopMappingInfo->Bind();
 
                                 ID3D11InputLayout* MeshInputLayout = Renderer.GetResourceManager()->GetInputLayout(TEXT("MeshParticle"));
@@ -454,13 +451,13 @@ void FParticleRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewp
                                 //ParticleComponent가 움직이면 Particle도 같이 움직여야하기 때문에 Model값 가져가야함
                                 UpdateMatrixConstants(ParticleSystemComponent, View, Proj, InvView);
 
-                                const int materialIndex = RenderData->MaterialSubsets[subMeshIndex].MaterialIndex;
+                                const int materialIndex = RenderData.MaterialSubsets[subMeshIndex].MaterialIndex;
 
-                                UpdateMaterialConstants(RenderData->Materials[materialIndex]);
+                                UpdateMaterialConstants(RenderData.Materials[materialIndex]);
 
                                 // index draw
-                                const uint64 startIndex = RenderData->MaterialSubsets[subMeshIndex].IndexStart;
-                                const uint64 indexCount = RenderData->MaterialSubsets[subMeshIndex].IndexCount;
+                                const uint64 startIndex = RenderData.MaterialSubsets[subMeshIndex].IndexStart;
+                                const uint64 indexCount = RenderData.MaterialSubsets[subMeshIndex].IndexCount;
 
                                 Graphics.DeviceContext->DrawIndexedInstanced(
                                     indexCount,               // indexCount (쿼드 하나 = 2 tri = 6 index)
