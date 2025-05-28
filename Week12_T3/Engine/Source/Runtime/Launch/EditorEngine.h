@@ -58,7 +58,7 @@ public:
     
     float testBlurStrength;
 
-private:
+private: 
     std::shared_ptr<FWorldContext> CreateNewWorldContext(UWorld* InWorld, EWorldType::Type InWorldType, ELevelTick LevelType);
 
     // TODO 임시 Public 바꿔잇
