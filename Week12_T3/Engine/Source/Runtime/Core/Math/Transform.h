@@ -84,6 +84,8 @@ public:
         }
         return physx::PxTransform(Location.ToPxVec3(), pxRotation);
     }
+    FMatrix ToRowMatrixNoScale() const;
+    FMatrix ToRowMatrixWithScale() const;
 
 private:
     static bool Private_AnyHasNegativeScale(FVector InScale3D, FVector InOtherScale3D);
