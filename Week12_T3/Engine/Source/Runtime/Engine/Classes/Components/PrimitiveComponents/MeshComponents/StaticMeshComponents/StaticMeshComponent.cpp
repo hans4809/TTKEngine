@@ -167,6 +167,21 @@ void UStaticMeshComponent::TickComponent(float DeltaTime)
 {
     //Timer += DeltaTime * 0.005f;
     //SetLocation(GetWorldLocation()+ (FVector(1.0f,1.0f, 1.0f) * sin(Timer)));
+    if (BodyInstance.IsPhysicsStateCreated() && BodyInstance.bHasSimulated)
+    {
+        FTransform NewWorldTransform = BodyInstance.GetGlobalPose();
+
+        AActor* OwnerActor = GetOwner();
+
+        if (OwnerActor)
+        {
+            // 컴포넌트의 월드 위치, 회전, 스케일을 물리 결과로 직접 설정
+            OwnerActor->SetActorLocation(NewWorldTransform.GetLocation());
+            OwnerActor->SetActorRotation(NewWorldTransform.GetRotation().Rotator());
+        }
+
+        BodyInstance.bHasSimulated = false;
+    }
 }
 
 void UStaticMeshComponent::DestroyPhysicsState()

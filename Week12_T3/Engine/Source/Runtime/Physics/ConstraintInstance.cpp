@@ -23,7 +23,7 @@ bool FConstraintInstance::InitConstraint(UPrimitiveComponent* InOwnerComponent, 
 {
     if (!InBody1 || !InScene) // Body1과 PhysScene은 필수
     {
-       return false;
+        return false;
     }
 
     physx::PxRigidActor* Actor1 = InBody1->GetPxRigidActor(); // FBodyInstance에 GetPxActor() 함수가 있다고 가정
@@ -48,18 +48,20 @@ bool FConstraintInstance::InitConstraint(UPrimitiveComponent* InOwnerComponent, 
     // FTransform에 ToPxTransform() 같은 변환 함수가 있다고 가정
     physx::PxTransform PxLocalFrame1 = Pos1.ToPxTransform();
     physx::PxTransform PxLocalFrame2 = Pos2.ToPxTransform();
-    if (!PxLocalFrame1.isValid()) {
+    if (!PxLocalFrame1.isValid())
+    {
         UE_LOG(LogLevel::Error, TEXT("PxLocalFrame1 IS INVALID! P: (%f,%f,%f), Q: (%f,%f,%f,%f)"),
             PxLocalFrame1.p.x, PxLocalFrame1.p.y, PxLocalFrame1.p.z,
             PxLocalFrame1.q.x, PxLocalFrame1.q.y, PxLocalFrame1.q.z, PxLocalFrame1.q.w);
     }
-    if (!PxLocalFrame2.isValid()) {
+    if (!PxLocalFrame2.isValid())
+    {
         UE_LOG(LogLevel::Error, TEXT("PxLocalFrame2 IS INVALID! P: (%f,%f,%f), Q: (%f,%f,%f,%f)"),
             PxLocalFrame2.p.x, PxLocalFrame2.p.y, PxLocalFrame2.p.z,
             PxLocalFrame2.q.x, PxLocalFrame2.q.y, PxLocalFrame2.q.z, PxLocalFrame2.q.w);
     }
     physx::PxD6Joint* D6 = PxD6JointCreate(*PxPhysicsSDK, Actor1, PxLocalFrame1, Actor2, PxLocalFrame2);
-  
+
     if (!D6)
     {
         return false;
@@ -67,29 +69,18 @@ bool FConstraintInstance::InitConstraint(UPrimitiveComponent* InOwnerComponent, 
 
 
     PxJoint = D6;
-  
+
     physx::PxTransform Actor1ActualWorldPose = Actor1->getGlobalPose();
     physx::PxTransform Actor2ActualWorldPose = Actor2 ? Actor2->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
 
     physx::PxTransform JointWorldFrameFromActor1 = Actor1ActualWorldPose * PxLocalFrame1;
     physx::PxTransform JointWorldFrameFromActor2 = Actor2ActualWorldPose * PxLocalFrame2;
-    
-    UE_LOG(LogLevel::Error, TEXT("Joint: %s"), *JointName.ToString()); // 어떤 조인트인지 식별
-    UE_LOG(LogLevel::Error, TEXT("  Actor1 (%s) World Pose: P(%f,%f,%f) Q(%f,%f,%f,%f)"), *ConstraintBone1.ToString(), Actor1ActualWorldPose.p.x, Actor1ActualWorldPose.p.y, Actor1ActualWorldPose.p.z, Actor1ActualWorldPose.q.x, Actor1ActualWorldPose.q.y, Actor1ActualWorldPose.q.z, Actor1ActualWorldPose.q.w);
-    UE_LOG(LogLevel::Error, TEXT("  PxLocalFrame1: P(%f,%f,%f) Q(%f,%f,%f,%f)"), PxLocalFrame1.p.x, PxLocalFrame1.p.y, PxLocalFrame1.p.z, PxLocalFrame1.q.x, PxLocalFrame1.q.y, PxLocalFrame1.q.z, PxLocalFrame1.q.w);
-    UE_LOG(LogLevel::Error, TEXT("  => JointWorldFrame (from Actor1): P(%f,%f,%f) Q(%f,%f,%f,%f)"), JointWorldFrameFromActor1.p.x, JointWorldFrameFromActor1.p.y, JointWorldFrameFromActor1.p.z, JointWorldFrameFromActor1.q.x, JointWorldFrameFromActor1.q.y, JointWorldFrameFromActor1.q.z, JointWorldFrameFromActor1.q.w);
-    
-    if (Actor2) 
+    if (Actor2)
     {
-        UE_LOG(LogLevel::Error, TEXT("  Actor2 (%s) World Pose: P(%f,%f,%f) Q(%f,%f,%f,%f)"), *ConstraintBone2.ToString(), Actor2ActualWorldPose.p.x, Actor2ActualWorldPose.p.y, Actor2ActualWorldPose.p.z, Actor2ActualWorldPose.q.x, Actor2ActualWorldPose.q.y, Actor2ActualWorldPose.q.z, Actor2ActualWorldPose.q.w);
-        UE_LOG(LogLevel::Error, TEXT("  PxLocalFrame2: P(%f,%f,%f) Q(%f,%f,%f,%f)"), PxLocalFrame2.p.x, PxLocalFrame2.p.y, PxLocalFrame2.p.z, PxLocalFrame2.q.x, PxLocalFrame2.q.y, PxLocalFrame2.q.z, PxLocalFrame2.q.w);
-        UE_LOG(LogLevel::Error, TEXT("  => JointWorldFrame (from Actor2): P(%f,%f,%f) Q(%f,%f,%f,%f)"), JointWorldFrameFromActor2.p.x, JointWorldFrameFromActor2.p.y, JointWorldFrameFromActor2.p.z, JointWorldFrameFromActor2.q.x, JointWorldFrameFromActor2.q.y, JointWorldFrameFromActor2.q.z, JointWorldFrameFromActor2.q.w);
 
         physx::PxVec3 PosDiff = JointWorldFrameFromActor1.p - JointWorldFrameFromActor2.p;
         // 쿼터니언 차이 (각도 차이) 계산은 더 복잡하지만, 일단 위치만 비교
-        UE_LOG(LogLevel::Error, TEXT("  World Frame Position Difference Mag: %f"), PosDiff.magnitude());
         physx::PxQuat RotDiff = JointWorldFrameFromActor1.q * JointWorldFrameFromActor2.q.getConjugate();
-        UE_LOG(LogLevel::Error, TEXT("  World Frame Rotation Difference (Angle): %f degrees"),FMath::RadiansToDegrees(RotDiff.getAngle()));
     }
     ApplyFrames();         // 로컬 프레임 (이미 생성 시 적용되었지만, 필요시 추가 조정)
     ApplyLimits();         // 선형/각도 제한
@@ -105,11 +96,11 @@ bool FConstraintInstance::InitConstraint(UPrimitiveComponent* InOwnerComponent, 
     physx::PxScene* PxScenePtr = InScene->GetPxScene();
     physx::PxScene* Scene = InScene->GetPxScene();
 
-    if (!Actor1->getScene())     
+    if (!Actor1->getScene())
         Scene->addActor(*Actor1);
-    if (Actor2 && !Actor2->getScene()) 
+    if (Actor2 && !Actor2->getScene())
         Scene->addActor(*Actor2);
-    
+
     bConstraintBroken = false; // 초기에는 파괴되지 않은 상태
 
     return true; // 성공적으로 조인트 생성 및 설정 완료
@@ -233,11 +224,10 @@ void FConstraintInstance::ApplyLimits()
     // --- 각도 제한 (Angular Limits) ---
 
     // Twist Limit (X-axis)
-    // --- 각도 제한 (테스트를 위해 모두 eFREE로 설정) ---
-    JointD6->setMotion(physx::PxD6Axis::eTWIST, physx::PxD6Motion::eFREE);
-    JointD6->setMotion(physx::PxD6Axis::eSWING1, physx::PxD6Motion::eFREE);
-    JointD6->setMotion(physx::PxD6Axis::eSWING2, physx::PxD6Motion::eFREE);
-
+    // --- 각도 제한  ---
+    JointD6->setMotion(physx::PxD6Axis::eTWIST, ConvertMotion(ProfileInstance.AngularTwistMotion));
+    JointD6->setMotion(physx::PxD6Axis::eSWING1, ConvertMotion(ProfileInstance.AngularSwing1Motion));
+    JointD6->setMotion(physx::PxD6Axis::eSWING2, ConvertMotion(ProfileInstance.AngularSwing2Motion));
     //////JointD6->setMotion(physx::PxD6Axis::eTWIST, ConvertMotion(ProfileInstance.AngularTwistMotion));
     if (ProfileInstance.AngularTwistMotion == EConstraintMotion::Limited)
     {

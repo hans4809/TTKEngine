@@ -119,6 +119,10 @@ public:
     EAnimationMode GetAnimationMode() const { return AnimationMode; }
     int32 FindBodyIndex(FName BoneName) const;
     void CreatePhysicsState();
+
+
+    void ApplyPhysicsStateToBoneTransforms();
+    void UpdateChildBoneTransformsFromPhysics(int32 ParentSkelBoneIndex);
 private:
 
     UPROPERTY(EditAnywhere, EAnimationMode, AnimationMode, = EAnimationMode::AnimationSingleNode)

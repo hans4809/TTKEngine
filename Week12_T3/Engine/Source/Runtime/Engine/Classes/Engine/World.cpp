@@ -90,7 +90,6 @@ void UWorld::CreateBaseObject(EWorldType::Type WorldType)
     if (LocalGizmo == nullptr && WorldType)
     {
         LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>(this);
-        LocalGizmo->SetActorLabel(TEXT("Gizmo"));
     }
     /* if (WorldType == EWorldType::Editor)
      {
@@ -110,49 +109,13 @@ void UWorld::ReleaseBaseObject()
 
 void UWorld::SyncPhysicsActor(physx::PxActor* PActor)
 {
-    switch (PActor->getType())
-    {
-    case physx::PxActorType::eRIGID_DYNAMIC:
-    {
-        FBodyInstance* BodyInst = static_cast<FBodyInstance*>(PActor->userData);
-        if (BodyInst == nullptr) return;
+    if (!PActor || !PActor->userData) return;
 
-        auto* OwnerComp = BodyInst->GetOwnerComponent();
+    FBodyInstance* BodyInst = static_cast<FBodyInstance*>(PActor->userData);
+    if (!BodyInst) return;
 
-        if (OwnerComp == nullptr) return;
-        if (physx::PxRigidActor* Rigid = PActor->is<physx::PxRigidActor>())
-        {
-            physx::PxTransform PxT = Rigid->getGlobalPose();
-
-            FVector Location = FVector::PToFVector(PxT.p);
-            FQuat   Rotation = FQuat::PToFQuat(PxT.q);
-
-            AActor* Actor = OwnerComp->GetOwner();
-            if (Actor && !Actor->IsActorBeingDestroyed())
-            {
-                Actor->SetActorLocation(Location);
-                Actor->SetActorRotation(Rotation.Rotator());
-            }
-            else
-            {
-                CurrentPhysicsScene->RemoveObject(BodyInst);
-                Actor = nullptr;
-            }
-        }
-    }
-    break;
-
-    case physx::PxActorType::eRIGID_STATIC:
-    {
-        // 정적 강체는 위치 변경이 없으므로 기본적으로 스킵
-    }
-    break;
-    default:
-    {
-        // 기타 타입(eAGGREGATE, 사용자 정의 등)은 필요에 따라 처리
-    }
-    break;
-    }
+    // 물리 결과를 FBodyInstance에 캐시만 함
+    BodyInst->CacheSimulatedWorldTransform();
 }
 void UWorld::SyncPhysicsActors()
 {
@@ -185,14 +148,14 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
 
         FGameManager::Get().EditorTick(deltaSeconds);
     }
-    if (CurrentPhysicsScene )//&& (tickType == ELevelTick::LEVELTICK_All))
+    if (CurrentPhysicsScene)// && (tickType == ELevelTick::LEVELTICK_All))
     {
         CurrentPhysicsScene->Simulate(deltaSeconds); //내부에서 FetchResult 호출
         SyncPhysicsActors();
     }
 
     // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
-    if (tickType == LEVELTICK_All)
+    //if (tickType == LEVELTICK_All)
     {
         FLuaManager::Get().BeginPlay();
         TSet<AActor*> PendingActors = Level->PendingBeginPlayActors;

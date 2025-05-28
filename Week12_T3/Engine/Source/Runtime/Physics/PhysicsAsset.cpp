@@ -65,6 +65,7 @@ void UPhysicsAsset::AutoGenerateBodies()
         if (bone.ParentIndex != INDEX_NONE && bone.ParentIndex >= 0 && bone.ParentIndex < RefSkeletal.RawBones.Num())
         {
             parentBoneName = RefSkeletal.RawBones[bone.ParentIndex].BoneName;
+            UE_LOG(LogLevel::Warning, "P: %s", parentBoneName);
         }
         UE_LOG(LogLevel::Warning, TEXT("Bone: %s (Idx: %d), Parent: %s (ParentIdx: %d)"),
             *bone.BoneName, i, *parentBoneName, bone.ParentIndex);
@@ -74,8 +75,8 @@ void UPhysicsAsset::AutoGenerateBodies()
     BodySetups.Empty(); // 한 번만 호출해도 됩니다.
 
     const float DefaultCapsuleRadiusFactor = 0.1f; // 본 길이에 대한 반지름 비율
-    const float MinCapsuleRadiusFallback = 0.1f;  // 최소 반지름 (0이 되는 것 방지)
-  
+    const float MinCapsuleRadiusFallback = 0.5f;  // 최소 반지름 (0이 되는 것 방지)
+
     const FVector AssumedLeafBoneDirection = FVector::XAxisVector; // 말단 본의 기본 방향
 
     // Pass 1: 각 본의 반지름을 미리 계산하여 저장 (겹침 계산 시 필요)
@@ -104,7 +105,7 @@ void UPhysicsAsset::AutoGenerateBodies()
         {
             CurrentBoneLength = KINDA_SMALL_NUMBER;
         }
-        BoneRadii[BoneIndex] = FMath::Max(CurrentBoneLength * DefaultCapsuleRadiusFactor, MinCapsuleRadiusFallback);
+        BoneRadii[BoneIndex] = FMath::Max(CurrentBoneLength * DefaultCapsuleRadiusFactor, MinCapsuleRadiusFallback) * 1.5f;
     }
 
 
@@ -121,7 +122,6 @@ void UPhysicsAsset::AutoGenerateBodies()
 
         // 현재 본의 반지름 (Pass 1에서 계산)
         CapsuleShape.Radius = BoneRadii[CurrentBoneIndex];
-        UE_LOG(LogLevel::Warning, TEXT("Bone: %s, Radius: %f"), *CurrentBoneName.ToString(), CapsuleShape.Radius);
         // 본의 원래 시작점과 끝점 (로컬 공간 기준)
         FVector BoneSegmentStart_Local = FVector::ZeroVector;
         FVector BoneSegmentEnd_Local;
@@ -166,12 +166,12 @@ void UPhysicsAsset::AutoGenerateBodies()
         float EndOffset = 0.0f;
 
         // 부모 본의 반지름만큼 현재 캡슐의 시작점을 뒤로 민다
-        int32 ParentBoneIndex = CurrentBoneData.ParentIndex; 
-        
+        int32 ParentBoneIndex = CurrentBoneData.ParentIndex;
+
         if (ParentBoneIndex != INDEX_NONE && ParentBoneIndex >= 0 && ParentBoneIndex < BoneRadii.Num()) // 유효성 검사 추가
         {
             StartOffset = BoneRadii[ParentBoneIndex];
-        
+
         }
 
         if (ParentBoneIndex != INDEX_NONE && ParentBoneIndex < BoneRadii.Num())
@@ -200,7 +200,7 @@ void UPhysicsAsset::AutoGenerateBodies()
         if (CapsuleCylinderLength < KINDA_SMALL_NUMBER) // 오프셋으로 인해 길이가 너무 짧아지거나 음수가 된 경우
         {
             CapsuleCylinderLength = KINDA_SMALL_NUMBER; // 매우 작은 길이로 설정
-        
+
             // 캡슐을 원래 본 세그먼트의 중앙에 위치시키거나, 시작점에 위치
             CapsuleShape.Center = BoneDirection_Local * (AnatomicalBoneLength * 0.5f); // 또는 StartOffset * BoneDirection_Local
             CapsuleShape.Length = CapsuleCylinderLength * 0.5f; // Sphyl의 Length는 절반 높이
@@ -216,7 +216,7 @@ void UPhysicsAsset::AutoGenerateBodies()
         // 방향 설정 (이전과 동일)
         FVector CapsuleUpVector_UE = BoneDirection_Local; // 이미 정규화됨
         FVector CapsuleRightVector_UE;
-        if (FMath::Abs(CapsuleUpVector_UE.Dot(FVector::XAxisVector)) < 0.95f) 
+        if (FMath::Abs(CapsuleUpVector_UE.Dot(FVector::XAxisVector)) < 0.95f)
         {
             CapsuleRightVector_UE = CapsuleUpVector_UE.Cross(FVector::XAxisVector).GetSafeNormal();
         }
@@ -270,9 +270,9 @@ void UPhysicsAsset::GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal,
         NewConstraint->JointName = FName(*(ParentBoneName.ToString() + TEXT("_") + ChildBoneName.ToString()));
 
         // 기본 프로퍼티 설정.
-        NewConstraint->TwistLimit = 180.f;
-        NewConstraint->SwingLimit1 = 180.f;
-        NewConstraint->SwingLimit2 = 180.0f;
+        NewConstraint->TwistLimit = 170.f;
+        NewConstraint->SwingLimit1 = 170.f;
+        NewConstraint->SwingLimit2 = 170.0f;
 
         ConstraintSetup.Add(NewConstraint);
 

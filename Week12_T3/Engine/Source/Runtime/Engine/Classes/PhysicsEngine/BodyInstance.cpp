@@ -221,6 +221,16 @@ physx::PxShape* FBodyInstance::AddConvexGeometry(physx::PxConvexMesh* CookedMesh
     return NewShape;
 }
 
+void FBodyInstance::CacheSimulatedWorldTransform()
+{
+    if (PxActor)
+    {
+        LastSimulatedWorldTransform = FTransform(PxActor->getGlobalPose());
+        LastSimulatedWorldTransform.SetScale(FVector::OneVector);
+        bHasSimulated = true;
+    }
+}
+
 
 void FBodyInstance::SetBodyType(EPhysBodyType NewType)
 {

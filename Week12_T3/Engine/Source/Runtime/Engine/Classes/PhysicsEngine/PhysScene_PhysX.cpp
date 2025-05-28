@@ -39,7 +39,7 @@ bool FPhysScene_PhysX::Initialize()
 
     physx::PxSceneDesc sceneDesc(PxSDK->getTolerancesScale());
 
-    sceneDesc.gravity = physx::PxVec3(0.0f, 0.f, -0.3f);
+    sceneDesc.gravity = physx::PxVec3(0.0f, 0.f, -9.8f);
 
     unsigned int numCores = std::thread::hardware_concurrency();
 
