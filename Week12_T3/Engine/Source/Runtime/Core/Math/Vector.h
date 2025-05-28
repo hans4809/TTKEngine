@@ -252,7 +252,9 @@ struct FVector
     }
 
     FVector GetAbs() const;
-    
+    bool ContainsNAN() const;
+    bool IsFinitie() const;
+
     static const FVector ZeroVector;
     static const FVector OneVector;
     static const FVector UpVector;
@@ -351,4 +353,14 @@ inline bool FVector::IsUniform(const float Tolerance) const
 inline FVector FVector::GetAbs() const
 {
     return FVector(FMath::Abs(X), FMath::Abs(Y), FMath::Abs(Z));
+}
+
+inline bool FVector::ContainsNAN() const
+{
+    return isnan(X) || isnan(Y) || isnan(Z);
+}
+
+inline bool FVector::IsFinitie() const
+{
+    return isfinite(X) && isfinite(Y) && isfinite(Z);
 }
