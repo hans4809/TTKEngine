@@ -34,24 +34,10 @@ int32 FEngineLoop::Init(const HINSTANCE hInstance)
     
     Renderer.Initialize(&GraphicDevice);
     ResourceManager.Initialize(&GraphicDevice);
-    
-    // if (bIsEditor)
-    {
-        GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
-    }
-    //else
-    {
-        //TODO : UENGINE으로 만들 수 있게 해주기 
-        // GEngine = FObjectFactory::ConstructObject<UEngine>();
-    }
 
+    GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
     GEngine->Init();
 
-    for (const auto& AppWnd : AppWindows)
-    {
-        UpdateUI(AppWnd);
-    }
-    
     return 0;
 }
 
@@ -118,8 +104,8 @@ void FEngineLoop::Render() const
 
     const uint32 OriginalIndex = LevelEditor->GetCurrentViewportClientIndex();
     const HWND OriginalWindow = LevelEditor->GetCurrentViewportWindow();
-    TArray<HWND> CopiedAppWindows = AppWindows;
-    for (const auto& AppWindow : CopiedAppWindows)
+    // TArray<HWND> CopiedAppWindows = AppWindows; -- Why are you copy this?
+    for (const auto& AppWindow : AppWindows)
     {
         LevelEditor->FocusViewportClient(AppWindow, 0);
         TArray<std::shared_ptr<FEditorViewportClient>> ViewportClients = LevelEditor->GetViewportClients(AppWindow);
@@ -330,10 +316,11 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(const HWND hWnd, const UINT Msg, const 
                 break;
             }
         }
-        //break;
+        
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
+        
         case WM_SIZE:
             if (wParam != SIZE_MINIMIZED)
             {
@@ -345,17 +332,13 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(const HWND hWnd, const UINT Msg, const 
                     {
                         const FVector2D ClientSize = FWindowsCursor::GetClientSize(hWnd);
                         LevelEditor->ResizeWindow(hWnd, ClientSize);
-                        // for (std::shared_ptr<FEditorViewportClient>& ViewportClient : LevelEditor->GetViewports())
-                        // {
-                        //     FWindowData& WindowData = FEngineLoop::GraphicDevice.SwapChains[hWnd];
-                        //     ViewportClient->ResizeViewport(WindowData.screenWidth, WindowData.screenHeight);
-                        // }
                     }   
                 }
             }
             ViewportTypePanel::GetInstance().OnResize(hWnd);
             GEngineLoop.UpdateUI(hWnd);
             break;
+        
         default:
             GEngineLoop.AppMessageHandler->ProcessMessage(hWnd, Msg, wParam, lParam);
             return DefWindowProc(hWnd, Msg, wParam, lParam);

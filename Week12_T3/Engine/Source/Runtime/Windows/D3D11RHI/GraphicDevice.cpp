@@ -286,12 +286,12 @@ void FGraphicsDevice::ReleaseDevice()
 
 void FGraphicsDevice::CreateFrameBuffer(const HWND hWindow)
 {
-    ReleaseFrameBuffer(hWindow);
-
     if (!SwapChains.Contains(hWindow))
     {
         return;
     }
+    
+    ReleaseFrameBuffer(hWindow);
 
     FWindowData& WindowData = SwapChains[hWindow];
     WindowData.SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&WindowData.FrameBuffer));
