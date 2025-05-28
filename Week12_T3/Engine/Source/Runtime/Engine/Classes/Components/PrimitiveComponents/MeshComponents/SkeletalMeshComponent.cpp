@@ -357,10 +357,6 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
 
 }
 
-void USkeletalMeshComponent::SetData(const FString& FilePath)
-{
-    SkeletalMesh = LoadSkeletalMesh(FilePath);
-}
 
 void USkeletalMesh::ResetToOriginalPose()
 {
