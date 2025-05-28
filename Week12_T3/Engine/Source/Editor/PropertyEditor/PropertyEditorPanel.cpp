@@ -855,15 +855,16 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
         ImGui::Text("StaticMesh");
         ImGui::SameLine();
 
-        FString PreviewName = StaticMeshComponent->GetStaticMesh()->GetRenderData()->DisplayName;
-        const TMap<FString, UStaticMesh*> Meshes = FManagerOBJ::GetStaticMeshes();
+        FString PreviewName = StaticMeshComponent->GetStaticMesh()->GetDescriptor().AssetName.ToString();
+        TMap<FName, UAsset*> Assets = UAssetManager::Get().GetLoadedAssetsByType(UStaticMesh::StaticClass());
         if (ImGui::BeginCombo("##StaticMesh", GetData(PreviewName), ImGuiComboFlags_None))
         {
-            for (const auto Mesh : Meshes)
+            for (const auto Asset : Assets)
             {
-                if (ImGui::Selectable(GetData(Mesh.Value->GetRenderData()->DisplayName), false))
+                UStaticMesh* Mesh = Cast<UStaticMesh>(Asset.Value);
+                if (ImGui::Selectable(GetData(Mesh->GetDescriptor().AssetName.ToString()), false))
                 {
-                    StaticMeshComponent->SetStaticMesh(Mesh.Value);
+                    StaticMeshComponent->SetStaticMesh(Mesh);
                 }
             }
 
@@ -1030,7 +1031,7 @@ void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp
 
     if (ImGui::TreeNodeEx("SubMeshes", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
-        const auto Subsets = StaticMeshComp->GetStaticMesh()->GetRenderData()->MaterialSubsets;
+        const auto Subsets = StaticMeshComp->GetStaticMesh()->GetRenderData().MaterialSubsets;
         for (uint32 i = 0; i < Subsets.Num(); ++i)
         {
             std::string Temp = "subset " + std::to_string(i);
@@ -1772,10 +1773,11 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& AssetName
         AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
         SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
         UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
-        FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
-        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
-        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
-        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
+        UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("SkySphere"));
+        //FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
+        MeshComp->SetStaticMesh(StaticMesh);
+        MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetDiffuse(FVector::OneVector);
+        MeshComp->GetStaticMesh()->GetMaterials()[0].Material->SetEmissive(FVector::OneVector);
         MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
         SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
 

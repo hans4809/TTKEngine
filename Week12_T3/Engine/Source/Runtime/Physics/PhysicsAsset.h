@@ -135,6 +135,10 @@ public:
     
     /* Constraint 재귀 생성*/
     void GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal, int32 ParentBoneIndex);
+    bool LoadFromFile(const FString& filepath) override;
+    bool SerializeToFile(std::ostream& Out) override;
+    bool DeserializeFromFile(std::istream& In) override;
+    void PostLoad() override;
 
 private:
     UPROPERTY(EditAnywhere, TArray<UBodySetup*>, BodySetups, = {})

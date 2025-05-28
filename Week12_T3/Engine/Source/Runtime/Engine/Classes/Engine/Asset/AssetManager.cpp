@@ -58,12 +58,7 @@ void UAssetManager::Initalize()
     Registry->ScanDirectory();
     Registry->ScanDirectory(TEXT("Assets"));
     
-    LoadObjFiles();
-}
-
-void UAssetManager::InitAssetManager()
-{
-    AssetRegistry = std::make_unique<FAssetRegistry>();
+    //LoadObjFiles();
 }
 
 void UAssetManager::RegisterFactory(UAssetFactory* InFactory)
@@ -183,6 +178,7 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
             if (F->CanImport(ClassType, Path))
             {
                 Asset = F->ImportFromFile(Path);
+                Asset->PostLoad();
                 if (ClassType != UTexture::StaticClass())
                 {
                     // 5) 새 파일명 + 확장자 조합
@@ -192,7 +188,6 @@ UAsset* UAssetManager::Load(UClass* ClassType, const FString& Path)
                     Serializer::SaveToFile(Asset, NewPath);
                     Registry->RegisterNewFile(NewPath);
                 }
-                break;
             }
         }
     }
@@ -284,46 +279,6 @@ TArray<FAssetDescriptor> UAssetManager::GetDescriptorsByType(UClass* InClass)
     }
 
     return TArray<FAssetDescriptor>();
-}
-
-void UAssetManager::LoadObjFiles()
-{
-    const std::string BasePathName = "Contents/";
-
-    // Obj 파일 로드
-	
-    for (const auto& Entry : std::filesystem::recursive_directory_iterator(BasePathName))
-    {
-        if (Entry.is_regular_file() && Entry.path().extension() == ".obj")
-        {
-            FAssetInfo NewAssetInfo;
-            NewAssetInfo.AssetName = FName(Entry.path().filename().string());
-            NewAssetInfo.PackagePath = FName(Entry.path().parent_path().string());
-            NewAssetInfo.AssetType = EAssetType::StaticMesh; // obj 파일은 무조건 StaticMesh
-            NewAssetInfo.Size = static_cast<uint32>(std::filesystem::file_size(Entry.path()));
-            
-            AssetRegistry->PathNameToAssetInfo.Add(NewAssetInfo.AssetName, NewAssetInfo);
-            
-            FString MeshName = NewAssetInfo.PackagePath.ToString() + "/" + NewAssetInfo.AssetName.ToString();
-            FManagerOBJ::CreateStaticMesh(MeshName);
-            // ObjFileNames.push_back(UGTLStringLibrary::StringToWString(Entry.path().string()));
-            // FObjManager::LoadObjStaticMeshAsset(UGTLStringLibrary::StringToWString(Entry.path().string()));
-        }
-
-        if (Entry.is_regular_file() && Entry.path().extension() == ".csv")
-        {
-            FAssetInfo NewAssetInfo;
-            NewAssetInfo.AssetName = FName(Entry.path().filename().string());
-            NewAssetInfo.PackagePath = FName(Entry.path().parent_path().string());
-            NewAssetInfo.AssetType = EAssetType::Curve;
-            NewAssetInfo.Size = static_cast<uint32>(std::filesystem::file_size(Entry.path()));
-            
-            AssetRegistry->PathNameToAssetInfo.Add(NewAssetInfo.AssetName, NewAssetInfo);
-            
-            // ObjFileNames.push_back(UGTLStringLibrary::StringToWString(Entry.path().string()));
-            // FObjManager::LoadObjStaticMeshAsset(UGTLStringLibrary::StringToWString(Entry.path().string()));
-        }
-    }
 }
 
 UAssetFactory* UAssetManager::FindFactoryForFile(UClass* InClass, const FString& filepath)

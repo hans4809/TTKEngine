@@ -102,29 +102,28 @@ void FGizmoRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewport
 
         if (!GizmoComp->GetStaticMesh()) continue;
 
-        OBJ::FStaticMeshRenderData* renderData = GizmoComp->GetStaticMesh()->GetRenderData();
-        if (renderData == nullptr) continue;
+        FStaticMeshRenderData renderData = GizmoComp->GetStaticMesh()->GetRenderData();
 
         // VIBuffer Bind
         const std::shared_ptr<FVBIBTopologyMapping> VBIBTopMappingInfo = Renderer.GetVBIBTopologyMapping(GizmoComp->GetVBIBTopologyMappingName());
         VBIBTopMappingInfo->Bind();
 
         // If There's No Material Subset
-        if (renderData->MaterialSubsets.Num() == 0)
+        if (renderData.MaterialSubsets.Num() == 0)
         {
             Graphics.DeviceContext->DrawIndexed(VBIBTopMappingInfo->GetNumIndices(), 0,0);
         }
 
         // SubSet마다 Material Update 및 Draw
-        for (int subMeshIndex = 0; subMeshIndex < renderData->MaterialSubsets.Num(); ++subMeshIndex)
+        for (int subMeshIndex = 0; subMeshIndex < renderData.MaterialSubsets.Num(); ++subMeshIndex)
         {
-            const int materialIndex = renderData->MaterialSubsets[subMeshIndex].MaterialIndex;
+            const int materialIndex = renderData.MaterialSubsets[subMeshIndex].MaterialIndex;
             
             UpdateMaterialConstants(GizmoComp->GetMaterial(materialIndex)->GetMaterialInfo());
 
             // index draw
-            const uint64 startIndex = renderData->MaterialSubsets[subMeshIndex].IndexStart;
-            const uint64 indexCount = renderData->MaterialSubsets[subMeshIndex].IndexCount;
+            const uint64 startIndex = renderData.MaterialSubsets[subMeshIndex].IndexStart;
+            const uint64 indexCount = renderData.MaterialSubsets[subMeshIndex].IndexCount;
             Graphics.DeviceContext->DrawIndexed(indexCount, startIndex, 0);
         }                           
     }

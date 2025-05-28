@@ -210,7 +210,7 @@ void FEngineLoop::Render() const
         ImGuiManager::Get().EndFrame(AppWindow);
     
         // Pending 처리된 오브젝트 제거
-        GUObjectArray.ProcessPendingDestroyObjects();
+        //GUObjectArray.ProcessPendingDestroyObjects();
         GraphicDevice.SwapBuffer(AppWindow);
     }
     LevelEditor->FocusViewportClient(OriginalWindow, OriginalIndex);

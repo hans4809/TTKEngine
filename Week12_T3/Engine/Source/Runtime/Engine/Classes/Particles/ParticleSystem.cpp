@@ -51,6 +51,11 @@ bool UParticleSystem::DeserializeFromFile(std::istream& In)
     return true;
 }
 
+void UParticleSystem::PostLoad()
+{
+    UAsset::PostLoad();
+}
+
 
 bool UParticleSystem::CanBePooled()const
 {

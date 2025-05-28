@@ -1,6 +1,7 @@
 #include "Define.h"
 
 #include "MathSSE.h"
+#include "Components/Material/Material.h"
 #include "Runtime/Serialization/Archive.h"
 
 void FMaterialSubset::Serialize(FArchive& Ar) const
@@ -11,6 +12,10 @@ void FMaterialSubset::Serialize(FArchive& Ar) const
 void FMaterialSubset::Deserialize(FArchive& Ar)
 {
     Ar >> IndexStart >> IndexCount >> MaterialIndex >> MaterialName;
+}
+
+FMaterialSlot::~FMaterialSlot()
+{
 }
 
 void FObjMaterialInfo::Serialize(FArchive& Ar) const

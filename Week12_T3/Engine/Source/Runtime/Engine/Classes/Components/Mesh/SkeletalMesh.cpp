@@ -187,29 +187,6 @@ bool USkeletalMesh::LoadFromFile(const FString& FilePath)
     Skeleton = UAssetManager::Get().Get<USkeleton>(AssetName);
     if (Skeleton == nullptr)
         return false;
-
-    const uint32 verticeNum = SkeletalMeshRenderData.Vertices.Num();
-        if (verticeNum <= 0) return false;
-
-    FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
-    SkeletalMeshRenderData.VB = renderResourceManager->CreateDynamicVertexBuffer<FSkeletalVertex>(SkeletalMeshRenderData.Vertices);
-    
-    const uint32 indexNum = SkeletalMeshRenderData.Indices.Num();
-    if (indexNum > 0)
-    {
-        SkeletalMeshRenderData.IB = renderResourceManager->CreateIndexBuffer(SkeletalMeshRenderData.Indices);
-    }
-
-    MaterialSlots.Empty();
-    for (int materialIndex = 0; materialIndex < Skeleton->GetRefSkeletal().Materials.Num(); materialIndex++) {
-        FMaterialSlot newMaterialSlot;
-        // Change
-
-        newMaterialSlot.Material = FManagerOBJ::GetMaterial(Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName);
-        newMaterialSlot.MaterialSlotName = Skeleton->GetRefSkeletal().Materials[materialIndex]->GetMaterialInfo().MTLName;
-        
-        MaterialSlots.Add(newMaterialSlot);
-    }
     
     return true;
 }

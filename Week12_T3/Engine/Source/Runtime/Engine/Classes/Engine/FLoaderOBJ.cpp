@@ -25,10 +25,12 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
 
     // 마지막 '.'을 찾아 확장자를 제거
     size_t dotPos = fileName.find_last_of('.');
-    if (dotPos != std::string::npos) {
+    if (dotPos != std::string::npos)
+    {
         OutObjInfo.DisplayName = fileName.substr(0, dotPos);
     }
-    else {
+    else
+    {
         OutObjInfo.DisplayName = fileName;
     }
 
@@ -196,7 +198,62 @@ bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FObjInfo& OutObjInfo)
     return true;
 }
 
-bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData& OutFStaticMesh)
+bool FLoaderOBJ::ParseOBJ(const FString& ObjFilePath, FStaticMeshRenderData& OutFStaticMeshRenderData)
+{
+    // Parse OBJ
+    FObjInfo NewObjInfo;
+    bool Result = ParseOBJ(ObjFilePath, NewObjInfo);
+
+    if (!Result)
+    {
+        return false;
+    }
+    
+    // Material
+    if (NewObjInfo.MaterialSubsets.Num() > 0)
+    {
+        Result = ParseMaterial(NewObjInfo, OutFStaticMeshRenderData);
+
+        if (!Result)
+        {
+            return false;
+        }
+
+        CombineMaterialIndex(OutFStaticMeshRenderData);
+
+        for (int materialIndex = 0; materialIndex < OutFStaticMeshRenderData.Materials.Num(); materialIndex++)
+        {
+            FManagerOBJ::CreateMaterial(OutFStaticMeshRenderData.Materials[materialIndex]);
+        }
+    }
+
+    // Convert FStaticMeshRenderData
+    Result = ConvertToStaticMesh(NewObjInfo, OutFStaticMeshRenderData);
+    if (!Result)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void FLoaderOBJ::CombineMaterialIndex(FStaticMeshRenderData& OutFStaticMesh)
+{
+    for (int32 i = 0; i < OutFStaticMesh.MaterialSubsets.Num(); i++)
+    {
+        FString MatName = OutFStaticMesh.MaterialSubsets[i].MaterialName;
+        for (int32 j = 0; j < OutFStaticMesh.Materials.Num(); j++)
+        {
+            if (OutFStaticMesh.Materials[j].MTLName == MatName)
+            {
+                OutFStaticMesh.MaterialSubsets[i].MaterialIndex = j;
+                break;
+            }
+        }
+    }
+}
+
+bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, FStaticMeshRenderData& OutFStaticMesh)
 {
     // Subset
     OutFStaticMesh.MaterialSubsets = OutObjInfo.MaterialSubsets;
@@ -326,7 +383,7 @@ bool FLoaderOBJ::ParseMaterial(FObjInfo& OutObjInfo, OBJ::FStaticMeshRenderData&
     return true;
 }
 
-bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, OBJ::FStaticMeshRenderData& OutStaticMesh)
+bool FLoaderOBJ::ConvertToStaticMesh(const FObjInfo& RawData, FStaticMeshRenderData& OutStaticMesh)
 {
     OutStaticMesh.ObjectName = RawData.ObjectName;
     OutStaticMesh.PathName = RawData.PathName;
@@ -481,9 +538,9 @@ void FLoaderOBJ::ComputeBoundingBox(const TArray<FVertexSimple>& InVertices, FVe
     OutMaxVector = MaxVector;
 }
 
-OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& PathFileName)
+FStaticMeshRenderData FManagerOBJ::LoadObjStaticMeshAsset(const FString& PathFileName)
 {
-    OBJ::FStaticMeshRenderData* NewStaticMesh = new OBJ::FStaticMeshRenderData();
+    FStaticMeshRenderData NewStaticMesh;
 
     if (const auto It = ObjStaticMeshMap.Find(PathFileName))
     {
@@ -511,11 +568,11 @@ OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& P
         const std::filesystem::file_time_type BinLastWriteTime = std::filesystem::last_write_time(BinaryPath);
         if (LastWriteTime < BinLastWriteTime)
         {
-            if (LoadStaticMeshFromBinary(BinaryPath, *NewStaticMesh))
+            if (LoadStaticMeshFromBinary(BinaryPath, NewStaticMesh))
             {
                 ObjStaticMeshMap.Add(PathFileName, NewStaticMesh);
                 // 패스 명 추가
-                NewStaticMesh->PathName = PathFileName.ToWideString();
+                NewStaticMesh.PathName = PathFileName.ToWideString();
                 return NewStaticMesh;
             }
         }
@@ -527,43 +584,41 @@ OBJ::FStaticMeshRenderData* FManagerOBJ::LoadObjStaticMeshAsset(const FString& P
 
     if (!Result)
     {
-        delete NewStaticMesh;
-        return nullptr;
+        return {};
     }
 
 
     // Material
     if (NewObjInfo.MaterialSubsets.Num() > 0)
     {
-        Result = FLoaderOBJ::ParseMaterial(NewObjInfo, *NewStaticMesh);
+        Result = FLoaderOBJ::ParseMaterial(NewObjInfo, NewStaticMesh);
 
         if (!Result)
         {
-            delete NewStaticMesh;
-            return nullptr;
+            return {};
         }
 
-        CombineMaterialIndex(*NewStaticMesh);
+        CombineMaterialIndex(NewStaticMesh);
 
-        for (int materialIndex = 0; materialIndex < NewStaticMesh->Materials.Num(); materialIndex++) {
-            CreateMaterial(NewStaticMesh->Materials[materialIndex]);
+        for (int materialIndex = 0; materialIndex < NewStaticMesh.Materials.Num(); materialIndex++)
+        {
+            CreateMaterial(NewStaticMesh.Materials[materialIndex]);
         }
     }
 
     // Convert FStaticMeshRenderData
-    Result = FLoaderOBJ::ConvertToStaticMesh(NewObjInfo, *NewStaticMesh);
+    Result = FLoaderOBJ::ConvertToStaticMesh(NewObjInfo, NewStaticMesh);
     if (!Result)
     {
-        delete NewStaticMesh;
-        return nullptr;
+        return {};
     }
 
-    SaveStaticMeshToBinary(BinaryPath, *NewStaticMesh);
+    SaveStaticMeshToBinary(BinaryPath, NewStaticMesh);
     ObjStaticMeshMap.Add(PathFileName, NewStaticMesh);
     return NewStaticMesh;
 }
 
-bool FManagerOBJ::LoadStaticMeshFromBinary(const FString& FilePath, OBJ::FStaticMeshRenderData& OutStaticMesh)
+bool FManagerOBJ::LoadStaticMeshFromBinary(const FString& FilePath, FStaticMeshRenderData& OutStaticMesh)
 {
     std::ifstream File(FilePath.ToWideString(), std::ios::binary);
     if (!File.is_open())
@@ -719,26 +774,21 @@ UMaterial* FManagerOBJ::GetDefaultMaterial()
 
 UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
 {
-    OBJ::FStaticMeshRenderData* staticMeshRenderData = FManagerOBJ::LoadObjStaticMeshAsset(filePath);
+    FStaticMeshRenderData staticMeshRenderData = FManagerOBJ::LoadObjStaticMeshAsset(filePath);
 
-    if (staticMeshRenderData == nullptr) return nullptr;
-
-    UStaticMesh* staticMesh = GetStaticMesh(staticMeshRenderData->ObjectName);
+    UStaticMesh* staticMesh = GetStaticMesh(staticMeshRenderData.ObjectName);
     if (staticMesh != nullptr)
     {
         return staticMesh;
     }
 
-
-
     staticMesh = FObjectFactory::ConstructObject<UStaticMesh>(nullptr);
-
 
     UBodySetup* newBodySetup = FObjectFactory::ConstructObject<UBodySetup>(staticMesh);
 
     staticMesh->SetBodySetup(newBodySetup);
-    const FVector Min = staticMeshRenderData->BoundingBoxMin;
-    const FVector Max = staticMeshRenderData->BoundingBoxMax;
+    const FVector Min = staticMeshRenderData.BoundingBoxMin;
+    const FVector Max = staticMeshRenderData.BoundingBoxMax;
     const FVector Center = (Min + Max) * 0.5f; // 메시 로컬 공간에서의 AABB 중심
     const FVector Extents = (Max - Min) * 0.5f; // AABB의 half-extents
 
@@ -774,7 +824,7 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
     {
         FKConvexElem ConvexElem;
 
-        for (const FVertexSimple& vert : staticMeshRenderData->Vertices)
+        for (const FVertexSimple& vert : staticMeshRenderData.Vertices)
         {
             ConvexElem.VertexData.Add(FVector(vert.x, vert.y, vert.z));
         }
@@ -791,7 +841,7 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
 
     staticMesh->SetData(staticMeshRenderData);
 
-    staticMeshMap.Add(staticMeshRenderData->ObjectName, staticMesh);
+    staticMeshMap.Add(staticMeshRenderData.ObjectName, staticMesh);
 
     return staticMesh;
 }
@@ -805,7 +855,7 @@ UStaticMesh* FManagerOBJ::GetStaticMesh(const FString& name)
     return nullptr;
 }
 
-void FManagerOBJ::CombineMaterialIndex(OBJ::FStaticMeshRenderData& OutFStaticMesh)
+void FManagerOBJ::CombineMaterialIndex(FStaticMeshRenderData& OutFStaticMesh)
 {
     for (int32 i = 0; i < OutFStaticMesh.MaterialSubsets.Num(); i++)
     {
@@ -821,7 +871,7 @@ void FManagerOBJ::CombineMaterialIndex(OBJ::FStaticMeshRenderData& OutFStaticMes
     }
 }
 
-bool FManagerOBJ::SaveStaticMeshToBinary(const FString& FilePath, const OBJ::FStaticMeshRenderData& StaticMesh)
+bool FManagerOBJ::SaveStaticMeshToBinary(const FString& FilePath, const FStaticMeshRenderData& StaticMesh)
 {
     std::ofstream File(FilePath.ToWideString(), std::ios::binary);
     if (!File.is_open())

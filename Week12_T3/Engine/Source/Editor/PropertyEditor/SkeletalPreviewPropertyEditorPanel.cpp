@@ -32,6 +32,7 @@
 #include "Engine/FBXLoader.h"
 #include "Animation/Skeleton.h"
 #include "Components/PrimitiveComponents/MeshComponents/SkeletalMeshComponent.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Light/ShadowMapAtlas.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/FunctionRegistry.h"
@@ -204,8 +205,9 @@ void SkeletalPreviewPropertyEditorPanel::Render()
                         StaticMeshComponent->SetupAttachment(ParentComponent);
                     }
                     PickedComponent = StaticMeshComponent;
-                    FManagerOBJ::CreateStaticMesh("Assets/Cube.obj");
-                    StaticMeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+                    //FManagerOBJ::CreateStaticMesh("Assets/Cube.obj");
+                    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(TEXT("Cube"));
+                    StaticMeshComponent->SetStaticMesh(StaticMesh);
                 }
                 if (ImGui::Selectable("CubeComponent"))
                 {
@@ -1204,7 +1206,7 @@ void SkeletalPreviewPropertyEditorPanel::RenderForMaterial(UStaticMeshComponent*
 
     if (ImGui::TreeNodeEx("SubMeshes", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
     {
-        auto subsets = StaticMeshComp->GetStaticMesh()->GetRenderData()->MaterialSubsets;
+        auto subsets = StaticMeshComp->GetStaticMesh()->GetRenderData().MaterialSubsets;
         for (uint32 i = 0; i < subsets.Num(); ++i)
         {
             std::string temp = "subset " + std::to_string(i);

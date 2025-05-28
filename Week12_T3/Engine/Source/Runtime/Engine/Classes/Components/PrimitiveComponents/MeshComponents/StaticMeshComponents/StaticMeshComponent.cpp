@@ -17,6 +17,8 @@
 #include <PxRigidActor.h>
 #include <PxScene.h>
 
+#include "Engine/Asset/AssetManager.h"
+
 
 uint32 UStaticMeshComponent::GetNumMaterials() const
 {
@@ -36,7 +38,7 @@ UMaterial* UStaticMeshComponent::GetMaterial(uint32 ElementIndex) const
 
         if (staticMesh->GetMaterials().IsValidIndex(ElementIndex))
         {
-            return staticMesh->GetMaterials()[ElementIndex]->Material;
+            return staticMesh->GetMaterials()[ElementIndex].Material;
         }
     }
     return nullptr;
@@ -54,9 +56,9 @@ TArray<FName> UStaticMeshComponent::GetMaterialSlotNames() const
     TArray<FName> MaterialNames;
     if (staticMesh == nullptr) return MaterialNames;
 
-    for (const FMaterialSlot* Material : staticMesh->GetMaterials())
+    for (FMaterialSlot Material : staticMesh->GetMaterials())
     {
-        MaterialNames.Emplace(Material->MaterialSlotName);
+        MaterialNames.Emplace(Material.MaterialSlotName);
     }
 
     return MaterialNames;
@@ -81,15 +83,15 @@ int UStaticMeshComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayD
     int nIntersections = 0;
     if (staticMesh == nullptr) return 0;
 
-    OBJ::FStaticMeshRenderData* renderData = staticMesh->GetRenderData();
+    FStaticMeshRenderData renderData = staticMesh->GetRenderData();
 
-    FVertexSimple* vertices = renderData->Vertices.GetData();
-    int vCount = renderData->Vertices.Num();
-    UINT* indices = renderData->Indices.GetData();
-    int iCount = renderData->Indices.Num();
+    FVertexSimple* vertices = renderData.Vertices.GetData();
+    int vCount = renderData.Vertices.Num();
+    UINT* indices = renderData.Indices.GetData();
+    int iCount = renderData.Indices.Num();
 
     if (!vertices) return 0;
-    BYTE* pbPositions = reinterpret_cast<BYTE*>(renderData->Vertices.GetData());
+    BYTE* pbPositions = reinterpret_cast<BYTE*>(renderData.Vertices.GetData());
 
     int nPrimitives = (!indices) ? (vCount / 3) : (iCount / 3);
     float fNearHitDistance = FLT_MAX;
@@ -129,8 +131,8 @@ void UStaticMeshComponent::SetStaticMesh(UStaticMesh* value)
 {
     staticMesh = value;
     OverrideMaterials.SetNum(value->GetMaterials().Num());
-    AABB = FBoundingBox(staticMesh->GetRenderData()->BoundingBoxMin, staticMesh->GetRenderData()->BoundingBoxMax);
-    VBIBTopologyMappingName = staticMesh->GetRenderData()->DisplayName;
+    AABB = FBoundingBox(staticMesh->GetRenderData().BoundingBoxMin, staticMesh->GetRenderData().BoundingBoxMax);
+    VBIBTopologyMappingName = staticMesh->GetRenderData().DisplayName;
 }
 
 std::unique_ptr<FActorComponentInfo> UStaticMeshComponent::GetComponentInfo()
@@ -146,15 +148,18 @@ void UStaticMeshComponent::SaveComponentInfo(FActorComponentInfo& OutInfo)
     FStaticMeshComponentInfo* Info = static_cast<FStaticMeshComponentInfo*>(&OutInfo);
     Super::SaveComponentInfo(*Info);
 
-    Info->StaticMeshPath = staticMesh->GetRenderData()->PathName;
+    Info->StaticMeshPath = staticMesh->GetRenderData().PathName;
 }
 void UStaticMeshComponent::LoadAndConstruct(const FActorComponentInfo& Info)
 {
     Super::LoadAndConstruct(Info);
 
     const FStaticMeshComponentInfo& StaticMeshInfo = static_cast<const FStaticMeshComponentInfo&>(Info);
-    UStaticMesh* Mesh = FManagerOBJ::CreateStaticMesh(StaticMeshInfo.StaticMeshPath);
-    SetStaticMesh(Mesh);
+    UStaticMesh* StaticMesh = UAssetManager::Get().Get<UStaticMesh>(StaticMeshInfo.VBIBTopologyMappingName.ToString());
+
+    SetStaticMesh(StaticMesh);
+    //UStaticMesh* Mesh = FManagerOBJ::CreateStaticMesh(StaticMeshInfo.StaticMeshPath);
+    //SetStaticMesh(Mesh);
 
 }
 

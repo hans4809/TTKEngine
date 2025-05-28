@@ -128,6 +128,26 @@ void UPhysicsAsset::GenerateConstraintRecursive(const FRefSkeletal& RefSkeletal,
     }
 }
 
+bool UPhysicsAsset::LoadFromFile(const FString& filepath)
+{
+    return UAsset::LoadFromFile(filepath);
+}
+
+bool UPhysicsAsset::SerializeToFile(std::ostream& Out)
+{
+    return UAsset::SerializeToFile(Out);
+}
+
+bool UPhysicsAsset::DeserializeFromFile(std::istream& In)
+{
+    return UAsset::DeserializeFromFile(In);
+}
+
+void UPhysicsAsset::PostLoad()
+{
+    UAsset::PostLoad();
+}
+
 UPhysicsAsset::UPhysicsAsset()
 {
 }

@@ -206,6 +206,8 @@ void FStrProperty::Serialize(FArchive2& Ar, void* DataPtr) const
         FString Buffer;
         Buffer.Resize(Len);
         Ar.SerializeRaw(GetData(Buffer), (Len) * sizeof(TCHAR));
+
+        Str = Buffer;
     }
 }
 

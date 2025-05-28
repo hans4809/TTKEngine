@@ -45,9 +45,7 @@ public:
     static UAssetManager* GetIfInitialized();
 
     void Initalize();
-    
-    void InitAssetManager();
-    
+
     // 팩토리 등록/해제
     void RegisterFactory(UAssetFactory* InFactory);
     void UnregisterFactory(UAssetFactory* InFactory);
@@ -96,7 +94,6 @@ public:
 
     UAssetRegistry* GetRegistry() const { return Registry; }
 public:
-    void LoadObjFiles();
     UAssetFactory* FindFactoryForFile(UClass* InClass, const FString& filepath);
 
 private:

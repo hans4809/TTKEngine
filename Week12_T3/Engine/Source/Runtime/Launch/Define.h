@@ -18,12 +18,30 @@ class UMaterial;
 
 struct FVertexSimple
 {
-    float x, y, z, w;    // Position
-    float r, g, b, a; // Color
-    float nx, ny, nz;
-    float Tangentnx, Tangentny, Tangentnz;
-    float u=0, v=0;
-    uint32 MaterialIndex;
+    DECLARE_STRUCT(FVertexSimple)
+    
+    UPROPERTY(float, x)
+    UPROPERTY(float, y)
+    UPROPERTY(float, z)
+    UPROPERTY(float, w)
+
+    UPROPERTY(float, r)
+    UPROPERTY(float, g)
+    UPROPERTY(float, b)
+    UPROPERTY(float, a)
+
+    UPROPERTY(float, nx)
+    UPROPERTY(float, ny)
+    UPROPERTY(float, nz)
+
+    UPROPERTY(float, Tangentnx)
+    UPROPERTY(float, Tangentny)
+    UPROPERTY(float, Tangentnz)
+
+    UPROPERTY(float, u, = 0.0f)
+    UPROPERTY(float, v, = 0.0f)
+
+    UPROPERTY(uint32, MaterialIndex)
 };
 
 // Material Subset
@@ -43,6 +61,7 @@ struct FMaterialSubset
 struct FMaterialSlot
 {
     DECLARE_STRUCT(FMaterialSlot)
+    ~FMaterialSlot();
     
     UPROPERTY(VisibleAnywhere | DuplicateTransient, UMaterial*, Material, = nullptr)
     UPROPERTY(VisibleAnywhere, FName, MaterialSlotName, = TEXT("None"))
@@ -140,30 +159,28 @@ struct FObjMaterialInfo
     void Deserialize(FArchive& Ar);
 };
 
-// Cooked Data
-namespace OBJ
+struct FStaticMeshRenderData
 {
-    struct FStaticMeshRenderData
-    {
-        FString ObjectName;
-        FString PathName;
-        FString DisplayName;
-        
-        TArray<FVertexSimple> Vertices;
-        TArray<UINT> Indices;
+    DECLARE_STRUCT(FStaticMeshRenderData)
+    
+    UPROPERTY(VisibleAnywhere, FString, ObjectName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, FString, PathName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, FString, DisplayName, = TEXT("None"))
 
-        FString VBName;
-        FString IBName;
-        // ID3D11Buffer* VertexBuffer;
-        // ID3D11Buffer* IndexBuffer;
-        
-        TArray<FObjMaterialInfo> Materials;
-        TArray<FMaterialSubset> MaterialSubsets;
+    UPROPERTY(VisibleAnywhere, TArray<FVertexSimple>, Vertices, = {})
+    UPROPERTY(VisibleAnywhere, TArray<uint32>, Indices, = {})
 
-        FVector BoundingBoxMin;
-        FVector BoundingBoxMax;
-    };
-}
+    UPROPERTY(VisibleAnywhere, FString, VBName, = TEXT("None"))
+    UPROPERTY(VisibleAnywhere, FString, IBName, = TEXT("None"))
+    // ID3D11Buffer* VertexBuffer;
+    // ID3D11Buffer* IndexBuffer;
+
+    UPROPERTY(VisibleAnywhere, TArray<FObjMaterialInfo>, Materials, = {})
+    UPROPERTY(VisibleAnywhere, TArray<FMaterialSubset>, MaterialSubsets, = {})
+
+    UPROPERTY(VisibleAnywhere, FVector, BoundingBoxMin, = FVector::ZeroVector)
+    UPROPERTY(VisibleAnywhere, FVector, BoundingBoxMax, = FVector::ZeroVector)
+};
 
 enum class EShaderStage
 {

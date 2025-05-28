@@ -194,6 +194,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\SkeletalMesh\USkeletalMeshFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Skeleton\USkeletonFactory.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\StaticMesh\UStaticMeshFactory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.cpp" />
@@ -511,6 +512,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\ObjectDuplicator.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\SkeletalMesh\USkeletalMeshFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\Skeleton\USkeletonFactory.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Asset\StaticMesh\UStaticMeshFactory.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\PhysicsEngine\BodyInstance.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesCurveEditorPanel.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\Particles\ParticlesDetailsPanel.h" />
