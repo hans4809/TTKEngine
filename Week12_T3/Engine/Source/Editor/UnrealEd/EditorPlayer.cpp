@@ -328,8 +328,8 @@ void UEditorPlayer::PickedObjControl(const EControlMode ControlMode, const ECoor
     {
         POINT CurrentMousePos;
         GetCursorPos(&CurrentMousePos);
-        const int32 DeltaX = CurrentMousePos.x - LastMousePosision.x;
-        const int32 DeltaY = CurrentMousePos.y - LastMousePosision.y;
+        const int32 DeltaX = CurrentMousePos.x - LastMousePos.x;
+        const int32 DeltaY = CurrentMousePos.y - LastMousePos.y;
 
         // USceneComponent* pObj = World->GetPickingObj();
         //AActor* PickedActor = World->GetSelectedActors();
@@ -358,7 +358,7 @@ void UEditorPlayer::PickedObjControl(const EControlMode ControlMode, const ECoor
                 break;
             }
         }
-        LastMousePosision = CurrentMousePos;
+        LastMousePos = CurrentMousePos;
     }
 }
 

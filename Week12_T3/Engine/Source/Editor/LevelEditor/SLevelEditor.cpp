@@ -401,6 +401,11 @@ void SLevelEditor::RegisterEditorInputDelegates()
                         {
                             EditorPlayer->PickActor(ActiveViewportClient->GetWorld(), PickPosition);
                         }
+
+                        // Maybe you should change code.
+                        POINT CurrentMousePos;
+                        GetCursorPos(&CurrentMousePos);
+                        EditorPlayer->SetLastMousePosition(CurrentMousePos);
                         break;
                     }
                     default:

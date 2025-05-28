@@ -29,6 +29,7 @@ class UEditorPlayer : public UObject
     void PickedObjControl(EControlMode ControlMode, ECoordiMode CoordiMode, UWorld* World);
     bool GetMultiSelecting() const { return bMultiSeleting; }
     void SetAlreadyDup(const bool InbAlreadyDup) { bAlreadyDup = InbAlreadyDup; }
+    void SetLastMousePosition(POINT NewMousePos) { LastMousePos = NewMousePos; }
 private:
     static int RayIntersectsObject(const FVector& PickPosition, USceneComponent* Component, float& HitDistance, int& IntersectCount);
 
@@ -46,6 +47,6 @@ private:
     bool bMultiSeleting =false;
     
     POINT multiSelectingStartPos;
-    POINT LastMousePosision;
+    POINT LastMousePos = { 0, 0 };
 };
 
