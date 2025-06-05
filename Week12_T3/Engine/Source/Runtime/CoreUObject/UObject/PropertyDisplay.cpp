@@ -211,6 +211,12 @@ void FStrProperty::Serialize(FArchive2& Ar, void* DataPtr) const
     }
 }
 
+void FStrProperty::CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const
+{
+    const FString str = *static_cast<const FString*>(SrcPtr);
+    *static_cast<FString*>(DstPtr) = str;
+}
+
 void FNameProperty::DisplayRawDataInImGui(const char* PropertyLabel, void* DataPtr) const
 {
     FProperty::DisplayRawDataInImGui(PropertyLabel, DataPtr);

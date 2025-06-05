@@ -383,6 +383,7 @@ struct FStrProperty : public FProperty
     virtual void DisplayInImGui(UObject* Object) const override;
     virtual void DisplayRawDataInImGui(const char* PropertyLabel, void* DataPtr) const override;
     void Serialize(FArchive2& Ar, void* DataPtr) const override;
+    void CopyData(const void* SrcPtr, void* DstPtr, FObjectDuplicator& Duplicator) const override;
 };
 
 struct FNameProperty : public FProperty
