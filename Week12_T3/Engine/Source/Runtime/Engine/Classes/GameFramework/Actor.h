@@ -309,6 +309,13 @@ void AActor::AddDuplicatedComponent(T* Component, EComponentOrigin Origin)
         }
     }
 
+    /* ActorComponent가 Actor와 World에 등록이 되었다는 전제하에 호출됩니다 */
+    if (!Component->HasBeenInitialized())
+    {
+        // TODO: RegisterComponent() 생기면 제거
+        Component->InitializeComponent();
+    }
+
     // TODO: RegisterComponent() 생기면 제거
     Component->ComponentOrigin = Origin;
 }

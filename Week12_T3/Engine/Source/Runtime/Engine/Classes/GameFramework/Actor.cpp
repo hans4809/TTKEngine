@@ -329,26 +329,33 @@ UObject* AActor::Duplicate(UObject* InOuter)
 
 void AActor::DuplicateSubObjects(const UObject* Source, UObject* InOuter, FObjectDuplicator& Duplicator)
 {
-    // const AActor* SrcActor = static_cast<const AActor*>(Source);
-    //
-    // for (UActorComponent* SrcComp : SrcActor->OwnedComponents)
-    // {
-    //     if (SrcComp->ComponentOrigin == EComponentOrigin::Constructor)
-    //     {
-    //         continue;
-    //     }
-    //     
-    //     if (SrcComp->HasAnyFlags(RF_DuplicateTransient))
-    //     {
-    //         AddDuplicatedComponent(SrcComp);
-    //         continue;
-    //     }
-    //     
-    //     // 같은 Duplicator 인스턴스를 재사용
-    //     UObject* Copied = Duplicator.DuplicateObject(SrcComp);
-    //     UActorComponent* NewComp = static_cast<UActorComponent*>(Copied);
-    //     AddDuplicatedComponent(NewComp, EComponentOrigin::Duplicated);
-    // }
+    Super::DuplicateSubObjects(Source, InOuter, Duplicator);
+    const AActor* SrcActor = static_cast<const AActor*>(Source);
+    
+    // 기본적으로 있던 컴포넌트 제거 (생성자에서 생기는 애들 삭제)
+    TArray<UActorComponent*> CopiedComponents = OwnedComponents;
+    for (UActorComponent* Components : CopiedComponents)
+    {
+        if (Components)
+        {
+            Components->DestroyComponent();
+        }
+    }
+    OwnedComponents.Empty();
+    
+    for (UActorComponent* SrcComp : SrcActor->OwnedComponents)
+    {
+        // 같은 Duplicator 인스턴스를 재사용
+        UObject* Copied = Duplicator.DuplicateObject(SrcComp);
+        UActorComponent* NewComp = static_cast<UActorComponent*>(Copied);
+        
+        if (SrcComp == SrcActor->RootComponent)
+        {
+            RootComponent = static_cast<USceneComponent*>(NewComp);
+        }
+        
+        AddDuplicatedComponent(NewComp, EComponentOrigin::Duplicated);
+    }
 }
 
 void AActor::PostDuplicate()

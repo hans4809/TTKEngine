@@ -49,9 +49,25 @@ UObject* FObjectDuplicator::DuplicateObject(UObject* Src)
     DuplicatedMap[Src] = NewObj;
 
     // 4) 프로퍼티별 복제
-    for (UStruct* StructIter = Src->GetClass(); StructIter; StructIter = StructIter->GetSuperStruct())
+    // 1) Child → Parent → GrandParent 순서로 TempStructs에 쌓기
+    TArray<UStruct*> TempStructs;
+    for (UStruct* Iter = Src->GetClass(); Iter; Iter = Iter->GetSuperStruct())
     {
-        for (FProperty* Prop : StructIter->GetProperties())
+        TempStructs.Add(Iter);
+    }
+    // 이제 TempStructs = [Child, Parent, GrandParent, ...]
+
+    // 2) StructStack에 순서대로 Push (TempStructs[0] 부터 TempStructs.Last() 순서)
+    TArray<UStruct*> StructQueue;
+    for (int32 i = TempStructs.Num() - 1; i >= 0; --i)
+    {
+        StructQueue.Add(TempStructs[i]);
+    }
+    // StructStack = [GrandParent, Parent, Child, ...]
+
+    for (UStruct* Iter : StructQueue)
+    {
+        for (FProperty* Prop : Iter->GetProperties())
         {
             // CPF_DuplicateTransient 검사
             if (HasAnyFlags(Prop->Flags, EPropertyFlags::DuplicateTransient))
