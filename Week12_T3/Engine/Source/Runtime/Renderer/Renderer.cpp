@@ -241,6 +241,49 @@ void FRenderer::Release()
 
 void FRenderer::CreateVertexPixelShader(const FString& InPrefix, D3D_SHADER_MACRO* pDefines)
 {
+    CreateVertexShader(InPrefix, pDefines);
+    CreatePixelShader(InPrefix, pDefines);
+//     FString Prefix = InPrefix;
+//     if (pDefines != nullptr)
+//     {
+// #if USE_WIDECHAR
+//         Prefix += ConvertAnsiToWchar(pDefines->Name);
+// #else
+//         Prefix += pDefines->Name;
+// #endif
+//     }
+//     // 접미사를 각각 붙여서 전체 파일명 생성
+//     const FString VertexShaderFile = InPrefix + TEXT("VertexShader.hlsl");
+//     const FString PixelShaderFile  = InPrefix + TEXT("PixelShader.hlsl");
+//
+//     const FString VertexShaderName = Prefix+ TEXT("VertexShader.hlsl");
+//     const FString PixelShaderName = Prefix+ TEXT("PixelShader.hlsl");
+//     
+//     RenderResourceManager->CreateVertexShader(VertexShaderName, VertexShaderFile, pDefines);
+//     RenderResourceManager->CreatePixelShader(PixelShaderName, PixelShaderFile, pDefines);
+//
+//     ID3DBlob* VertexShaderBlob = RenderResourceManager->GetVertexShaderBlob(VertexShaderName);
+//     
+//     TArray<FConstantBufferInfo> VertexStaticMeshConstant;
+//     ID3D11InputLayout* InputLayout = nullptr;
+//     Graphics->ExtractVertexShaderInfo(VertexShaderBlob, VertexStaticMeshConstant, InputLayout);
+//     RenderResourceManager->AddOrSetInputLayout(VertexShaderName, InputLayout);
+//
+//     ID3DBlob* PixelShaderBlob = RenderResourceManager->GetPixelShaderBlob(PixelShaderName);
+//     TArray<FConstantBufferInfo> PixelStaticMeshConstant;
+//     Graphics->ExtractPixelShaderInfo(PixelShaderBlob, PixelStaticMeshConstant);
+//     
+//     TMap<FShaderConstantKey, uint32> ShaderStageToCB;
+//
+//     CreateMappedCB(ShaderStageToCB, VertexStaticMeshConstant, EShaderStage::VS);  
+//     CreateMappedCB(ShaderStageToCB, PixelStaticMeshConstant, EShaderStage::PS);
+//     
+//     MappingVSPSInputLayout(Prefix, VertexShaderName, PixelShaderName, VertexShaderName);
+//     MappingVSPSCBSlot(Prefix, ShaderStageToCB);
+}
+
+void FRenderer::CreateVertexShader(const FString& InPrefix, D3D_SHADER_MACRO* pDefines)
+{
     FString Prefix = InPrefix;
     if (pDefines != nullptr)
     {
@@ -252,32 +295,50 @@ void FRenderer::CreateVertexPixelShader(const FString& InPrefix, D3D_SHADER_MACR
     }
     // 접미사를 각각 붙여서 전체 파일명 생성
     const FString VertexShaderFile = InPrefix + TEXT("VertexShader.hlsl");
-    const FString PixelShaderFile  = InPrefix + TEXT("PixelShader.hlsl");
-
     const FString VertexShaderName = Prefix+ TEXT("VertexShader.hlsl");
-    const FString PixelShaderName = Prefix+ TEXT("PixelShader.hlsl");
-    
-    RenderResourceManager->CreateVertexShader(VertexShaderName, VertexShaderFile, pDefines);
-    RenderResourceManager->CreatePixelShader(PixelShaderName, PixelShaderFile, pDefines);
 
+    RenderResourceManager->CreateVertexShader(VertexShaderName, VertexShaderFile, pDefines);
     ID3DBlob* VertexShaderBlob = RenderResourceManager->GetVertexShaderBlob(VertexShaderName);
-    
+
     TArray<FConstantBufferInfo> VertexStaticMeshConstant;
     ID3D11InputLayout* InputLayout = nullptr;
     Graphics->ExtractVertexShaderInfo(VertexShaderBlob, VertexStaticMeshConstant, InputLayout);
     RenderResourceManager->AddOrSetInputLayout(VertexShaderName, InputLayout);
 
+    TMap<FShaderConstantKey, uint32> ShaderStageToCB;
+
+    CreateMappedCB(ShaderStageToCB, VertexStaticMeshConstant, EShaderStage::VS);
+
+    MappingVSInputLayout(Prefix, VertexShaderName, VertexShaderName);
+    MappingCBSlot(Prefix, ShaderStageToCB);
+}
+
+void FRenderer::CreatePixelShader(const FString& InPrefix, D3D_SHADER_MACRO* pDefines)
+{
+    FString Prefix = InPrefix;
+    if (pDefines != nullptr)
+    {
+#if USE_WIDECHAR
+        Prefix += ConvertAnsiToWchar(pDefines->Name);
+#else
+        Prefix += pDefines->Name;
+#endif
+    }
+    // 접미사를 각각 붙여서 전체 파일명 생성
+    const FString PixelShaderFile  = InPrefix + TEXT("PixelShader.hlsl");
+    const FString PixelShaderName = Prefix+ TEXT("PixelShader.hlsl");
+
+    RenderResourceManager->CreatePixelShader(PixelShaderName, PixelShaderFile, pDefines);
+
     ID3DBlob* PixelShaderBlob = RenderResourceManager->GetPixelShaderBlob(PixelShaderName);
     TArray<FConstantBufferInfo> PixelStaticMeshConstant;
     Graphics->ExtractPixelShaderInfo(PixelShaderBlob, PixelStaticMeshConstant);
-    
+
     TMap<FShaderConstantKey, uint32> ShaderStageToCB;
 
-    CreateMappedCB(ShaderStageToCB, VertexStaticMeshConstant, EShaderStage::VS);  
     CreateMappedCB(ShaderStageToCB, PixelStaticMeshConstant, EShaderStage::PS);
-    
-    MappingVSPSInputLayout(Prefix, VertexShaderName, PixelShaderName, VertexShaderName);
-    MappingVSPSCBSlot(Prefix, ShaderStageToCB);
+    MappingPS(Prefix, PixelShaderName);
+    MappingCBSlot(Prefix, ShaderStageToCB);
 }
 
 #pragma region Shader
@@ -542,9 +603,47 @@ void FRenderer::MappingVSPSInputLayout(const FName InShaderProgramName, FName VS
     ShaderPrograms.Add(InShaderProgramName, std::make_shared<FShaderProgram>(VSName, PSName, InInputLayoutName));
 }
 
+void FRenderer::MappingPS(const FName InShaderProgramName, FName PSName)
+{
+    if (ShaderPrograms.Contains(InShaderProgramName))
+    {
+        ShaderPrograms[InShaderProgramName]->SetPixelShaderName(PSName);
+    }
+    else
+    {
+        ShaderPrograms.Add(InShaderProgramName, std::make_shared<FShaderProgram>(TEXT("None"), PSName, TEXT("None")));
+    }
+}
+
+
+void FRenderer::MappingVSInputLayout(const FName InShaderProgramName, FName VSName, FName InInputLayoutName)
+{
+    if (ShaderPrograms.Contains(InShaderProgramName))
+    {
+        ShaderPrograms[InShaderProgramName]->SetVertexShaderName(VSName);
+        ShaderPrograms[InShaderProgramName]->SetPixelShaderName(InInputLayoutName);
+    }
+    else
+    {
+        ShaderPrograms.Add(InShaderProgramName, std::make_shared<FShaderProgram>(VSName, TEXT("None"), InInputLayoutName));
+    }
+}
+
 void FRenderer::MappingVSPSCBSlot(const FName InShaderName, const TMap<FShaderConstantKey, uint32>& MappedConstants)
 {
     ShaderConstantNameAndSlots.Add(InShaderName, MappedConstants);
+}
+
+void FRenderer::MappingCBSlot(const FName InShaderName, TMap<FShaderConstantKey, uint32> MappedConstants)
+{
+    // GroupName에 해당하는 내부 맵을 찾거나 새로 생성
+    auto& InnerMap = ShaderConstantNameAndSlots.FindOrAdd(InShaderName);
+    
+    // 전달된 모든 (키, 슬롯) 쌍을 내부 맵에 추가
+    for (const auto& Pair : MappedConstants)
+    {
+        InnerMap.Add(Pair.Key, Pair.Value);
+    }
 }
 
 void FRenderer::MappingVBTopology(const FName InObjectName, const FName InVBName, const uint32 InStride, const uint32 InNumVertices, const D3D11_PRIMITIVE_TOPOLOGY InTopology)

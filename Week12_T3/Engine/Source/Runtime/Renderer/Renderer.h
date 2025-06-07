@@ -31,6 +31,8 @@ class FRenderer
 {
 private:
     void CreateVertexPixelShader(const FString& InPrefix, D3D_SHADER_MACRO* pDefines);
+    void CreateVertexShader(const FString& InPrefix, D3D_SHADER_MACRO* pDefines);
+    void CreatePixelShader(const FString& InPrefix, D3D_SHADER_MACRO* pDefines);
     //void CreateComputeShader();
     //void CreateStaticMeshShader();
     //void CreateTextureShader();
@@ -93,7 +95,10 @@ public:
     
     void MappingInputLayout(FName InShaderProgramName, FName InInputLayoutName);
     void MappingVSPSInputLayout(FName InShaderProgramName, FName VSName, FName PSName, FName InInputLayoutName);
+    void MappingPS(FName InShaderProgramName, FName PSName);
+    void MappingVSInputLayout(FName InShaderProgramName, FName VSName, FName InInputLayoutName);
     void MappingVSPSCBSlot(FName InShaderName, const TMap<FShaderConstantKey, uint32>& MappedConstants);
+    void MappingCBSlot(FName InShaderName, TMap<FShaderConstantKey, uint32> MappedConstants);
     void MappingVBTopology(FName InObjectName, FName InVBName, uint32 InStride, uint32 InNumVertices, D3D11_PRIMITIVE_TOPOLOGY InTopology= D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     void MappingIB(FName InObjectName, FName InIBName, uint32 InNumIndices);
 private: 

@@ -117,5 +117,20 @@ public:
     static void ExtractPixelShaderInfo(ID3DBlob* shaderBlob, TArray<FConstantBufferInfo>& OutCBInfos);
     static TArray<FConstantBufferInfo> ExtractConstantBufferInfos(ID3D11ShaderReflection* InReflector, const D3D11_SHADER_DESC& InShaderDecs);
     ID3D11InputLayout* ExtractInputLayout(ID3DBlob* InShaderBlob, ID3D11ShaderReflection* InReflector, const D3D11_SHADER_DESC& InShaderDecs) const;
+
+    /**
+     * Shader ByteCode와 Reflector를 사용하여 (Instance Buffer도 고려한)InputLayout을 생성합니다.
+     *
+     * @param InShaderBlob      Complie된 Shader ByteCode(Vertex Shader)의 Blob 포인터
+     * @param InReflector       Shader Reflection Interface 포인터 (ID3D11ShaderReflection*)
+     * @param InShaderDescs     Shader Description을 담고 있는 D3D11_SHADER_DESC 구조체(입력 파라미터 개수 등)
+     * @param OutInputLayout    생성된 ID3D11InputLayout 포인터를 저장할 변수의 주소
+     *                          (이 함수 호출 후, 이 포인터를 통해 입력 레이아웃 객체를 얻음)
+     *
+     * 함수 내부에서는 InReflector->GetInputParameterDesc를 사용해 각 입력 시그니처를 분석하고,
+     * D3D11_INPUT_ELEMENT_DESC 배열을 구성한 뒤, CreateInputLayout을 통해 InputLayout을 생성합니다.
+     * 생성된 객체는 OutInputLayout에 할당되며, 호출자는 이후 이 레이아웃을 IASetInputLayout 등에 바인딩할 수 있습니다.
+     */
+    void ExtractInputLayout(ID3DBlob* InShaderBlob, ID3D11ShaderReflection* InReflector, const D3D11_SHADER_DESC& InShaderDescs, ID3D11InputLayout*& OutInputLayout) const;
 };
 

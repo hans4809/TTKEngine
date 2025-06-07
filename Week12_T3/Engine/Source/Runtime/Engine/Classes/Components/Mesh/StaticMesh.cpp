@@ -35,7 +35,7 @@ void UStaticMesh::GetUsedMaterials(TArray<UMaterial*>& Out) const
     }
 }
 
-void UStaticMesh::SetData(FStaticMeshRenderData renderData)
+void UStaticMesh::SetData(const FStaticMeshRenderData& renderData)
 {
     staticMeshRenderData = renderData;
 

@@ -779,7 +779,11 @@ void FGraphicsDevice::ExtractVertexShaderInfo(ID3DBlob* shaderBlob, TArray<FCons
     }
 
     OutCBInfos = ExtractConstantBufferInfos(pReflector, shaderDesc);
-    OutInputLayout = ExtractInputLayout(shaderBlob, pReflector, shaderDesc);
+    
+    // 실패 시에도 반드시 nullptr이 넘어가도록 미리 초기화
+    OutInputLayout = nullptr;
+    ExtractInputLayout(shaderBlob, pReflector, shaderDesc, OutInputLayout);
+    //OutInputLayout = ExtractInputLayout(shaderBlob, pReflector, shaderDesc);
     
     SAFE_RELEASE(pReflector);
 }
@@ -935,4 +939,108 @@ ID3D11InputLayout* FGraphicsDevice::ExtractInputLayout(ID3DBlob* InShaderBlob, I
                                    &inputLayout);
     
     return inputLayout;
+}
+
+void FGraphicsDevice::ExtractInputLayout(ID3DBlob* InShaderBlob, ID3D11ShaderReflection* InReflector, const D3D11_SHADER_DESC& InShaderDescs,
+    ID3D11InputLayout*& OutInputLayout) const
+{
+    // 합쳐진 레이아웃 기술자들을 저장할 배열
+    std::vector<D3D11_INPUT_ELEMENT_DESC> layoutDescs;
+    
+    // 스트림별 첫 요소 구분용 카운터
+    UINT vertexCount   = 0;
+    UINT instanceCount = 0;
+
+    for (UINT i = 0; i < InShaderDescs.InputParameters; ++i)
+    {
+        D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+        const HRESULT hr = InReflector->GetInputParameterDesc(i, &paramDesc);
+        if (FAILED(hr))
+            continue;
+
+        D3D11_INPUT_ELEMENT_DESC elementDesc = {};
+        elementDesc.SemanticName     = paramDesc.SemanticName;
+        elementDesc.SemanticIndex    = paramDesc.SemanticIndex;
+
+        // Mask 값에 따라 DXGI_FORMAT 결정
+        if (paramDesc.Mask == 1)
+        {
+            if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                elementDesc.Format = DXGI_FORMAT_R32_FLOAT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                elementDesc.Format = DXGI_FORMAT_R32_SINT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                elementDesc.Format = DXGI_FORMAT_R32_UINT;
+        }
+        else if (paramDesc.Mask <= 3)
+        {
+            if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32_SINT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32_UINT;
+        }
+        else if (paramDesc.Mask <= 7)
+        {
+            if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32B32_UINT;
+        }
+        else if (paramDesc.Mask <= 15)
+        {
+            if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
+            else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32)
+                elementDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
+        }
+        else
+        {
+            elementDesc.Format = DXGI_FORMAT_UNKNOWN;
+        }
+        
+        // 기본값은 정점 스트림(스트림 0)
+        elementDesc.InputSlot      = 0;
+        elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+        elementDesc.InstanceDataStepRate = 0;
+
+        // SemanticName이 "INST_"로 시작하면 인스턴스 버퍼용으로 분리
+        // (쉐이더에서 인스턴스 데이터를 위한 시맨틱에 "INST_" 접두사를 붙이는 것을 전제)
+        if (std::strncmp(paramDesc.SemanticName, "INST_", 5) == 0)
+        {
+            elementDesc.InputSlot      = 1;
+            elementDesc.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+            elementDesc.InstanceDataStepRate = 1;
+
+            
+            // 인스턴스 스트림의 첫 번째 요소라면 Offset = 0, 그렇지 않으면 APPEND
+            elementDesc.AlignedByteOffset = (instanceCount == 0) ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
+            instanceCount++;
+        }
+        else
+        {
+            // 정점 스트림의 첫 번째 요소라면 Offset = 0, 그렇지 않으면 APPEND
+            elementDesc.AlignedByteOffset = (vertexCount == 0) ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
+            vertexCount++;
+        }
+        
+        layoutDescs.push_back(elementDesc);
+    }
+
+    // 실패 시에도 OutInputLayout이 nullptr이 되도록 미리 초기화
+    OutInputLayout = nullptr;
+    
+    // 하나로 합쳐진 레이아웃 배열로 단일 InputLayout 생성
+    ID3D11InputLayout* inputLayout = nullptr;
+    HRESULT hr = Device->CreateInputLayout(layoutDescs.data(), static_cast<UINT>(layoutDescs.size()), InShaderBlob->GetBufferPointer(), InShaderBlob->GetBufferSize(), &inputLayout);
+
+    if (SUCCEEDED(hr) && inputLayout != nullptr)
+    {
+        OutInputLayout = inputLayout;
+    }
 }

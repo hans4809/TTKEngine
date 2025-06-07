@@ -17,7 +17,7 @@ public:
     void GetUsedMaterials(TArray<UMaterial*>& Out) const;
     FStaticMeshRenderData GetRenderData() const { return staticMeshRenderData; }
 
-    void SetData(FStaticMeshRenderData renderData);
+    void SetData(const FStaticMeshRenderData& renderData);
     void SetBodySetup(UBodySetup* bodySetup);
     UBodySetup* GetBodySetup();
     
